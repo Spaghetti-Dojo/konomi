@@ -9,8 +9,6 @@ use SpaghettiDojo\Konomi\Blocks;
 use SpaghettiDojo\Konomi\User;
 use SpaghettiDojo\Konomi\Blocks\Bookmark\Context;
 
-covers(Context::class);
-
 describe('toArray', function (): void {
     it('ensure valid serialization', function (): void {
         $expected = (bool) (rand(0, 100) % 2);
