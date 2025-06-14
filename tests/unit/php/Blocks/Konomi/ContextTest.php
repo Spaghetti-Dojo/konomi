@@ -15,9 +15,11 @@ describe('toArray', function (): void {
             'isLoggedIn' => true,
             'findItem' => \Mockery::mock(User\Item::class, ['isActive' => true]),
         ]);
+        /** @var User\UserFactory&\Mockery\MockInterface $userFactory */
         $userFactory = \Mockery::mock(User\UserFactory::class, [
             'create' => $user,
         ]);
+        /** @var Blocks\InstanceId&\Mockery\MockInterface $instanceId */
         $instanceId = \Mockery::mock(Blocks\InstanceId::class);
 
         Functions\expect('get_the_ID')->andReturn(10);

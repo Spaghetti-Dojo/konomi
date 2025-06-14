@@ -9,18 +9,22 @@ use SpaghettiDojo\Konomi\Blocks;
 use SpaghettiDojo\Konomi\User;
 use SpaghettiDojo\Konomi\Blocks\Bookmark\Context;
 
+covers(Context::class);
+
 describe('toArray', function (): void {
     it('ensure valid serialization', function (): void {
-        $expected = rand(0, 100) % 2 ? true : false;
+        $expected = (bool) (rand(0, 100) % 2);
 
         $user = \Mockery::mock(User\User::class, [
             'findItem' => \Mockery::mock(User\Item::class, [
                 'isActive' => $expected,
             ]),
         ]);
+        /** @var User\UserFactory&\Mockery\MockInterface $userFactory */
         $userFactory = \Mockery::mock(User\UserFactory::class, [
             'create' => $user,
         ]);
+        /** @var Blocks\InstanceId&\Mockery\MockInterface $instanceId */
         $instanceId = \Mockery::mock(Blocks\InstanceId::class);
 
         Functions\expect('get_the_ID')->andReturn(10);
