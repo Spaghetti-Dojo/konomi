@@ -9,7 +9,7 @@ on:
         branches:
             - 'main'
         paths:
-            - '**/workflows/js-qa.yml'
+            - '**/workflows/client-linting.yml'
             - 'sources/**.ts'
             - 'sources/**.tsx'
             - 'sources/**.scss'

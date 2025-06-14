@@ -11,7 +11,7 @@ on:
             - 'sources/**.tsx'
             - 'sources/**.scss'
             - 'resources/**.scss'
-            - '.github/workflows/js-artifacts.yml'
+            - '.github/workflows/artifacts.yml'
             - 'package.json'
             - 'yarn.lock'
             - 'tsconfig.json'

@@ -11,6 +11,7 @@ on:
             - main
         paths:
             - '**.php'
+            - '.github/workflows/server-linting.yml'
             - 'composer.lock'
 
 jobs:
