@@ -1,10 +1,14 @@
 <?php
 
 /**
+ *
  * Plugin Name: Konomi
+ * Plugin URI: https://github.com/Spaghetti-Dojo/konomi
  * Author: Guido Scialfa
- * Description: A WordPress plugin to save posts as favorite using the new Interactive API.
  * Author URI: https://guidoscialfa.com/
+ * Description: A WordPress plugin to save posts as favorite using the new Interactive API.
+ * Version: 0.1.0
+ * Text Domain: konomi
  */
 
 // phpcs:disable PSR1.Files.SideEffects
