@@ -6,7 +6,7 @@
 	],
 	"env": {
 		"development": {
-			"phpVersion": "8.1",
+			"phpVersion": "8.2",
 			"mappings": {
 				"wp-content/plugins/konomi": ".",
 				"wp-content/plugins/wordpress-importer": "https://downloads.wordpress.org/plugin/wordpress-importer.0.7.zip",

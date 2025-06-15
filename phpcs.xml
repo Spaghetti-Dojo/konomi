@@ -9,7 +9,7 @@
 	<arg name="extensions" value="php,inc"/>
 
 	<config name="text_domain" value="konomi"/>
-	<config name="testVersion" value="8.1-"/>
+	<config name="testVersion" value="8.2-"/>
 	<config name="ignore_warnings_on_exit" value="1"/>
 
 	<rule ref="Inpsyde">
