@@ -17,8 +17,3 @@ function setupWpConstants(): void
         define('WPINC', '/wp-includes');
     }
 }
-
-function setUpWpHooks(): void
-{
-    require_once wordPressDirPath() . '/wp-includes/plugin.php';
-}

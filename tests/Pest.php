@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pest;
 
 use Brain\Monkey\Functions;
+use SpaghettiDojo\Konomi\Tests\WpTestCase;
 
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;
@@ -27,3 +28,12 @@ uses()
         tearDown();
     })
     ->in('unit', 'integration');
+
+pest()->extends(WpTestCase::class)
+    ->beforeAll(function (): void {
+        $this->setUpWordBless();
+    })
+    ->afterAll(function (): void {
+        $this->tearDownWordBless();
+    })
+    ->in('functional');
