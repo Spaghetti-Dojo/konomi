@@ -8,11 +8,6 @@ use Mockery;
 use SpaghettiDojo\Konomi\Blocks;
 use SpaghettiDojo\Konomi\User;
 
-beforeAll(function (): void {
-    setUpWpRest();
-    setUpWpError();
-});
-
 beforeEach(function (): void {
     /** @var Mockery\MockInterface&User\User $user */
     $this->user = Mockery::mock(User\User::class);
@@ -26,11 +21,33 @@ beforeEach(function (): void {
     $this->item = Mockery::mock(User\Item::class);
     /** @var Mockery\MockInterface&\WP_REST_Request $request */
     $this->request = Mockery::mock(\WP_REST_Request::class);
+
+    /** @var \WP_REST_Response&Mockery\MockInterface $successResponse */
+    $this->successResponse = Mockery::mock(\WP_REST_Response::class, [
+        'get_data' => [
+            'success' => true,
+            'message' => 'Reaction saved',
+        ],
+        'get_status' => 201,
+    ]);
+    /** @var \WP_Error&Mockery\MockInterface $failedToSaveError */
+    $this->failedToSaveError = Mockery::mock(\WP_Error::class, [
+        'get_error_code' => 'failed_to_save_reaction',
+        'get_error_message' => 'Failed to save reaction',
+        'get_error_data' => ['status' => 500],
+    ]);
+    /** @var \WP_Error&Mockery\MockInterface $failedToSaveError */
+    $this->failedBecauseInvalidData = Mockery::mock(\WP_Error::class, [
+        'get_error_code' => 'invalid_reaction_data',
+        'get_error_message' => 'Invalid Reaction Data',
+        'get_error_data' => ['status' => 400],
+    ]);
+
     /** @var Mockery\MockInterface&Blocks\Rest\AddResponse $addResponse */
     $this->addResponse = Mockery::mock(Blocks\Rest\AddResponse::class, [
-        'successResponse' => new \WP_REST_Response(['success' => true, 'message' => 'Reaction saved'], 201),
-        'failedToSaveError' => new \WP_Error('failed_to_save_reaction', 'Failed to save reaction', ['status' => 500]),
-        'failedBecauseInvalidData' => new \WP_Error('invalid_reaction_data', 'Invalid Reaction Data', ['status' => 400]),
+        'successResponse' => $this->successResponse,
+        'failedToSaveError' => $this->failedToSaveError,
+        'failedBecauseInvalidData' => $this->failedBecauseInvalidData,
     ]);
 });
 
@@ -38,11 +55,10 @@ describe('__invoke', function (): void {
     it('Successfully save an Item', function (): void {
         $id = 1;
         $type = 'post';
-        $isActive = true;
-        $rawRequestData = makeRequestData($id, $type, $isActive);
+        $rawRequestData = makeRequestData($id, $type, true);
 
         $this->request->shouldReceive('get_param')->with('meta')->andReturn($rawRequestData);
-        $this->itemFactory->shouldReceive('create')->with($id, $type, $isActive, User\ItemGroup::REACTION)->andReturn($this->item);
+        $this->itemFactory->shouldReceive('create')->with($id, $type, true, User\ItemGroup::REACTION)->andReturn($this->item);
         $this->item->shouldReceive('isValid')->andReturn(true);
         $this->user->shouldReceive('saveItem')->with($this->item)->andReturn(true);
 
@@ -66,11 +82,10 @@ describe('__invoke', function (): void {
     it('Fails to save the Like because of invalid data', function (): void {
         $id = 1;
         $type = 'post';
-        $isActive = true;
-        $rawRequestData = makeRequestData($id, $type, $isActive);
+        $rawRequestData = makeRequestData($id, $type, true);
 
         $this->request->shouldReceive('get_param')->with('meta')->andReturn($rawRequestData);
-        $this->itemFactory->shouldReceive('create')->with($id, $type, $isActive, User\ItemGroup::REACTION)->andReturn($this->item);
+        $this->itemFactory->shouldReceive('create')->with($id, $type, true, User\ItemGroup::REACTION)->andReturn($this->item);
         $this->item->shouldReceive('isValid')->andReturn(false);
 
         $controller = Blocks\Rest\AddController::new(
@@ -111,11 +126,10 @@ describe('__invoke', function (): void {
     it('Fails to save the Like', function (): void {
         $id = 1;
         $type = 'post';
-        $isActive = true;
-        $rawRequestData = makeRequestData($id, $type, $isActive);
+        $rawRequestData = makeRequestData($id, $type, true);
 
         $this->request->shouldReceive('get_param')->with('meta')->andReturn($rawRequestData);
-        $this->itemFactory->shouldReceive('create')->with($id, $type, $isActive, User\ItemGroup::REACTION)->andReturn($this->item);
+        $this->itemFactory->shouldReceive('create')->with($id, $type, true, User\ItemGroup::REACTION)->andReturn($this->item);
         $this->item->shouldReceive('isValid')->andReturn(true);
         $this->user->shouldReceive('saveItem')->with($this->item)->andReturn(false);
 

@@ -14,14 +14,10 @@ describe('registerBlockTypes', function (): void {
         $blockRegistrar = BlockRegistrar::new($blocksDirectory, $blockManifestPath);
 
         Functions\expect('register_block_type_from_metadata')->twice();
-        Functions\expect('wp_register_block_metadata_collection')
-            ->once()
-            ->with($blocksDirectory, $blockManifestPath);
+        Functions\expect('wp_register_block_metadata_collection')->once()->with($blocksDirectory, $blockManifestPath);
 
-        Functions\expect('register_block_type_from_metadata')
-            ->with($blocksDirectory . '/block-one')
-            ->andAlsoExpectIt()
-            ->with($blocksDirectory . '/block-two');
+        Functions\expect('register_block_type_from_metadata')->with($blocksDirectory . '/block-one')
+            ->andAlsoExpectIt()->with($blocksDirectory . '/block-two');
 
         $blockRegistrar->registerBlockTypes();
     });

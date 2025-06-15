@@ -6,7 +6,7 @@ namespace SpaghettiDojo\Konomi\Tests\Unit\Configuration;
 
 describe('serialize', function (): void {
     it('Serialize the given configuration', function (): void {
-        /** @var \Inpsyde\Modularity\Properties\Properties&\Mockery\MockInterface */
+        /** @var \Inpsyde\Modularity\Properties\Properties&\Mockery\MockInterface $properties */
         $properties = \Mockery::mock('\Inpsyde\Modularity\Properties\Properties');
         $properties->shouldReceive('baseUrl')->andReturn('http://example.com');
         $properties->shouldReceive('basePath')->andReturn('/var/www/html');

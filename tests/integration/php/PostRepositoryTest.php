@@ -109,6 +109,7 @@ describe('Post Repository', function (): void {
 
         expect($result)
             ->toBeFalse()
-            ->and($this->postMetaStorage[-1]['_konomi_items.reaction'][$this->wpUser->ID])->toBeEmpty();
+            ->and($this->postMetaStorage[-1]['_konomi_items.reaction'][$this->wpUser->ID] ?? [])
+            ->toBeEmpty();
     });
 });

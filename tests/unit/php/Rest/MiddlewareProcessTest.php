@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Unit\Rest;
 
-use SpaghettiDojo\Konomi\Rest\MiddlewareProcess;
-use SpaghettiDojo\Konomi\Rest\Middleware;
+use Mockery;
+use SpaghettiDojo\Konomi\Rest\{
+    MiddlewareProcess,
+    Middleware
+};
 
-beforeAll(function (): void {
-    setUpWpRest();
-    setUpWpError();
+beforeEach(function (): void {
+    /** @var \WP_Rest_Request&\Mockery\MockInterface $request */
+    $this->request = Mockery::mock(\WP_Rest_Request::class);
 });
 
 describe('run', function (): void {
@@ -37,16 +40,17 @@ describe('run', function (): void {
             },
         ];
 
-        $controller = function (\WP_REST_Request $request): \WP_REST_Response {
-            return new \WP_REST_Response(['data']);
+        $controller = function (\WP_REST_Request $request): \WP_REST_Response&Mockery\MockInterface {
+            return Mockery::mock(\WP_REST_Response::class, [
+                'get_data' => ['data'],
+                'get_status' => 200,
+            ]);
         };
 
-        /** @var \WP_Rest_Request&\Mockery\MockInterface $request */
-        $request = new \WP_Rest_Request();
-        $response = MiddlewareProcess::run($middlewares, $controller, $request);
+        $response = MiddlewareProcess::run($middlewares, $controller, $this->request);
 
-        expect($request->middleware1)->toBe(true);
-        expect($request->middleware2)->toBe(true);
+        expect($this->request->middleware1)->toBe(true);
+        expect($this->request->middleware2)->toBe(true);
         expect($response->get_status())->toBe(200);
         expect($response->get_data())->toBe(['data']);
     });

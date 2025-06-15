@@ -1,1 +1,1 @@
-{"redefinable-internals": ["realpath", "preg_replace"]}
+{"redefinable-internals": ["realpath", "preg_replace", "file_get_contents"]}

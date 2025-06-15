@@ -15,11 +15,7 @@ describe('new', function (): void {
     });
 
     it('throws an assertion error when base key is empty', function (): void {
-        try {
-            StorageKey::new('');
-        } catch (\Throwable $thr) {
-            expect($thr)->toBeInstanceOf(\AssertionError::class);
-        }
+        expect(static fn () => StorageKey::new('')->for(ItemGroup::BOOKMARK))->toThrow(\InvalidArgumentException::class);
     });
 });
 

@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+namespace SpaghettiDojo\Konomi\Tests\Unit\Icons;
+
+use Mockery;
 use SpaghettiDojo\Konomi\Configuration;
 use SpaghettiDojo\Konomi\Icons;
 use org\bovigo\vfs\vfsStream;
@@ -16,7 +19,7 @@ beforeEach(function (): void {
             'empty-icon.svg' => '',
         ],
     ]);
-    $this->configuration = \Mockery::mock(Configuration\Configuration::class);
+    $this->configuration = Mockery::mock(Configuration\Configuration::class);
     $this->renderer = Icons\Render::new($this->configuration);
     $this->validKsesConfiguration = [
         'svg' => [
@@ -45,10 +48,7 @@ describe('render', function (): void {
     it('should return the SVG markup for a given icon name', function (): void {
         $iconName = 'icon-name';
 
-        Functions\expect('wp_kses')
-            ->with($this->svgContent, $this->validKsesConfiguration)
-            ->andReturnFirstArg();
-
+        Functions\expect('wp_kses')->with($this->svgContent, $this->validKsesConfiguration)->andReturnFirstArg();
         $this->configuration->shouldReceive('iconsPath')->andReturn($this->fs->url() . '/icons');
         $result = $this->renderer->render($iconName);
 
@@ -58,13 +58,8 @@ describe('render', function (): void {
     it('should return the cached icon', function (): void {
         $iconName = 'icon-name';
 
-        Functions\expect('wp_kses')
-            ->with($this->svgContent, $this->validKsesConfiguration)
-            ->andReturnFirstArg();
-
-        $this->configuration
-            ->shouldReceive('iconsPath')
-            ->andReturn($this->fs->url() . '/icons');
+        Functions\expect('wp_kses')->with($this->svgContent, $this->validKsesConfiguration)->andReturnFirstArg();
+        $this->configuration->shouldReceive('iconsPath')->andReturn($this->fs->url() . '/icons');
 
         $original = $this->renderer->render($iconName);
         $cached = $this->renderer->render($iconName);
@@ -79,13 +74,8 @@ describe('render', function (): void {
     it('should return empty string when wp_kses return empty string', function (): void {
         $iconName = 'non-cached-icon-name';
 
-        Functions\expect('wp_kses')
-            ->with($this->svgContent, $this->validKsesConfiguration)
-            ->andReturn('');
-
-        $this->configuration
-            ->shouldReceive('iconsPath')
-            ->andReturn($this->fs->url() . '/icons');
+        Functions\expect('wp_kses')->with($this->svgContent, $this->validKsesConfiguration)->andReturn('');
+        $this->configuration->shouldReceive('iconsPath')->andReturn($this->fs->url() . '/icons');
 
         $result = $this->renderer->render($iconName);
 
@@ -95,13 +85,9 @@ describe('render', function (): void {
     it('should return empty string when the icon file does not exist', function (): void {
         $iconName = 'non-existent-icon';
 
-        $this->configuration
-            ->shouldReceive('iconsPath')
-            ->andReturn($this->fs->url() . '/icons');
-
-        Functions\expect('wp_kses')
-            ->with('', $this->validKsesConfiguration)
-            ->andReturn('');
+        $this->configuration->shouldReceive('iconsPath')->andReturn($this->fs->url() . '/icons');
+        Functions\expect('wp_kses')->with('', $this->validKsesConfiguration)->andReturn('');
+        Functions\expect('file_get_contents')->with($this->fs->url() . '/icons/non-existent-icon.svg')->andReturn(false);
 
         $result = $this->renderer->render($iconName);
 
@@ -111,13 +97,8 @@ describe('render', function (): void {
     it('return empty string when file is empty', function (): void {
         $iconName = 'empty-icon';
 
-        Functions\expect('wp_kses')
-            ->with('', $this->validKsesConfiguration)
-            ->andReturn('');
-
-        $this->configuration
-            ->shouldReceive('iconsPath')
-            ->andReturn($this->fs->url() . '/icons');
+        Functions\expect('wp_kses')->with('', $this->validKsesConfiguration)->andReturn('');
+        $this->configuration->shouldReceive('iconsPath')->andReturn($this->fs->url() . '/icons');
 
         $result = $this->renderer->render($iconName);
 
