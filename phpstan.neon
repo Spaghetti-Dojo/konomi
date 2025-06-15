@@ -4,7 +4,6 @@ parameters:
 		- sources
 	scanFiles:
 		- vendor/inpsyde/wp-stubs-versions/6.7.php
-		- tests/helpers/functional.php
 		- tests/helpers/functions.php
 		- tests/helpers/integration.php
 		- tests/helpers/mocks.php

@@ -18,9 +18,7 @@ function setupWpConstants(): void
     }
 }
 
-if (!function_exists('wp_normalize_path')) {
-    function wp_normalize_path(string $path): string
-    {
-        return str_replace('\\', '/', $path);
-    }
+function setUpWpHooks(): void
+{
+    require_once wordPressDirPath() . '/wp-includes/plugin.php';
 }

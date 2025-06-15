@@ -18,7 +18,7 @@ function includeValidUsersLikes(): array
  * @param array<int, array<string, mixed>> $data
  * @return array{0: callable, 1: callable, 2: callable, 3: callable}
  */
-function setupUserMetaStorage(array &$data): array
+function setupIntegrationUserMetaStorage(array &$data): array
 {
     $stubsCounter = [
         'get_user_meta' => 0,
@@ -44,7 +44,7 @@ function setupUserMetaStorage(array &$data): array
 /**
  * @return array{0: callable, 1: callable, 2: callable, 3: callable}
  */
-function setupPostMetaStorage(array &$data): array
+function setupIntegrationPostMetaStorage(array &$data): array
 {
     $stubsCounter = [
         'get_post_meta' => 0,
@@ -65,4 +65,9 @@ function setupPostMetaStorage(array &$data): array
             return true;
         },
     ];
+}
+
+function setupIntegrationAssets(): void
+{
+    require_once stubsDirectory() . '/php/wp-assets.php';
 }

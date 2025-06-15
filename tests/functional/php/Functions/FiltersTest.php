@@ -8,7 +8,7 @@ use function SpaghettiDojo\Konomi\Functions\add_single_conditional_filter;
 use function SpaghettiDojo\Konomi\Functions\add_action_on_module_import;
 
 beforeAll(function (): void {
-    setUpHooks();
+    setUpWpHooks();
 });
 
 describe('Add Single Conditional Filter', function (): void {

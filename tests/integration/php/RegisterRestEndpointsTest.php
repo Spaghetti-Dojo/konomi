@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Integration\Rest;
 
+use Mockery;
 use Brain\Monkey\Functions;
 use SpaghettiDojo\Konomi\Rest;
-
-beforeAll(function (): void {
-    setUpWpRest();
-    setUpWpError();
-});
 
 beforeEach(function (): void {
     $schema = new class implements Rest\Schema {
@@ -23,14 +19,13 @@ beforeEach(function (): void {
     $this->controller = new class implements Rest\Controller {
         public function __invoke(\WP_REST_Request $request): \WP_Rest_Response
         {
-
-            return new \WP_Rest_Response(
-                [
+            return Mockery::mock(\WP_REST_Response::class, [
+                'get_data' => [
                     'success' => true,
                     'middleware1' => $request->middleware1,
                     'middleware2' => $request->middleware2,
-                ]
-            );
+                ],
+            ]);
         }
     };
     $this->route = Rest\Route::post(
@@ -84,7 +79,7 @@ test('Register Rest Endpoints With Middlewares', function (): void {
     );
 
     $this->route->register();
-    $response = $handler(new \WP_REST_Request());
+    $response = $handler(Mockery::mock(\WP_REST_Request::class));
     $data = $response->get_data();
 
     expect($data['success'])->toBeTrue();

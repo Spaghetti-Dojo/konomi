@@ -17,11 +17,11 @@
 	"require-dev": {
 		"inpsyde/php-coding-standards": "^2.0.0-beta",
 		"roots/wordpress-no-content": "^6.8",
-		"pestphp/pest": "^2.34",
+		"pestphp/pest": "^3.0.0",
 		"brain/monkey": "^2.6",
 		"mockery/mockery": "^1.6",
 		"inpsyde/wp-stubs-versions": "6.7",
-		"phpmetrics/phpmetrics": "^2.8",
+		"phpmetrics/phpmetrics": "v3.0.0rc8",
 		"phpstan/phpstan": "^2.1",
 		"bnf/phpstan-psr-container": "^1.1",
 		"mikey179/vfsstream": "^1.6"

@@ -16,7 +16,7 @@ beforeAll(function (): void {
 
 beforeEach(function (): void {
     $this->userMetaStorage = includeValidUsersLikes();
-    [$stubsCounter, $getter, $setter] = setupUserMetaStorage($this->userMetaStorage);
+    [$stubsCounter, $getter, $setter] = setupIntegrationUserMetaStorage($this->userMetaStorage);
     $this->stubsCounter = $stubsCounter;
 
     Functions\when('get_user_meta')->alias($getter);

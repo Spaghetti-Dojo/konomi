@@ -8,6 +8,11 @@ use SpaghettiDojo\Konomi\ApiFetch;
 use SpaghettiDojo\Konomi\Configuration;
 use SpaghettiDojo\Konomi\Icons;
 
+beforeAll(function (): void {
+    setupIntegrationAssets();
+    setupWpHooks();
+});
+
 beforeEach(function (): void {
     setupWpConstants();
     $this->properties = propertiesMock();

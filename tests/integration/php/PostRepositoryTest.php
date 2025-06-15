@@ -13,7 +13,7 @@ beforeEach(function (): void {
     $this->wpUser->ID = 34;
 
     $this->postMetaStorage = includeValidPostUserLikes();
-    [, $getter, $setter] = setupPostMetaStorage($this->postMetaStorage);
+    [, $getter, $setter] = setupIntegrationPostMetaStorage($this->postMetaStorage);
 
     Functions\when('get_post_meta')->alias($getter);
     Functions\when('update_post_meta')->alias($setter);
