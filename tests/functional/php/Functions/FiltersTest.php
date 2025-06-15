@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SpaghettiDojo\Konomi\Tests\Integration\Functions;
+namespace SpaghettiDojo\Konomi\Tests\Functional\Functions;
+
+use SpaghettiDojo\Konomi\Tests\WpLoad;
 
 use function SpaghettiDojo\Konomi\Functions\add_single_conditional_filter;
 use function SpaghettiDojo\Konomi\Functions\add_action_on_module_import;
 
-beforeAll(function (): void {
-    setUpWpHooks();
-});
+WpLoad::load();
 
 describe('Add Single Conditional Filter', function (): void {
     it('Add script module filter', function (): void {
