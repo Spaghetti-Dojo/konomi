@@ -8,12 +8,17 @@ use SpaghettiDojo\Konomi\User;
 
 class StorageKey
 {
+    /**
+     * @param non-empty-string $base
+     */
     public static function new(string $base): StorageKey
     {
-        assert($base);
         return new self($base);
     }
 
+    /**
+     * @param non-empty-string $base
+     */
     final private function __construct(private readonly string $base)
     {
     }
@@ -26,8 +31,11 @@ class StorageKey
     {
         $groupValue = $group->value;
 
-        if (empty($groupValue)) {
+        if (!$groupValue) {
             throw new \InvalidArgumentException('Group value cannot be empty');
+        }
+        if (!$this->base) {
+            throw new \InvalidArgumentException('Base value cannot be empty');
         }
 
         $key = preg_replace(
