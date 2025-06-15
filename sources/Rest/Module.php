@@ -27,11 +27,18 @@ class Module implements ServiceModule
     public function services(): array
     {
         return [
-            Middlewares\ErrorCatch::class => static fn () => Middlewares\ErrorCatch::new(),
+            ErrorFactory::class => static fn () => ErrorFactory::new(),
+
+            Middlewares\ErrorCatch::class => static fn (
+                ContainerInterface $container
+            ) => Middlewares\ErrorCatch::new(
+                $container->get(ErrorFactory::class)
+            ),
             Middlewares\Authentication::class => static fn (
                 ContainerInterface $container
             ) => Middlewares\Authentication::new(
-                $container->get(User\CurrentUser::class)
+                $container->get(User\CurrentUser::class),
+                $container->get(ErrorFactory::class)
             ),
         ];
     }

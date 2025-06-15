@@ -9,13 +9,14 @@ use SpaghettiDojo\Konomi\User;
 
 class Authentication implements Rest\Middleware
 {
-    public static function new(User\User $user): Authentication
+    public static function new(User\User $user, Rest\ErrorFactory $errorFactory): Authentication
     {
-        return new self($user);
+        return new self($user, $errorFactory);
     }
 
     final private function __construct(
-        private readonly User\User $user
+        private readonly User\User $user,
+        private readonly Rest\ErrorFactory $errorFactory
     ) {
     }
 
@@ -25,7 +26,7 @@ class Authentication implements Rest\Middleware
     ): \WP_REST_Response|\WP_Error {
 
         if (!$this->user->isLoggedIn()) {
-            return new \WP_Error(
+            return $this->errorFactory->create(
                 'unauthorized',
                 'Unauthorized',
                 ['status' => 401]
