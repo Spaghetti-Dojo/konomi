@@ -1,1 +1,1 @@
-<?php return array('dependencies' => array('@konomi/configuration'), 'version' => '3ed535b7c1a8db3200fd', 'type' => 'module');
+<?php return array('dependencies' => array('@konomi/configuration'), 'version' => 'a95217475242acaf7bd2', 'type' => 'module');
