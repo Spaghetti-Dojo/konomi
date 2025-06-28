@@ -38,13 +38,10 @@ class StorageKey
             throw new \InvalidArgumentException('Base value cannot be empty');
         }
 
-        $key = preg_replace(
-            '/[^a-z0-9._]/',
-            '',
-            $this->base . '.' . $groupValue
-        );
+        $expectedKey = $this->base . '.' . $groupValue;
+        $key = preg_replace('/[^a-z0-9._]/', '', $expectedKey);
 
-        if (empty($key)) {
+        if ($key !== $expectedKey) {
             throw new \UnexpectedValueException('Storage key cannot be empty after sanitization');
         }
 

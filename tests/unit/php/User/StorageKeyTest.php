@@ -45,7 +45,6 @@ describe('for', function (): void {
     it('throws an UnexpectedValueException when key is empty after sanitization', function (): void {
         $base = '!@#$%^&*()';
         $storageKey = StorageKey::new($base);
-        Functions\expect('preg_replace')->once()->andReturn('');
         expect(fn () => $storageKey->for(ItemGroup::REACTION))->toThrow(\UnexpectedValueException::class, 'Storage key cannot be empty after sanitization');
     });
 });
