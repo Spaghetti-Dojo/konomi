@@ -66,8 +66,3 @@ function setupIntegrationPostMetaStorage(array &$data): array
         },
     ];
 }
-
-function setupIntegrationAssets(): void
-{
-    require_once stubsDirectory() . '/php/wp-assets.php';
-}

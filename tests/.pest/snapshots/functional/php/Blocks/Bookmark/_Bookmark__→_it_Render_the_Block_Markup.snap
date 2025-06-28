@@ -1,0 +1,22 @@
+
+<div
+    data-wp-interactive="konomiBookmark"
+    class="konomi-bookmark"
+    style="--konomi-color--inactive:#000000;--konomi-color--active:#ffffff;"
+    data-wp-context='{"isActive":false}'>
+    
+<button
+    class="wp-block-konomi-bookmark"    data-wp-class--is-active="context.isActive"
+    data-wp-on-async--click="actions.toggleStatus"
+    data-wp-run--maybe-show-login-modal="konomi::callbacks.toggleLoginModal"
+    style="anchor-name: --konomi-1"
+>
+    <svg width="32" height="28" fill="currentColor" class="konomi-icon konomi-icon--bookmark" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+	<path d="M 8.5,2 C 6.5,2 5,3.5 5,5.5 V 24 c 0,0.6 0.4,1 1,1 0.2,0 0.5,-0.1 0.6,-0.2 L 16,19.2 25.4,24.8 C 25.6,24.9 25.8,25 26,25 c 0.6,0 1,-0.4 1,-1 V 5.5 C 27,3.5 25.5,2 23.5,2 Z" />
+</svg>
+
+            <span class="konomi-label" data-wp-text="context.label"></span>
+    
+    <span class="konomi-count" data-wp-text="context.count"></span>
+</button>
+</div>

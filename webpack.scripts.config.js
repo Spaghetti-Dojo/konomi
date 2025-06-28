@@ -56,26 +56,6 @@ const configuration = {
 
 module.exports = [
 	/*
-	 * The Configuration build
-	 */
-	{
-		...configuration,
-		entry: {
-			'konomi-configuration': './sources/Configuration/client/index.ts',
-		},
-		output: {
-			filename: '[name].js',
-			path: path.resolve('./sources/Configuration/client/dist'),
-			clean: true,
-			library: {
-				name: 'konomiConfiguration',
-				type: 'window',
-			},
-		},
-		name: 'konomi-configuration',
-	},
-
-	/*
 	 * The Icons build
 	 */
 	{

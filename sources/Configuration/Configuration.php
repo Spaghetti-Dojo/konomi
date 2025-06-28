@@ -32,20 +32,26 @@ class Configuration
         return $this->buildIconsPath($this->properties->basePath());
     }
 
-    public function serialize(): string
+    public function isDebugMode(): bool
     {
-        return (string) wp_json_encode(
-            [
-                'iconsUrl' => $this->iconsUrl(),
-                'iconsPath' => $this->iconsPath(),
-                'isDebugMode' => $this->properties->isDebug(),
-            ]
-        );
+        return $this->properties->isDebug();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'iconsUrl' => $this->iconsUrl(),
+            'iconsPath' => $this->iconsPath(),
+            'isDebugMode' => $this->isDebugMode(),
+        ];
     }
 
     private function buildIconsPath(string $base): string
     {
-        $relativeIconsPath = untrailingslashit($this->relativeIconsPath);
+        $relativeIconsPath = trim($this->relativeIconsPath, '/\\');
         $basePath = untrailingslashit($base);
         return "{$basePath}/{$relativeIconsPath}";
     }

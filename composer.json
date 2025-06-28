@@ -24,7 +24,8 @@
 		"phpmetrics/phpmetrics": "v3.0.0rc8",
 		"phpstan/phpstan": "^2.1",
 		"bnf/phpstan-psr-container": "^1.1",
-		"mikey179/vfsstream": "^1.6"
+		"mikey179/vfsstream": "^1.6",
+		"automattic/wordbless": "^0.6.0"
 	},
 	"autoload": {
 		"psr-4": {
@@ -51,7 +52,8 @@
 		},
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true,
-			"pestphp/pest-plugin": true
+			"pestphp/pest-plugin": true,
+			"roots/wordpress-core-installer": true
 		}
 	},
 	"repositories": [
@@ -83,6 +85,8 @@
 			"@cs",
 			"@analysis",
 			"@tests"
-		]
+		],
+		"post-install-cmd": "WorDBless\\Composer\\InstallDropin::copy",
+		"post-update-cmd": "WorDBless\\Composer\\InstallDropin::copy"
 	}
 }

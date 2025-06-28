@@ -8,12 +8,22 @@ import { initConfiguration } from './init-configuration';
  */
 import type { KonomiConfiguration } from './types';
 
-export function configuration(): KonomiConfiguration.Configuration {
-	const _configuration = initConfiguration( '' );
-	return {
-		// @ts-expect-error
-		isDebugMode: false,
-		..._configuration,
-		iconsUrl: new URL( _configuration.iconsUrl ),
-	};
+type Get = ( key: string, defaultValue: any ) => unknown;
+
+export function configuration(): { get: Get } {
+	let _configuration: KonomiConfiguration.Configuration = {};
+
+	try {
+		_configuration = initConfiguration();
+	} catch ( error ) {}
+
+	return Object.freeze( {
+		get( key: string, defaultValue: any ) {
+			if ( ! Object.hasOwn( _configuration, key ) ) {
+				return defaultValue;
+			}
+
+			return _configuration[ key ];
+		},
+	} );
 }

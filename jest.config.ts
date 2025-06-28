@@ -22,6 +22,9 @@ module.exports = {
 		'<rootDir>/.*/dist',
 		'<rootDir>/.*/build-modules',
 	],
+	testPathIgnorePatterns: [
+		'/tests/.pest/',
+	],
 	modulePaths: [ '<rootDir>/sources' ],
 	notifyMode: 'failure',
 	resetMocks: true,

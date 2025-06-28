@@ -10,6 +10,7 @@
 /vendor/
 /node_modules/
 /php-metrics
+/wordpress
 
 /.pnp.*
 /.yarn/*

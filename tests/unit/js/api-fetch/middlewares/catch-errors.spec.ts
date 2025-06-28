@@ -1,5 +1,4 @@
 import { jest, describe, it, expect } from '@jest/globals';
-import { fromPartial } from '@total-typescript/shoehorn';
 import { configuration } from '@konomi/configuration';
 import { catchErrors } from '../../../../../sources/ApiFetch/client/middlewares/catch-errors';
 
@@ -15,7 +14,13 @@ describe( 'Catch Errors Middleware', () => {
 		} );
 
 		jest.mocked( configuration ).mockImplementation( () =>
-			fromPartial( { isDebugMode: true } )
+			( {
+				get: ( key, defaultValue ) => {
+					expect( key ).toBe( 'isDebugMode' );
+					expect( defaultValue ).toBe( false );
+					return true
+				},
+			} ),
 		);
 
 		const next = jest.fn( () => Promise.reject( 'Error' ) );
@@ -29,7 +34,13 @@ describe( 'Catch Errors Middleware', () => {
 		} );
 
 		jest.mocked( configuration ).mockImplementation( () =>
-			fromPartial( { isDebugMode: false } )
+			( {
+				get: ( key, defaultValue ) => {
+					expect( key ).toBe( 'isDebugMode' );
+					expect( defaultValue ).toBe( false );
+					return false
+				},
+			} ),
 		);
 
 		const next = jest.fn( () => Promise.reject( 'Error' ) );

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pest;
+namespace SpaghettiDojo\Konomi\Tests;
 
 use Brain\Monkey\Functions;
 
@@ -27,3 +27,12 @@ uses()
         tearDown();
     })
     ->in('unit', 'integration');
+
+pest()->extends(WpTestCase::class)
+    ->beforeAll(function (): void {
+        $this->setUpWordBless();
+    })
+    ->afterAll(function (): void {
+        $this->tearDownWordBless();
+    })
+    ->in('functional');
