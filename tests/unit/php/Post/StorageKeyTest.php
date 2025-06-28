@@ -44,7 +44,6 @@ describe('for', function (): void {
     it('throws a RuntimeException when key is empty after sanitization', function (): void {
         $base = '!@#$%^&*()';
         $storageKey = StorageKey::new($base);
-        \Brain\Monkey\Functions\expect('preg_replace')->once()->andReturn('');
-        expect(fn () => $storageKey->for(ItemGroup::REACTION))->toThrow(\RuntimeException::class, 'Storage key cannot be empty after sanitization');
+        expect(fn () => $storageKey->for(ItemGroup::REACTION))->toThrow(\UnexpectedValueException::class, 'Storage key cannot be empty after sanitization');
     });
 });
