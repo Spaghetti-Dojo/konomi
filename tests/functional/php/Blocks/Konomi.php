@@ -20,7 +20,7 @@ describe('Konomi', function (): void {
     <!-- /wp:group -->
 <!-- /wp:konomi/konomi -->
 MARKUP
-);
+        );
         expect($result)->toMatchSnapshot();
     });
 });
