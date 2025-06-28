@@ -1,0 +1,69 @@
+
+<div
+    data-wp-interactive="konomi"
+    class="konomi"
+    data-wp-context='{"id":0,"type":"","isUserLoggedIn":false,"error":{"code":"","message":""}}'>
+    
+    
+        <div class="wp-block-group is-content-justification-center is-nowrap is-layout-flex wp-container-core-group-is-layout-94bc23d7 wp-block-group-is-layout-flex">
+            
+<div data-wp-interactive="konomiReaction" class="konomi-reaction" style="--konomi-color--inactive:#cfcabe;--konomi-color--active:#d8613c" data-wp-context='{"count":0,"isActive":false}'>
+    
+<button class="wp-block-konomi-reaction" data-wp-class--is-active="context.isActive" data-wp-on-async--click="actions.toggleStatus" data-wp-run--maybe-show-login-modal="konomi::callbacks.toggleLoginModal">
+    <svg width="32" height="28" fill="currentColor" class="konomi-icon konomi-icon--heart" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+	<path d="m 15.861161,5.8403516 c 1.825179,-1.8660134 3.103488,-3.4795003 5.915313,-3.7945996 5.279573,-0.5944425 10.135325,4.7063762 7.469332,9.924509 -0.758782,1.486107 -2.303691,3.253791 -4.01266,4.987954 -1.875308,1.904004 -3.951135,3.770018 -5.404897,5.184612 L 15.863439,26 12.586776,22.907111 C 8.6447551,19.184023 2.2167528,14.497759 2.0048407,8.6918881 1.85673,4.6246495 5.128836,2.0189351 8.8931251,2.0658648 12.256376,2.1105598 13.671401,3.7508636 15.861161,5.8403516 Z" />
+</svg>
+
+            <span class="konomi-label" data-wp-text="context.label"></span>
+    
+    <span class="konomi-count" data-wp-text="context.count">0</span>
+</button>
+</div>
+
+            
+<div data-wp-interactive="konomiBookmark" class="konomi-bookmark" style="--konomi-color--inactive:#cfcabe;--konomi-color--active:#b1c5a4" data-wp-context='{"isActive":false}'>
+    
+<button class="wp-block-konomi-bookmark" data-wp-class--is-active="context.isActive" data-wp-on-async--click="actions.toggleStatus" data-wp-run--maybe-show-login-modal="konomi::callbacks.toggleLoginModal">
+    <svg width="32" height="28" fill="currentColor" class="konomi-icon konomi-icon--bookmark" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+	<path d="M 8.5,2 C 6.5,2 5,3.5 5,5.5 V 24 c 0,0.6 0.4,1 1,1 0.2,0 0.5,-0.1 0.6,-0.2 L 16,19.2 25.4,24.8 C 25.6,24.9 25.8,25 26,25 c 0.6,0 1,-0.4 1,-1 V 5.5 C 27,3.5 25.5,2 23.5,2 Z" />
+</svg>
+
+            <span class="konomi-label" data-wp-text="context.label"></span>
+    
+    <span class="konomi-count" data-wp-text="context.count"></span>
+</button>
+</div>
+
+        </div>
+    
+
+    
+<span
+    popover="manual"
+    class="konomi-response-message"
+    style="position-anchor: --konomi-1"
+    data-wp-text="context.error.message"
+    data-wp-run--maybe-render-response-error="callbacks.maybeRenderResponseError"
+></span>
+
+    
+<dialog class="konomi-login-modal">
+    <h2>Sign in to bookmark</h2>
+
+    <p>You need to be signed in to save your bookmarks.</p>
+
+    <a href="http://example.org/wp-login.php">
+        Login    </a>
+
+    <button
+        class="konomi-login-modal-closer"
+        data-wp-on--click="actions.closeLoginModal"
+    >
+        <svg width="18" height="18" fill="currentColor" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <path d="m 0.37657954,0.37657942 c 0.50210608,-0.50210609 1.31617456,-0.50210609 1.81828056,0 L 9.0000203,7.1817604 15.805187,0.37657942 c 0.502068,-0.50210609 1.316193,-0.50210609 1.818262,0 0.502068,0.50210611 0.502068,1.31617458 0,1.81828068 l -6.805171,6.8051607 6.805168,6.8051652 c 0.502069,0.502069 0.502069,1.316194 0,1.818263 -0.502068,0.502068 -1.316193,0.502068 -1.818261,0 l -6.8051647,-6.80517 -6.8051547,6.805168 c -0.5021061,0.502068 -1.31617452,0.502068 -1.81828062,0 -0.50210608,-0.502069 -0.50210608,-1.316194 0,-1.818262 L 7.1817604,9.0000208 0.37657935,2.1948657 c -0.50210608,-0.502106 -0.50210608,-1.31617455 1.9e-7,-1.81828628 z" />
+</svg>
+        <span class="screen-reader-text">
+                    </span>
+    </button>
+</dialog>
+</div>
