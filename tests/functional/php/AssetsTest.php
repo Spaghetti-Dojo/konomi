@@ -34,7 +34,6 @@ describe('Assets', function (): void {
 
             expect(wp_script_is('wp-api-fetch', 'enqueued'))->toBeTrue()
                 ->and(wp_script_is('konomi-icons', 'registered'))->toBeTrue()
-                ->and(wp_script_is('konomi-icons', 'registered'))->toBeTrue()
                 ->and($configuration)->toBeArray();
 
             ob_end_clean();
