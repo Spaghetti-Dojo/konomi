@@ -5,24 +5,19 @@ import type { KonomiConfiguration } from './types';
 
 let configuration: KonomiConfiguration.Configuration | null = null;
 
-export function initConfiguration(
-	serializedConfiguration: string
-): KonomiConfiguration.Configuration {
+export function initConfiguration(): KonomiConfiguration.Configuration {
 	if ( configuration !== null ) {
 		return configuration;
 	}
 
-	configuration = parseConfiguration( serializedConfiguration );
-	assertConfiguration( configuration );
-	return configuration;
-}
+	const configurationScriptElement = document.getElementById(
+		'wp-script-module-data-@konomi/configuration'
+	);
+	const serializedConfiguration =
+		configurationScriptElement?.textContent ?? '{}';
 
-function assertConfiguration(
-	parsedConfiguration: unknown
-): asserts parsedConfiguration is KonomiConfiguration.Configuration {
-	if ( ! Boolean( parsedConfiguration ) ) {
-		throw new Error( 'Configuration not initialized' );
-	}
+	configuration = parseConfiguration( serializedConfiguration );
+	return configuration;
 }
 
 function parseConfiguration(

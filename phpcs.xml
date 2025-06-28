@@ -28,8 +28,12 @@
 	<rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
+	<rule ref="Inpsyde.CodeQuality.HookPriority.HookPriority">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/wordpress/*</exclude-pattern>
 	<exclude-pattern>*/dist/*</exclude-pattern>
 	<exclude-pattern>*/tests/helpers/*</exclude-pattern>
 	<exclude-pattern>*/tests/fixtures/*</exclude-pattern>

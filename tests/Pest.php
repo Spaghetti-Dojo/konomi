@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pest;
+namespace SpaghettiDojo\Konomi\Tests;
 
 use Brain\Monkey\Functions;
-use SpaghettiDojo\Konomi\Tests\WpTestCase;
 
 use function Brain\Monkey\setUp;
 use function Brain\Monkey\tearDown;

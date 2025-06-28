@@ -20,21 +20,16 @@ class WpLoad
 {
     public static function load(string $dbEngine = 'dbless'): void
     {
-        if (!defined('ABSPATH')) {
-            define('ABSPATH', dirname(__DIR__) . '/wordpress/');
+        defined('ABSPATH') or define('ABSPATH', dirname(__DIR__) . '/wordpress/');
+        defined('WP_REPAIRING') or define('WP_REPAIRING', true);
+        defined('DB_ENGINE') or define('DB_ENGINE', $dbEngine);
+        defined('WP_CONTENT_DIR') or define('WP_CONTENT_DIR', ABSPATH . 'wp-content');
+        defined('UPLOADS') or define('UPLOADS', 'wp-content/uploads');
+
+        if (!file_exists(ABSPATH . UPLOADS)) {
+            mkdir(ABSPATH . UPLOADS);
         }
 
-        define('WP_REPAIRING', true);
-        define('WP_CONTENT_DIR', ABSPATH . 'wp-content');
-        if (!defined('UPLOADS')) {
-            (defined('dbless_UPLOADS'))
-                ? define('UPLOADS', 'wp-content/' . constant('\dbless_UPLOADS'))
-                : define('UPLOADS', 'wp-content/uploads');
-        }
-
-        if (!defined('DB_ENGINE')) {
-            define('DB_ENGINE', $dbEngine);
-        }
         $_SERVER['SERVER_NAME'] = 'anything.example';
         $_SERVER['HTTP_HOST'] = 'anything.example';
 
@@ -43,11 +38,10 @@ class WpLoad
         $table_prefix = 'wp_';
         // phpcs:enable Inpsyde.CodeQuality.VariablesName.SnakeCaseVar
 
-        require ABSPATH . '/wp-settings.php';
+        require_once ABSPATH . 'wp-includes/plugin.php';
+        require_once dirname(__DIR__) . '/konomi.php';
+        require_once ABSPATH . '/wp-settings.php';
         require_once ABSPATH . 'wp-admin/includes/admin.php';
-        if (!file_exists(ABSPATH . UPLOADS)) {
-            mkdir(ABSPATH . UPLOADS);
-        }
 
         Options::init();
         Posts::init();
@@ -55,9 +49,5 @@ class WpLoad
         Users::init();
         UserMeta::init();
         WpDie::init();
-
-        require_once dirname(__DIR__) . '/konomi.php';
-        do_action('plugins_loaded');
-        do_action('init');
     }
 }
