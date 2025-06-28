@@ -30,7 +30,8 @@ expect()->extend(
 expect()->extend(
     'wpModuleToHaveDependency',
     function (string $moduleId, string $dependencyId): Expectation {
-        $module = registeredModules()[$moduleId];
+        $module = registeredModules()[$moduleId] ?? null;
+        expect($module)->not()->toBeNull("Module '{$moduleId}' is not registered");
         $deps = array_column($module['dependencies'], 'id');
         expect($deps)->toContainEqual($dependencyId);
         return $this;
