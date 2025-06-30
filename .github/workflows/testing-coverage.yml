@@ -46,6 +46,8 @@ jobs:
                 run: composer install --prefer-dist --no-progress --no-interaction
 
             -   name: Build Artifacts
+                # Skip when secrets are unavailable (e.g., PRs from forks)
+                if: ${{ secrets.GIT_USER != '' && secrets.GIT_EMAIL != '' }}
                 uses: widoz/github-artifacts-action@main
                 env:
                     GIT_USER: ${{ secrets.GIT_USER }}
@@ -63,6 +65,9 @@ jobs:
                 run: composer run test:integration:coverage
 
             -   name: Php Coverage Functional
+                # Skip when secrets are unavailable and therefore isn't possible to compile the
+                # assets necessary for the functional tests (e.g., PRs from forks)
+                if: ${{ secrets.GIT_USER != '' && secrets.GIT_EMAIL != '' }}
                 run: composer run test:functional:coverage
 
             -   name: JavaScript Coverage
