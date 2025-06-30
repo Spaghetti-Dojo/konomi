@@ -54,6 +54,7 @@ jobs:
                 with:
                     command: 'yarn build'
                     target-dir: './sources'
+                    can-push: 'false'
 
             -   name: Php Coverage Unit
                 run: composer run test:unit:coverage
