@@ -39,10 +39,10 @@ jobs:
                     coverage: xdebug
                     tools: composer:v2
 
-            -   name: Install
+            -   name: Install Npm Dependencies
                 run: yarn install --frozen-lockfile
 
-            -   name: Install PHP dependencies
+            -   name: Install PHP Dependencies
                 run: composer install --prefer-dist --no-progress --no-interaction
 
             -   name: Build Artifacts
