@@ -29,7 +29,8 @@ jobs:
             -   name: Setup Node
                 uses: actions/setup-node@v4
                 with:
-                    node-version: 20
+                    cache: 'yarn'
+                    node-version: '20'
 
             -   name: Setup PHP
                 uses: shivammathur/setup-php@v2
@@ -43,6 +44,16 @@ jobs:
 
             -   name: Install PHP dependencies
                 run: composer install --prefer-dist --no-progress --no-interaction
+
+            -   name: Build Artifacts
+                uses: widoz/github-artifacts-action@main
+                env:
+                    GIT_USER: ${{ secrets.GIT_USER }}
+                    GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+                    HUSKY: 0
+                with:
+                    command: 'yarn build'
+                    target-dir: './sources'
 
             -   name: Php Coverage Unit
                 run: composer run test:unit:coverage

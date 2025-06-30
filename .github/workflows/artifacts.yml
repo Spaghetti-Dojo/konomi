@@ -1,25 +1,9 @@
 name: Artifacts
 
 on:
-    workflow_dispatch: { }
-
     push:
-        branches:
-            - main
-        paths:
-            - 'sources/**.ts'
-            - 'sources/**.tsx'
-            - 'sources/**.scss'
-            - 'resources/**.scss'
-            - '.github/workflows/artifacts.yml'
-            - 'package.json'
-            - 'yarn.lock'
-            - 'tsconfig.json'
-            - 'webpack.modules.config.js'
-            - 'webpack.scripts.config.js'
-
-permissions:
-    contents: write
+        tags:
+            - '*'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
