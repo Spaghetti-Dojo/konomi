@@ -28,8 +28,8 @@ jobs:
             -   name: Build Artifacts
                 uses: widoz/github-artifacts-action@main
                 env:
-                    GIT_USER: ${{ secrets.GIT_USER }}
-                    GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+                    GIT_USER: konomi-bot
+                    GIT_EMAIL: konomi-bot@konomi.bot
                     HUSKY: 0
                 with:
                     command: 'yarn build'

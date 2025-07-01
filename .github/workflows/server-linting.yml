@@ -14,6 +14,9 @@ on:
             - '.github/workflows/server-linting.yml'
             - 'composer.lock'
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
     server-linting:
         runs-on: ubuntu-latest
