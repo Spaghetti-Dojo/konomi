@@ -32,5 +32,9 @@ $iconName = (string) ($data['icon'] ?? null);
         </span>
     <?php endif ?>
 
-    <span class="konomi-count" data-wp-text="context.count"></span>
+    <span
+        class="konomi-count"
+        data-wp-bind--hidden="!context.showCount"
+        data-wp-text="context.count"
+    ></span>
 </button>
