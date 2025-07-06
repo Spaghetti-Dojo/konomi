@@ -12,6 +12,7 @@ use function SpaghettiDojo\Konomi\Blocks\renderKonomiBlock;
  * @var array{} $data
  */
 
+$dummy = (bool) ($data['dummy'] ?? null);
 $items = (array) ($data['items'] ?? null);
 ?>
 
@@ -40,27 +41,39 @@ $items = (array) ($data['items'] ?? null);
         </thead>
 
         <tbody>
-            <?php loop($items, static function (): void { ?>
+        <?php
+        loop(
+            $items,
+            static function (\WP_Post $post) use ($dummy): void {
+                $permalink = (string) get_the_permalink($post);
+                $title = get_the_title($post);
+                $excerpt = wp_trim_words(get_the_excerpt(), 15);
+
+                if ($dummy) {
+                    $permalink = '#';
+                    $title = 'Lorem Ipsum dolor sit amet';
+                    $excerpt = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+                }
+                ?>
                 <tr class="konomi-user-profile-item">
                     <td class="konomi-user-profile-item__title">
-                        <a href="<?= esc_url((string) get_the_permalink()) ?>">
-                            <?= esc_html(get_the_title()) ?>
+                        <a href="<?= esc_url($permalink) ?>">
+                            <?= esc_html($title) ?>
                         </a>
                     </td>
 
                     <td class="konomi-user-profile-item__excerpt has-text-align-left">
-                        <?= esc_html(wp_trim_words(get_the_excerpt(), 15)) ?>
+                        <?= esc_html($excerpt) ?>
                     </td>
 
                     <td class="konomi-user-profile-item__actions has-text-align-center">
-                        <?=
-                        /*
-                         * phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-                         */
-                        kses(renderKonomiBlock()); ?>
+                        <?= // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+                        kses(renderKonomiBlock());
+                        ?>
                     </td>
                 </tr>
-            <?php }); ?>
+            <?php }
+        ); ?>
         </tbody>
 
     </table>

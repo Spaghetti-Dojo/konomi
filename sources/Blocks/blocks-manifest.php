@@ -121,7 +121,11 @@ return array(
 			
 		),
 		'attributes' => array(
-			
+			'dummy' => array(
+				'type' => 'boolean',
+				'default' => false,
+				'role' => 'local'
+			)
 		),
 		'supports' => array(
 			'html' => false,

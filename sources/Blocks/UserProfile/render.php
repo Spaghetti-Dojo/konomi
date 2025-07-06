@@ -8,13 +8,19 @@ use SpaghettiDojo\Konomi\User;
 
 use function SpaghettiDojo\Konomi\Blocks\renderer;
 
+/**
+ * @var array<string, mixed> $attributes
+ */
+
 $user = User\currentUser();
 $items = $user->merge(
     ...$user->all(User\ItemGroup::REACTION),
     ...$user->all(User\ItemGroup::BOOKMARK)
 );
+
 $content = renderer()->render('UserProfile/table.php', [
     'items' => $items,
+    'dummy' => (bool) ($attributes['dummy'] ?? null),
 ]);
 
 /*

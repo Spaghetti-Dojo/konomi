@@ -8,7 +8,13 @@
 	"icon": "smiley",
 	"description": "User Profile",
 	"example": {},
-	"attributes": {},
+	"attributes": {
+		"dummy": {
+			"type": "boolean",
+			"default": false,
+			"role": "local"
+		}
+	},
 	"supports": {
 		"html": false,
 		"interactivity": true,
