@@ -9,8 +9,9 @@ use function SpaghettiDojo\Konomi\Blocks\kses;
 use function SpaghettiDojo\Konomi\Blocks\renderKonomiBlock;
 
 /**
- * @var array{} $data
+ * @var array<string, mixed> $data
  */
+$data = (array) ($data ?? null);
 
 $dummy = (bool) ($data['dummy'] ?? null);
 $items = (array) ($data['items'] ?? null);

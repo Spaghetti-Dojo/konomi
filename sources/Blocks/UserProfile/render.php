@@ -11,6 +11,7 @@ use function SpaghettiDojo\Konomi\Blocks\renderer;
 /**
  * @var array<string, mixed> $attributes
  */
+$attributes = (array) ($attributes ?? null);
 
 $user = User\currentUser();
 $items = $user->merge(
