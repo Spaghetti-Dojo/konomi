@@ -10,5 +10,5 @@ namespace SpaghettiDojo\Konomi\Functions;
  */
 function excludeNonPositiveInt(array $array): array
 {
-    return array_filter($array, static fn (int $value): bool => $value > 0);
+    return array_values(array_filter($array, static fn (int $value): bool => $value > 0));
 }
