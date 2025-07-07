@@ -60,8 +60,8 @@ class TemplateRender
     }
 
     /**
-     * @param array<mixed> $data
-     * @return array<mixed>
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
      */
     private function filterData(array $data, string $path): array
     {
@@ -70,7 +70,7 @@ class TemplateRender
     }
 
     /**
-     * @param array<mixed> $data
+     * @param array<string, mixed> $data
      */
     private function filterPath(string $path, array $data): string
     {
