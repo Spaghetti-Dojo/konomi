@@ -63,7 +63,7 @@ $items = (array) ($data['items'] ?? null);
                         </a>
                     </td>
 
-                    <td class="konomi-user-profile-item__excerpt has-text-align-left">
+                    <td class="konomi-user-profile-item__excerpt">
                         <?= esc_html($excerpt) ?>
                     </td>
 
