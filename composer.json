@@ -32,6 +32,7 @@
 			"SpaghettiDojo\\Konomi\\": "sources/"
 		},
 		"files": [
+			"sources/Functions/array.php",
 			"sources/Functions/filters.php",
 			"sources/package.php",
 			"sources/Blocks/api.php",

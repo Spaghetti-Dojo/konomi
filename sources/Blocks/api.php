@@ -81,14 +81,14 @@ function kses(string $content): string
 }
 
 /**
- * @param array<positive-int, mixed> $items
+ * @param array<positive-int> $ids
  * @param callable(\WP_Post $post): void $callback
  */
-function loop(array $items, callable $callback): void
+function loop(array $ids, callable $callback): void
 {
     global $post;
 
-    foreach ($items as $id => $item) {
+    foreach ($ids as $id) {
         $post = get_post($id);
         if ($post) {
             /** @var \WP_Post $post */

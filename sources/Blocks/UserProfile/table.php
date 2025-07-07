@@ -7,14 +7,19 @@ namespace SpaghettiDojo\Konomi\Blocks\UserProfile;
 use function SpaghettiDojo\Konomi\Blocks\loop;
 use function SpaghettiDojo\Konomi\Blocks\kses;
 use function SpaghettiDojo\Konomi\Blocks\renderKonomiBlock;
+use function SpaghettiDojo\Konomi\Functions\excludeNonPositiveInt;
 
 /**
- * @var array<string, mixed> $data
+ * @var array{
+ *     dummy: bool,
+ *     ids: array<int>
+ * } $data
  */
 $data = (array) ($data ?? null);
 
 $dummy = (bool) ($data['dummy'] ?? null);
-$items = (array) ($data['items'] ?? null);
+$ids = (array) ($data['ids'] ?? null);
+$ids = excludeNonPositiveInt($ids);
 ?>
 
 <figure
@@ -44,7 +49,7 @@ $items = (array) ($data['items'] ?? null);
         <tbody>
         <?php
         loop(
-            $items,
+            $ids,
             static function (\WP_Post $post) use ($dummy): void {
                 $permalink = (string) get_the_permalink($post);
                 $title = get_the_title($post);
