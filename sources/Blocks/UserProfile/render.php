@@ -19,7 +19,7 @@ $items = $user->merge(
     ...$user->all(User\ItemGroup::BOOKMARK)
 );
 
-$content = renderer()->render('UserProfile/table', [
+$content = renderer()->render('UserProfile/partials/table', [
     'ids' => array_keys($items),
     'dummy' => (bool) ($attributes['dummy'] ?? null),
 ]);
