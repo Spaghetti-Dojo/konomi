@@ -11,6 +11,7 @@ $data = (array) ($data ?? null);
 $anchor = (string) ($data['anchor'] ?? null);
 $label = (string) ($data['label'] ?? null);
 $iconName = (string) ($data['icon'] ?? null);
+$showCount = (bool) ($data['showCount'] ?? null);
 ?>
 
 <button
@@ -27,14 +28,15 @@ $iconName = (string) ($data['icon'] ?? null);
     Icons\icon()->render($iconName) ?>
 
     <?php if ($label) : ?>
-        <span class="konomi-label" data-wp-text="context.label">
+        <span class="konomi-label">
             <?= esc_html($label) ?>
         </span>
     <?php endif ?>
 
-    <span
-        class="konomi-count"
-        data-wp-bind--hidden="!context.showCount"
-        data-wp-text="context.count"
-    ></span>
+    <?php if ($showCount) : ?>
+        <span
+            class="konomi-count"
+            data-wp-text="context.count"
+        ></span>
+    <?php endif ?>
 </button>

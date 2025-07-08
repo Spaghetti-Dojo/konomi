@@ -42,5 +42,6 @@ $style = (string) Blocks\style()->add(
         'anchor' => $anchor,
         'label' => esc_html__('Save this post', 'konomi'),
         'icon' => 'heart',
+        'showCount' => $showCount,
     ]) ?>
 </div>
