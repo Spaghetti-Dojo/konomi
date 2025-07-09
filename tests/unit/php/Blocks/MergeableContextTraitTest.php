@@ -9,7 +9,7 @@ use SpaghettiDojo\Konomi\Blocks\InstanceId;
 use SpaghettiDojo\Konomi\Blocks\MergeableContextTrait;
 
 // Create a test class that uses the trait
-class TestContext implements Context
+class MergeableContextTraitTest implements Context
 {
     use MergeableContextTrait;
 
@@ -36,12 +36,12 @@ class TestContext implements Context
 
 describe('MergeableContextTrait', function (): void {
     it('initializes with an empty extra array', function (): void {
-        $context = new TestContext();
+        $context = new MergeableContextTraitTest();
         expect($context->toArray())->toBe(['test' => 'value']);
     });
 
     it('merges data into the context', function (): void {
-        $context = new TestContext();
+        $context = new MergeableContextTraitTest();
         $result = $context->merge(['foo' => 'bar']);
 
         expect($result)->toBe($context)
@@ -52,7 +52,7 @@ describe('MergeableContextTrait', function (): void {
     });
 
     it('replaces existing merged data when merge is called again', function (): void {
-        $context = new TestContext();
+        $context = new MergeableContextTraitTest();
         $context->merge(['foo' => 'bar']);
         $context->merge(['baz' => 'qux']);
 
@@ -63,14 +63,14 @@ describe('MergeableContextTrait', function (): void {
     });
 
     it('handles empty arrays', function (): void {
-        $context = new TestContext();
+        $context = new MergeableContextTraitTest();
         $context->merge([]);
 
         expect($context->toArray())->toBe(['test' => 'value']);
     });
 
     it('handles complex nested data structures', function (): void {
-        $context = new TestContext();
+        $context = new MergeableContextTraitTest();
         $context->merge([
             'nested' => [
                 'foo' => 'bar',
