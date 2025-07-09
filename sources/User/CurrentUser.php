@@ -40,6 +40,9 @@ class CurrentUser implements User
         return $this->itemRepository->save($this, $item);
     }
 
+    /**
+     * @return array<Item>
+     */
     public function all(ItemGroup $group): array
     {
         return $this->itemRepository->all($this, $group);
