@@ -1,0 +1,21 @@
+
+<figure
+    class="wp-block-table is-style-stripes wp-block-konomi-user-profile">
+    <table class="has-fixed-layout">
+
+        <thead>
+            <tr>
+                <th class="has-text-align-left">
+                    Title                </th>
+                <th class="has-text-align-left">
+                    Excerpt                </th>
+                <th class="has-text-align-center">
+                    Actions                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+                </tbody>
+
+    </table>
+</figure>
