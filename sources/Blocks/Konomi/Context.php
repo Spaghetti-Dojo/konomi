@@ -14,6 +14,7 @@ class Context implements Blocks\Context
 {
     use Blocks\PostContextTrait;
     use Blocks\UserContextTrait;
+    use Blocks\MergeableContextTrait;
 
     public static function new(
         User\UserFactory $userFactory,
@@ -30,12 +31,7 @@ class Context implements Blocks\Context
     }
 
     /**
-     * @return array{
-     *     id: int,
-     *     type: string,
-     *     isUserLoggedIn: bool,
-     *     error: array{ code: string, message: string }
-     * }
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -47,6 +43,7 @@ class Context implements Blocks\Context
                 'code' => '',
                 'message' => '',
             ],
+            ...$this->extra,
         ];
     }
 

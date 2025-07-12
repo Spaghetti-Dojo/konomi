@@ -14,6 +14,7 @@ class Context implements Blocks\Context
 {
     use Blocks\PostContextTrait;
     use Blocks\UserContextTrait;
+    use Blocks\MergeableContextTrait;
 
     public static function new(
         User\UserFactory $userFactory,
@@ -30,9 +31,7 @@ class Context implements Blocks\Context
     }
 
     /**
-     * @return array{
-     *     isActive: bool
-     * }
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -40,6 +39,7 @@ class Context implements Blocks\Context
 
         return [
             'isActive' => $bookmark->isActive(),
+            ...$this->extra,
         ];
     }
 
