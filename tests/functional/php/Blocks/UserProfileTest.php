@@ -11,17 +11,6 @@ WpLoad::load();
 
 describe('UserProfile', function (): void {
     it('Render the Block Markup', function (): void {
-        // Create a test user
-        $userId = wp_insert_user([
-            'user_login' => 'testuser',
-            'user_pass' => 'password',
-            'user_email' => 'test@example.com',
-            'role' => 'administrator',
-        ]);
-
-        // Set the user as the current user
-        wp_set_current_user($userId);
-
         // Create a test post
         $postId = wp_insert_post([
             'post_title' => 'Test Post',

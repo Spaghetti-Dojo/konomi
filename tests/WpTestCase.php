@@ -21,11 +21,38 @@ class WpTestCase extends TestCase
      */
     private static array $hooks = [];
 
+    private static bool $initialized = false;
+
     public function setUpWordBless(): void
     {
-        if (!self::$hooks) {
-            $this->backupHooks();
+        // TODO Change with a more meaningful flag.
+        if (self::$initialized) {
+            return;
         }
+
+        $this->backupHooks();
+
+        /*
+         * TODO
+         * Let's check if we can use the test groups to perform the same tests
+         * with and without logged in users or if there's a way to logout the user specifically
+         * from within the a test or a set of tests and then on the next run automatically login
+         * they again.
+         *
+         * Think about roles too.
+         */
+        $userId = wp_insert_user([
+            'user_login' => 'subscriber',
+            'user_pass' => 'password',
+            'user_email' => 'subscriber@test.com',
+            'role' => 'subscriber',
+        ]);
+
+        if (!$userId instanceof \WP_Error) {
+            wp_set_current_user($userId);
+        }
+
+        self::$initialized = true;
     }
 
     public function tearDownWordBless(): void
