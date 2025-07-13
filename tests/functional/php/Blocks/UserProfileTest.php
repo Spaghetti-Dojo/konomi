@@ -4,20 +4,12 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Functional\Blocks;
 
-use SpaghettiDojo\Konomi\Tests\WpLoad;
 use SpaghettiDojo\Konomi\User;
-
-WpLoad::load();
 
 describe('UserProfile', function (): void {
     it('Render the Block Markup', function (): void {
-        // Create a test post
-        $postId = wp_insert_post([
-            'post_title' => 'Test Post',
-            'post_content' => 'Test Content',
-            'post_status' => 'publish',
-            'post_type' => 'post',
-        ]);
+        $this->signInUser('subscriber');
+        $postId = $this->postIdByIndex(0);
 
         // Get current user
         $user = User\currentUser();

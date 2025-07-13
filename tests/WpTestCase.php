@@ -16,43 +16,25 @@ use WorDBless\{
 
 class WpTestCase extends TestCase
 {
+    /** @var array<int> */
+    protected static array $posts = [];
+
     /**
      * @var array<string, mixed>
      */
     private static array $hooks = [];
 
-    private static bool $initialized = false;
+    /** @var array<string, int> */
+    private static array $users = [];
+
+    private static bool $userIsLoggedIn = false;
 
     public function setUpWordBless(): void
     {
-        // TODO Change with a more meaningful flag.
-        if (self::$initialized) {
-            return;
-        }
-
+        WpLoad::load();
         $this->backupHooks();
-
-        /*
-         * TODO
-         * Let's check if we can use the test groups to perform the same tests
-         * with and without logged in users or if there's a way to logout the user specifically
-         * from within the a test or a set of tests and then on the next run automatically login
-         * they again.
-         *
-         * Think about roles too.
-         */
-        $userId = wp_insert_user([
-            'user_login' => 'subscriber',
-            'user_pass' => 'password',
-            'user_email' => 'subscriber@test.com',
-            'role' => 'subscriber',
-        ]);
-
-        if (!$userId instanceof \WP_Error) {
-            wp_set_current_user($userId);
-        }
-
-        self::$initialized = true;
+        $this->insertUsers();
+        $this->insertPosts();
     }
 
     public function tearDownWordBless(): void
@@ -63,6 +45,12 @@ class WpTestCase extends TestCase
         PostMeta::init()->clear_all_meta();
         Users::init()->clear_all_users();
         $this->clearUploads();
+
+        self::$posts = [];
+        if (self::$userIsLoggedIn) {
+            wp_logout();
+            self::$userIsLoggedIn = false;
+        }
     }
 
     public function clearUploads(): void
@@ -74,6 +62,27 @@ class WpTestCase extends TestCase
             $path = (string) $path;
             $path and $this->recursiveDelete($path);
         }
+    }
+
+    protected function signInUser(string $name): void
+    {
+        $id = (int) (self::$users[$name] ?? null);
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        $id or throw new \InvalidArgumentException("User '{$name}' not found");
+        $currentUser = wp_signon([
+            'user_login' => $name,
+            'user_password' => 'password',
+            'remember' => false,
+        ]);
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+        $currentUser or throw new \RuntimeException("Unable to set current user to '{$name}'");
+        wp_set_current_user($id, $name);
+        self::$userIsLoggedIn = true;
+    }
+
+    protected function postIdByIndex(int $index): ?int
+    {
+        return self::$posts[$index] ?? self::$posts[0] ?? null;
     }
 
     private function recursiveDelete(string $file): void
@@ -118,5 +127,27 @@ class WpTestCase extends TestCase
                 is_object($hookObject) and $GLOBALS['wp_filter'][$hookName] = clone $hookObject;
             }
         }
+    }
+
+    private function insertUsers(): void
+    {
+        self::$users['subscriber'] = wp_insert_user([
+            'user_login' => 'subscriber',
+            'user_pass' => 'password',
+            'user_email' => 'subscriber@test.com',
+            'role' => 'subscriber',
+        ]);
+    }
+
+    private function insertPosts(): void
+    {
+        self::$posts[] = wp_insert_post([
+            'post_title' => 'Test Post',
+            'post_name' => 'test-post',
+            'post_content' => 'Test Content',
+            'post_status' => 'publish',
+            'post_type' => 'post',
+            'post_date' => '2023-01-01 12:00:00',
+        ]);
     }
 }

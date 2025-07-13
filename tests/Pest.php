@@ -39,7 +39,7 @@ pest()->extends(WpTestCase::class)
     ->beforeEach(function (): void {
         $this->setUpWordBless();
     })
-    ->afterAll(function (): void {
+    ->afterEach(function (): void {
         $this->tearDownWordBless();
     })
     ->in('functional');

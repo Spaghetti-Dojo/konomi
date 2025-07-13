@@ -33,7 +33,7 @@ class Module implements ServiceModule
             UserFactory::class => static fn (
                 ContainerInterface $container
             ) => UserFactory::new(
-                $container->get(CurrentUser::class)
+                $container->get(Repository::class)
             ),
 
             ItemFactory::class => static fn () => ItemFactory::new(),

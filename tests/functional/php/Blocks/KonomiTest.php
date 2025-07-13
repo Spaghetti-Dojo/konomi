@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Functional\Blocks;
 
-use SpaghettiDojo\Konomi\Tests\WpLoad;
-
-WpLoad::load();
-
 describe('Konomi', function (): void {
     it('Render the Block Markup', function (): void {
+        $this->signInUser('subscriber');
+
         $result = do_blocks(<<<MARKUP
 <!-- wp:konomi/konomi -->
     <!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"center"}} -->

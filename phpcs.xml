@@ -31,6 +31,12 @@
 	<rule ref="Inpsyde.CodeQuality.HookPriority.HookPriority">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>
+	<rule ref="PHPCompatibility.Classes.NewLateStaticBinding.OutsideClassScope">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
+	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.StaticOutsideClass">
+		<exclude-pattern>*/tests/*</exclude-pattern>
+	</rule>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/wordpress/*</exclude-pattern>
