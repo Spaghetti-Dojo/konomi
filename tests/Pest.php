@@ -29,10 +29,17 @@ uses()
     ->in('unit', 'integration');
 
 pest()->extends(WpTestCase::class)
-    ->beforeAll(function (): void {
+    /**
+     * This should be hooked to `beforeAll` but due to an issue since 3.0.3,
+     * it isn't possible to execute that hook during `setUpBeforeClass`.
+     *
+     * @link https://github.com/pestphp/pest/issues/1282
+     * @link https://github.com/pestphp/pest/pull/1322
+     */
+    ->beforeEach(function (): void {
         $this->setUpWordBless();
     })
-    ->afterAll(function (): void {
+    ->afterEach(function (): void {
         $this->tearDownWordBless();
     })
     ->in('functional');
