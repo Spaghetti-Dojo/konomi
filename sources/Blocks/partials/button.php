@@ -28,7 +28,7 @@ $showCount = (bool) ($data['showCount'] ?? null);
     Icons\icon()->render($iconName) ?>
 
     <?php if ($label) : ?>
-        <span class="konomi-label">
+        <span class="konomi-label screen-reader-text">
             <?= esc_html($label) ?>
         </span>
     <?php endif ?>
