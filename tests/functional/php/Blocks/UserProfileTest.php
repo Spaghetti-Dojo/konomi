@@ -9,7 +9,7 @@ use SpaghettiDojo\Konomi\User;
 describe('UserProfile', function (): void {
     it('Render the Block Markup', function (): void {
         $this->signInUser('subscriber');
-        $postId = $this->postIdByIndex(0);
+        $postId = 26;
 
         // Get current user
         $user = User\currentUser();
