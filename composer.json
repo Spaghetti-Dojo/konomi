@@ -32,10 +32,12 @@
 			"SpaghettiDojo\\Konomi\\": "sources/"
 		},
 		"files": [
+			"sources/Functions/array.php",
 			"sources/Functions/filters.php",
 			"sources/package.php",
 			"sources/Blocks/api.php",
-			"sources/Icons/api.php"
+			"sources/Icons/api.php",
+			"sources/User/api.php"
 		]
 	},
 	"autoload-dev": {
