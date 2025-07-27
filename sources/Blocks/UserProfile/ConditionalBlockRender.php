@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SpaghettiDojo\Konomi\Blocks;
+namespace SpaghettiDojo\Konomi\Blocks\UserProfile;
 
 class ConditionalBlockRender
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Tests\Unit\Blocks;
 
 use Brain\Monkey\Functions;
-use SpaghettiDojo\Konomi\Blocks\ConditionalBlockRender;
+use SpaghettiDojo\Konomi\Blocks\UserProfile\ConditionalBlockRender;
 
 describe('hideBlocksInProfilePage', function (): void {
     it('returns the input value when blockName is empty', function (): void {
