@@ -11,11 +11,10 @@ use Inpsyde\Modularity\{
     Module\ServiceModule,
     Properties\Properties
 };
-use SpaghettiDojo\Konomi\Blocks\{
-    Rest\AddControllerFactory,
+use SpaghettiDojo\Konomi\Blocks\{Rest\AddControllerFactory,
     Rest\AddSchemaFactory,
-    Rest\AddResponse
-};
+    Rest\AddResponse,
+    UserProfile\ConditionalBlockRender};
 use SpaghettiDojo\Konomi\Rest;
 use SpaghettiDojo\Konomi\User;
 use SpaghettiDojo\Konomi\Post;
@@ -161,6 +160,7 @@ class Module implements ServiceModule, ExecutableModule
     {
         /** @var ConditionalBlockRender $conditionalBlockRenderer */
         $conditionalBlockRenderer = $container->get(ConditionalBlockRender::class);
+
         add_filter(
             'pre_render_block',
             [$conditionalBlockRenderer, 'hideBlocksInProfilePage'],

@@ -11,8 +11,8 @@ use function SpaghettiDojo\Konomi\Functions\excludeNonPositiveInt;
 
 /**
  * @var array{
- *     dummy: bool,
- *     ids: array<int>
+ *     dummy?: bool,
+ *     ids?: array<int>
  * } $data
  */
 $data = (array) ($data ?? null);

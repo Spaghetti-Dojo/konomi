@@ -14,26 +14,12 @@ use function SpaghettiDojo\Konomi\Blocks\renderer;
 $attributes = (array) ($attributes ?? null);
 
 $user = User\currentUser();
-$items = $user->merge(
-    ...$user->all(User\ItemGroup::REACTION),
-    ...$user->all(User\ItemGroup::BOOKMARK)
-);
 
-$content = renderer()->render('UserProfile/partials/table', [
-    'ids' => array_keys($items),
-    'dummy' => (bool) ($attributes['dummy'] ?? null),
-]);
-
-/*
- * phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
- */
-echo render_block([
-    'blockName' => 'core/table',
-    'attrs' => [
-        'className' => 'is-style-stripes',
-        'hasFixedLayout' => true,
-    ],
-    'innerContent' => [
-        $content,
-    ],
-]);
+echo $user->isLoggedIn()
+    ? renderer()->render('UserProfile/partials/logged-in', $attributes)
+    : renderer()->render('UserProfile/partials/logged-out', [
+        'loginPageUrl' => wp_login_url(add_query_arg([])),
+        'loginPageLabel' => __('Login', 'konomi'),
+        'title' => __('It\'s seems you\'re are logged out', 'konomi'),
+        'message' => __('Please sign in to see your saved favorites.', 'konomi'),
+    ]);

@@ -41,10 +41,10 @@ $context->instanceId()->reset();
     <?=
     $renderer->render('Konomi/partials/dialog', [
         'loginPageUrl' => wp_login_url(add_query_arg([])),
-        'loginPageLabel' => esc_html__('Login', 'konomi'),
-        'title' => esc_html__('Sign in to bookmark', 'konomi'),
-        'message' => esc_html__('You need to be signed in to save your bookmarks.', 'konomi'),
-        'closeLabel' => esc_html__('Close', 'konomi'),
+        'loginPageLabel' => __('Login', 'konomi'),
+        'title' => __('It\'s seems you\'re are logged out', 'konomi'),
+        'message' =>__('Please sign in to see your saved favorites.', 'konomi'),
+        'closeLabel' =>__('Close', 'konomi'),
     ])
     // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
     ?>
