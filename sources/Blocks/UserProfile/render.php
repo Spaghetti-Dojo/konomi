@@ -20,6 +20,6 @@ echo $user->isLoggedIn()
     : renderer()->render('UserProfile/partials/logged-out', [
         'loginPageUrl' => wp_login_url(add_query_arg([])),
         'loginPageLabel' => __('Login', 'konomi'),
-        'title' => __('It\'s seems you\'re are logged out', 'konomi'),
+        'title' => __('It\'s seems you\'re logged out', 'konomi'),
         'message' => __('Please sign in to see your saved favorites.', 'konomi'),
     ]);
