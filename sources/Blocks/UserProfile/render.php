@@ -15,6 +15,7 @@ $attributes = (array) ($attributes ?? null);
 
 $user = User\currentUser();
 
+// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 echo $user->isLoggedIn()
     ? renderer()->render('UserProfile/partials/logged-in', $attributes)
     : renderer()->render('UserProfile/partials/logged-out', [
@@ -23,3 +24,4 @@ echo $user->isLoggedIn()
         'title' => __('It\'s seems you\'re logged out', 'konomi'),
         'message' => __('Please sign in to see your saved favorites.', 'konomi'),
     ]);
+// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped

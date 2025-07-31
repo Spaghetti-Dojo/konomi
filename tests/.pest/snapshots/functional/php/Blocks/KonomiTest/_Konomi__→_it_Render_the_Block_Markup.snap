@@ -49,9 +49,9 @@
 
     
 <dialog class="konomi-login-modal">
-    <h2>Sign in to bookmark</h2>
+    <h2>It&#039;s seems you&#039;re logged out</h2>
 
-    <p>You need to be signed in to save your bookmarks.</p>
+    <p>Please sign in to see your saved favorites.</p>
 
     <a href="http://example.org/wp-login.php">
         Login    </a>
