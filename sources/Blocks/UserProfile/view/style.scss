@@ -1,0 +1,32 @@
+.konomi-user-profile {
+	.wp-block-table {
+		tr[aria-hidden="true"] {
+			display: none;
+		}
+	}
+
+	.konomi-user-profile-pagination {
+		margin: 3rem 0;
+		font-size: 1.3rem;
+
+		ul {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem;
+			list-style: none;
+			justify-content: center;
+
+			li {
+				padding: .63rem;
+
+				a {
+					text-decoration: none;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+}

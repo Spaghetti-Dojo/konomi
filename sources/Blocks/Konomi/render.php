@@ -25,52 +25,10 @@ $context->instanceId()->reset();
     echo wp_interactivity_data_wp_context($context->toArray()) ?>
 >
     <?=
-    wp_kses($content, [
-        'div' => [
-            'class' => true,
-            'data-wp-interactive' => true,
-            'data-wp-context' => true,
-            'style' => true,
-        ],
-        'button' => [
-            'class' => true,
-            'data-wp-class--is-active' => true,
-            'data-wp-on-async--click' => true,
-            'data-wp-run--maybe-show-login-modal' => true,
-            'style' => true,
-            'type' => true,
-        ],
-        'svg' => [
-            'width' => true,
-            'height' => true,
-            'fill' => true,
-            'class' => true,
-            'version' => true,
-            'xmlns' => true,
-            'xmlns:svg' => true,
-        ],
-        'path' => [
-            'd' => true,
-        ],
-        'span' => [
-            'class' => true,
-            'data-wp-text' => true,
-            'data-wp-run--maybe-render-response-error' => true,
-            'popover' => true,
-            'style' => true,
-        ],
-        'dialog' => [
-            'class' => true,
-        ],
-        'h2' => [],
-        'p' => [],
-        'a' => [
-            'href' => true,
-            'class' => true,
-            'target' => true,
-            'rel' => true,
-        ],
-    ]); ?>
+    /*
+     * phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+     */
+    Blocks\kses($content); ?>
 
     <?=
     /*
@@ -83,10 +41,10 @@ $context->instanceId()->reset();
     <?=
     $renderer->render('Konomi/partials/dialog', [
         'loginPageUrl' => wp_login_url(add_query_arg([])),
-        'loginPageLabel' => esc_html__('Login', 'konomi'),
-        'title' => esc_html__('Sign in to bookmark', 'konomi'),
-        'message' => esc_html__('You need to be signed in to save your bookmarks.', 'konomi'),
-        'closeLabel' => esc_html__('Close', 'konomi'),
+        'loginPageLabel' => __('Login', 'konomi'),
+        'title' => __('It\'s seems you\'re logged out', 'konomi'),
+        'message' => __('Please sign in to see your saved favorites.', 'konomi'),
+        'closeLabel' => __('Close', 'konomi'),
     ])
     // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
     ?>

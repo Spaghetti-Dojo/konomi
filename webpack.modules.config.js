@@ -132,5 +132,13 @@ module.exports = [
 			path: path.resolve('./sources/Blocks/Bookmark/build-module'),
 			clean: true,
 		},
+	},
+
+	/**
+	 * Konomi User Profile Module
+	 */
+	{
+		...configuration,
+
 	}
 ]
