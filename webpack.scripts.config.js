@@ -205,6 +205,23 @@ module.exports = [
 			clean: true,
 		},
 	},
+	{
+		...configuration,
+		entry: {
+			'konomi-user-profile-block':
+				'./sources/Blocks/UserProfile/view/style.scss',
+		},
+		output: {
+			path: path.resolve( __dirname, './sources/Blocks/UserProfile/dist/css' ),
+			clean: true,
+		},
+		plugins: [
+			...configuration.plugins.filter(
+				( plugin ) => plugin.constructor.name !== 'CleanWebpackPlugin'
+			),
+			cleanPluginFor( 'UserProfile' ),
+		],
+	},
 ];
 
 function cleanPluginFor( blockName ) {

@@ -18,7 +18,7 @@ $title = (string) ($data['title'] ?? null);
 $message = (string) ($data['message'] ?? null);
 ?>
 
-<div class="konomi-user-profile--logged-out">
+<div class="konomi-user-profile konomi-user-profile--logged-out">
     <h2><?= esc_html($title) ?></h2>
 
     <p><?= esc_html($message) ?></p>

@@ -12,7 +12,8 @@ use function SpaghettiDojo\Konomi\Functions\excludeNonPositiveInt;
 /**
  * @var array{
  *     dummy?: bool,
- *     ids?: array<int>
+ *     ids?: array<int>,
+ *     perPage?: positive-int
  * } $data
  */
 $data = (array) ($data ?? null);
@@ -20,13 +21,14 @@ $data = (array) ($data ?? null);
 $dummy = (bool) ($data['dummy'] ?? null);
 $ids = (array) ($data['ids'] ?? null);
 $ids = excludeNonPositiveInt($ids);
+$perPage = (int) ($data['perPage'] ?? null) ?: 10;
+
+$counter = 0;
 ?>
 
 <figure
     <?=
-    /*
-     * phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
-     */
+    /* phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped */
     get_block_wrapper_attributes(['class' => 'wp-block-table is-style-stripes'])
     ?>
 >
@@ -50,10 +52,13 @@ $ids = excludeNonPositiveInt($ids);
         <?php
         loop(
             $ids,
-            static function (\WP_Post $post) use ($dummy): void {
+            static function (\WP_Post $post) use ($perPage, &$counter, $dummy): void {
+                ++$counter;
                 $permalink = (string) get_the_permalink($post);
                 $title = get_the_title($post);
                 $excerpt = wp_trim_words(get_the_excerpt(), 15);
+                $pageLimitReached = $counter > $perPage;
+                $isHidden = $pageLimitReached ? 'true' : 'false';
 
                 if ($dummy) {
                     $permalink = '#';
@@ -61,7 +66,7 @@ $ids = excludeNonPositiveInt($ids);
                     $excerpt = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
                 }
                 ?>
-                <tr class="konomi-user-profile-item">
+                <tr class="konomi-user-profile-item" aria-hidden="<?= esc_attr($isHidden) ?>">
                     <td class="konomi-user-profile-item__title">
                         <a href="<?= esc_url($permalink) ?>">
                             <?= esc_html($title) ?>
