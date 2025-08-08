@@ -136,6 +136,7 @@ return array(
 		),
 		'textdomain' => 'konomi',
 		'editorScript' => 'file:./dist/js/konomi-user-profile-block.js',
+		'viewScriptModule' => 'file:./build-module/konomi-user-profile-block-view.js',
 		'style' => 'file:./dist/css/style-konomi-user-profile-block.css',
 		'render' => 'file:./render.php'
 	)

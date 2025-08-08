@@ -18,25 +18,13 @@ $items = $user->merge(
     ...$user->all(User\ItemGroup::BOOKMARK)
 );
 
-$perPage = 2;
-$count = count($items);
-$pages = ceil($count / $perPage);
-wp_interactivity_state('konomiProfile', [
-    'page' => 1,
-    'perPage' => $perPage,
-    'count' => $count,
-    'pages' => $pages,
-]);
-
 $content = renderer()->render('UserProfile/partials/table', [
     'ids' => array_keys($items),
     'dummy' => (bool) ($data['dummy'] ?? null),
-    'perPage' => $perPage,
 ]);
 ?>
 
 <div
-    data-wp-interactive="konomiProfile"
     <?=
     /* phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped */
     get_block_wrapper_attributes(['class' => 'konomi-user-profile konomi-user-profile--logged-in'])
@@ -56,9 +44,7 @@ $content = renderer()->render('UserProfile/partials/table', [
     ]);
 
     echo renderer()->render('UserProfile/partials/pagination', [
-        'perPage' => $perPage,
-        'count' => $count,
-        'pages' => $pages,
+        'count' => count($items),
     ]);
     /* phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped */
     ?>

@@ -139,6 +139,14 @@ module.exports = [
 	 */
 	{
 		...configuration,
-
+		entry: {
+			'konomi-user-profile-block-view': './sources/Blocks/UserProfile/view/index.ts',
+		},
+		output: {
+			...configuration.output,
+			filename: '[name].js',
+			path: path.resolve('./sources/Blocks/UserProfile/build-module'),
+			clean: true,
+		},
 	}
 ]

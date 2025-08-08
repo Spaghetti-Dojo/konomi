@@ -1,7 +1,14 @@
 .konomi-user-profile {
 	.wp-block-table {
-		tr[aria-hidden="true"] {
-			display: none;
+		tbody {
+			tr[aria-hidden="true"] {
+				display: none;
+			}
+		}
+
+		th,
+		td {
+			border-color: transparent;
 		}
 	}
 
@@ -24,6 +31,11 @@
 
 					&:hover {
 						text-decoration: underline;
+					}
+
+					&[aria-disabled="true"] {
+						text-decoration: none;
+						pointer-events: none;
 					}
 				}
 			}
