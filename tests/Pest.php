@@ -29,10 +29,4 @@ uses()
     ->in('unit', 'integration');
 
 pest()->extends(WpTestCase::class)
-    ->beforeAll(function (): void {
-        $this->setUpWordBless();
-    })
-    ->afterAll(function (): void {
-        $this->tearDownWordBless();
-    })
     ->in('functional');
