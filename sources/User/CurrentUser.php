@@ -49,7 +49,6 @@ class CurrentUser implements User
     }
 
     /**
-     * @param Item ...$items
      * @return array<int, array<Item>>
      */
     public function merge(Item ...$items): array

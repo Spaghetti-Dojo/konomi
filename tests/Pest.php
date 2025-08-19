@@ -29,4 +29,22 @@ uses()
     ->in('unit', 'integration');
 
 pest()->extends(WpTestCase::class)
+    ->beforeEach(function (): void {
+        expect()->pipe('toMatchSnapshot', function (\Closure $next): mixed {
+            if (is_string($this->value)) {
+                $this->value = preg_replace(
+                    '/style="position-anchor: --konomi-.*"/',
+                    'style="position-anchor: --konomi-test"',
+                    $this->value
+                );
+                $this->value = preg_replace(
+                    '/style="anchor-name: --konomi-.*"/',
+                    'style="anchor-name: --konomi-test"',
+                    $this->value
+                );
+            }
+
+            return $next();
+        });
+    })
     ->in('functional');

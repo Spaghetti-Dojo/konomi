@@ -20,12 +20,12 @@
         <tbody>
                         <tr class="konomi-user-profile-item">
                     <td class="konomi-user-profile-item__title">
-                        <a href="http://example.org/?p=26">
-                            Test Post                        </a>
+                        <a href="#">
+                            Lorem Ipsum dolor sit amet                        </a>
                     </td>
 
                     <td class="konomi-user-profile-item__excerpt">
-                        Test Content                    </td>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.                    </td>
 
                     <td class="konomi-user-profile-item__actions has-text-align-center">
                         

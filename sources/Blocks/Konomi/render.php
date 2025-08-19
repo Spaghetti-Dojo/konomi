@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Blocks\Konomi;
 
 use SpaghettiDojo\Konomi\Blocks;
+use SpaghettiDojo\Konomi\User;
 
 $content = (string) ($content ?? null);
 
+$user = User\currentUser();
 $renderer = Blocks\renderer();
 $context = Blocks\context(Context::class);
 
@@ -36,16 +38,17 @@ $context->instanceId()->reset();
      */
     $renderer->render('Konomi/partials/popover', [
         'anchor' => $anchor,
-    ]) ?>
+    ]);
 
-    <?=
-    $renderer->render('Konomi/partials/dialog', [
-        'loginPageUrl' => wp_login_url(add_query_arg([])),
-        'loginPageLabel' => __('Login', 'konomi'),
-        'title' => __('It\'s seems you\'re logged out', 'konomi'),
-        'message' => __('Please sign in to see your saved favorites.', 'konomi'),
-        'closeLabel' => __('Close', 'konomi'),
-    ])
+    if (!$user->isLoggedIn()) :
+        echo $renderer->render('Konomi/partials/dialog', [
+            'loginPageUrl' => wp_login_url(add_query_arg([])),
+            'loginPageLabel' => __('Login', 'konomi'),
+            'title' => __('It\'s seems you\'re logged out', 'konomi'),
+            'message' => __('Please sign in to see your saved favorites.', 'konomi'),
+            'closeLabel' => __('Close', 'konomi'),
+        ]);
+    endif
     // phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
     ?>
 </div>

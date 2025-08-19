@@ -21,4 +21,9 @@ interface User
      * @return array<Item>
      */
     public function all(ItemGroup $group): array;
+
+    /**
+     * @return array<int, array<Item>>
+     */
+    public function merge(Item ...$items): array;
 }

@@ -6,7 +6,7 @@ namespace SpaghettiDojo\Konomi\User;
 
 use function SpaghettiDojo\Konomi\package;
 
-function currentUser(): CurrentUser
+function currentUser(): User
 {
-    return package()->container()->get(CurrentUser::class);
+    return package()->container()->get(UserFactory::class)->create();
 }
