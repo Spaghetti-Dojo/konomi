@@ -8,8 +8,10 @@ export function init(): void {
 		actions: {
 			updatePagination: withSyncEvent( ( e: Readonly< MouseEvent > ) => {
 				e.preventDefault();
-				assertAnchorElement( e.target );
-				state.page = extractPageIndexFromHrefAttribute( e.target );
+				assertAnchorElement( e.currentTarget );
+				state.page = extractPageIndexFromHrefAttribute(
+					e.currentTarget
+				);
 			} ),
 		},
 		callbacks: {
