@@ -16,29 +16,32 @@
 	}
 
 	.konomi-user-profile-pagination {
-		margin: 3rem 0;
 		font-size: 1.3rem;
+		margin: 3rem 0;
 
 		ul {
 			display: flex;
 			flex-wrap: wrap;
 			gap: 1rem;
-			list-style: none;
 			justify-content: center;
+			list-style: none;
 
 			li {
 				padding: .63rem;
 
 				a {
 					text-decoration: none;
+					transition: all .3s;
 
 					&:hover {
+						font-weight: 700;
 						text-decoration: underline;
 					}
 
 					&[aria-disabled="true"] {
-						text-decoration: none;
+						font-weight: 700;
 						pointer-events: none;
+						text-decoration: none;
 					}
 				}
 			}
