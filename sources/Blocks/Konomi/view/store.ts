@@ -63,6 +63,7 @@ export function init(): void {
 				}, [ context.error.code, context.error.message ] );
 			},
 
+			// eslint-disable-next-line complexity
 			toggleLoginModal: (): void => {
 				const element = getElement();
 				if ( ! ( element.ref instanceof HTMLElement ) ) {
@@ -70,8 +71,11 @@ export function init(): void {
 				}
 
 				const context = getContext< Context >( 'konomi' );
-				const _loginModalElement = loginModalElement( element.ref );
+				if ( context.isUserLoggedIn ) {
+					return;
+				}
 
+				const _loginModalElement = loginModalElement( element.ref );
 				if ( context.loginRequired ) {
 					_loginModalElement.showModal();
 				} else {
