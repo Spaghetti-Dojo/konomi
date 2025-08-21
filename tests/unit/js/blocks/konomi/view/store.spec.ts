@@ -199,6 +199,7 @@ describe( 'Interactivity Store', () => {
 		describe( 'toggleLoginModal', () => {
 			it( 'should show modal when loginRequired is true', () => {
 				mockContext.loginRequired = true;
+				mockContext.isUserLoggedIn = false;
 				init();
 
 				const elementRef = document.createElement( 'div' );
@@ -225,6 +226,7 @@ describe( 'Interactivity Store', () => {
 
 			it( 'should close modal when loginRequired is false', () => {
 				mockContext.loginRequired = false;
+				mockContext.isUserLoggedIn = false;
 				init();
 
 				const elementRef = document.createElement( 'div' );
