@@ -59,4 +59,39 @@ describe('CurrentUser', function (): void {
         $this->repository->shouldReceive('save')->once()->with($currentUser, $item);
         $currentUser->saveItem($item);
     });
+
+    it('return all', function (): void {
+        Functions\expect('wp_get_current_user')->once()->andReturn($this->wpUser);
+
+        $user = User\CurrentUser::new($this->repository);
+
+        $this->repository->shouldReceive('all')->once()->with($user, User\ItemGroup::REACTION)->andReturn([
+            User\Item::new(2, 'post', true),
+        ]);
+        $items = $user->all(User\ItemGroup::REACTION);
+
+        expect(count($items))->toBe(1);
+    });
+
+    it('merge', function (): void {
+        Functions\expect('wp_get_current_user')->once()->andReturn($this->wpUser);
+
+        $user = User\CurrentUser::new($this->repository);
+
+        $this->repository->shouldReceive('all')->once()->with($user, User\ItemGroup::REACTION)->andReturn([
+            User\Item::new(2, 'post', true),
+        ]);
+        $this->repository->shouldReceive('all')->once()->with($user, User\ItemGroup::BOOKMARK)->andReturn([
+            User\Item::new(1, 'post', true, User\ItemGroup::BOOKMARK),
+            User\Item::new(100, 'post', true, User\ItemGroup::BOOKMARK),
+            User\Item::new(2, 'post', true, User\ItemGroup::BOOKMARK),
+        ]);
+
+        $merged = $user->merge(
+            ...$user->all(User\ItemGroup::REACTION),
+            ...$user->all(User\ItemGroup::BOOKMARK)
+        );
+
+        expect(count($merged))->toBe(3);
+    });
 });

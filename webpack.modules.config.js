@@ -132,5 +132,21 @@ module.exports = [
 			path: path.resolve('./sources/Blocks/Bookmark/build-module'),
 			clean: true,
 		},
+	},
+
+	/**
+	 * Konomi User Profile Module
+	 */
+	{
+		...configuration,
+		entry: {
+			'konomi-user-profile-block-view': './sources/Blocks/UserProfile/view/index.ts',
+		},
+		output: {
+			...configuration.output,
+			filename: '[name].js',
+			path: path.resolve('./sources/Blocks/UserProfile/build-module'),
+			clean: true,
+		},
 	}
 ]

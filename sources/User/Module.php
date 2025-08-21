@@ -26,14 +26,11 @@ class Module implements ServiceModule
     public function services(): array
     {
         return [
-            CurrentUser::class => static fn (ContainerInterface $container) => CurrentUser::new(
-                $container->get(Repository::class)
-            ),
             Storage::class => static fn () => Storage::new(),
             UserFactory::class => static fn (
                 ContainerInterface $container
             ) => UserFactory::new(
-                $container->get(CurrentUser::class)
+                $container->get(Repository::class)
             ),
 
             ItemFactory::class => static fn () => ItemFactory::new(),

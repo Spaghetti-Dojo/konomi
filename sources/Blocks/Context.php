@@ -12,4 +12,9 @@ interface Context
     public function toArray(): array;
 
     public function instanceId(): InstanceId;
+
+    /**
+     * @param array<string, mixed> $mergeable
+     */
+    public function merge(array $mergeable): Context;
 }

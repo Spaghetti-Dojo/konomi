@@ -10,9 +10,12 @@ $attributes = (array) ($attributes ?? null);
 
 $inactiveColor = (string) ($attributes['inactiveColor'] ?? null);
 $activeColor = (string) ($attributes['activeColor'] ?? null);
+$showCount = (bool) ($attributes['showCount'] ?? null);
 
 $renderer = Blocks\renderer();
-$context = Blocks\context(Context::class);
+$context = Blocks\context(Context::class)->merge([
+    'showCount' => $showCount,
+]);
 
 $uuid = $context->instanceId()->current();
 $anchor = "--konomi-{$uuid}";
@@ -39,5 +42,6 @@ $style = (string) Blocks\style()->add(
         'anchor' => $anchor,
         'label' => esc_html__('Save this post', 'konomi'),
         'icon' => 'heart',
+        'showCount' => $showCount,
     ]) ?>
 </div>

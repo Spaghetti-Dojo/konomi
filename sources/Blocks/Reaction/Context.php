@@ -14,7 +14,7 @@ use SpaghettiDojo\Konomi\Blocks;
 class Context implements Blocks\Context
 {
     use Blocks\PostContextTrait;
-    use Blocks\UserContextTrait;
+    use Blocks\MergeableContextTrait;
 
     public static function new(
         User\UserFactory $userFactory,
@@ -33,10 +33,7 @@ class Context implements Blocks\Context
     }
 
     /**
-     * @return array{
-     *     count: int,
-     *     isActive: bool
-     * }
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -45,6 +42,7 @@ class Context implements Blocks\Context
         return [
             'count' => $this->count(),
             'isActive' => $reaction->isActive(),
+            ...$this->extra,
         ];
     }
 
@@ -60,6 +58,6 @@ class Context implements Blocks\Context
 
     private function reaction(): User\Item
     {
-        return $this->user($this->userFactory)->findItem($this->postId(), User\ItemGroup::REACTION);
+        return $this->userFactory->create()->findItem($this->postId(), User\ItemGroup::REACTION);
     }
 }

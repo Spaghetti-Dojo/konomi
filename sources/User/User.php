@@ -16,4 +16,14 @@ interface User
     public function findItem(int $id, ItemGroup $group): Item;
 
     public function saveItem(Item $item): bool;
+
+    /**
+     * @return array<Item>
+     */
+    public function all(ItemGroup $group): array;
+
+    /**
+     * @return array<int, array<Item>>
+     */
+    public function merge(Item ...$items): array;
 }

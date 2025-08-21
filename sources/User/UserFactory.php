@@ -9,17 +9,17 @@ namespace SpaghettiDojo\Konomi\User;
  */
 class UserFactory
 {
-    public static function new(CurrentUser $currentUser): UserFactory
+    public static function new(Repository $itemRepository): UserFactory
     {
-        return new self($currentUser);
+        return new self($itemRepository);
     }
 
-    final private function __construct(readonly private CurrentUser $currentUser)
+    final private function __construct(private Repository $itemRepository)
     {
     }
 
     public function create(): User
     {
-        return $this->currentUser;
+        return CurrentUser::new($this->itemRepository);
     }
 }
