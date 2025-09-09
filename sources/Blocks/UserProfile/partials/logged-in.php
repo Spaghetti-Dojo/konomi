@@ -20,7 +20,6 @@ $items = $user->merge(
 
 $content = renderer()->render('UserProfile/partials/table', [
     'ids' => array_keys($items),
-    'dummy' => (bool) ($data['dummy'] ?? null),
 ]);
 ?>
 

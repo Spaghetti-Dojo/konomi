@@ -11,13 +11,11 @@ use function SpaghettiDojo\Konomi\Functions\excludeNonPositiveInt;
 
 /**
  * @var array{
- *     dummy?: bool,
  *     ids?: array<int>
  * } $data
  */
 $data = (array) ($data ?? null);
 
-$dummy = (bool) ($data['dummy'] ?? null);
 $ids = (array) ($data['ids'] ?? null);
 $ids = excludeNonPositiveInt($ids);
 ?>
@@ -50,16 +48,10 @@ $ids = excludeNonPositiveInt($ids);
         <?php
         loop(
             $ids,
-            static function (\WP_Post $post) use ($dummy): void {
+            static function (\WP_Post $post): void {
                 $permalink = (string) get_the_permalink($post);
                 $title = get_the_title($post);
                 $excerpt = wp_trim_words(get_the_excerpt(), 15);
-
-                if ($dummy) {
-                    $permalink = '#';
-                    $title = 'Lorem Ipsum dolor sit amet';
-                    $excerpt = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
-                }
                 ?>
                 <tr class="konomi-user-profile-item">
                     <td class="konomi-user-profile-item__title">

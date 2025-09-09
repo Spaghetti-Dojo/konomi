@@ -25,7 +25,7 @@ describe('UserProfile', function (): void {
         $bookmarkItem = User\Item::new($postId, 'post', true, User\ItemGroup::BOOKMARK);
         $user->saveItem($bookmarkItem);
 
-        $result = do_blocks('<!-- wp:konomi/user-profile {"dummy":false} -->');
+        $result = do_blocks('<!-- wp:konomi/user-profile -->');
         expect($result)->toMatchSnapshot();
     });
 
@@ -33,26 +33,7 @@ describe('UserProfile', function (): void {
         // Ensure no user is logged in
         wp_set_current_user(0);
 
-        $result = do_blocks('<!-- wp:konomi/user-profile {"dummy":false} -->');
-        expect($result)->toMatchSnapshot();
-    });
-
-    it('Render the Block Markup with dummy data', function (): void {
-        $this->signInUser('subscriber');
-        $postId = 26;
-
-        // Get current user
-        $user = User\currentUser();
-
-        // Create and save a reaction item for the post
-        $reactionItem = User\Item::new($postId, 'post', true);
-        $user->saveItem($reactionItem);
-
-        // Create and save a bookmark item for the post
-        $bookmarkItem = User\Item::new($postId, 'post', true, User\ItemGroup::BOOKMARK);
-        $user->saveItem($bookmarkItem);
-
-        $result = do_blocks('<!-- wp:konomi/user-profile {"dummy":true} -->');
+        $result = do_blocks('<!-- wp:konomi/user-profile -->');
         expect($result)->toMatchSnapshot();
     });
 });
