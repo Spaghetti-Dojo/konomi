@@ -59,6 +59,11 @@ const configuration = {
 		),
 	},
 	output: {},
+	watchOptions: {
+		ignored: /node_modules/,
+		aggregateTimeout: 300,
+		poll: 1000
+	}
 };
 
 module.exports = [
