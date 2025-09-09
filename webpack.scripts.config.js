@@ -230,9 +230,11 @@ function cleanPluginFor( blockName ) {
 	return new CleanWebpackPlugin( {
 		cleanAfterEveryBuildPatterns: [
 			path.resolve(
+				__dirname,
 				`./sources/Blocks/${ normalizedBlockName }/dist/css/*.js`
 			),
 			path.resolve(
+				__dirname,
 				`./sources/Blocks/${ normalizedBlockName }/dist/css/*.php`
 			),
 		],
