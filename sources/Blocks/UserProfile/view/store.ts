@@ -1,5 +1,16 @@
-import { getServerState, store, withSyncEvent } from '@wordpress/interactivity';
+/**
+ * External dependencies
+ */
 import type { MouseEvent } from 'react';
+
+/**
+ * WordPress dependencies
+ */
+import { getServerState, store, withSyncEvent } from '@wordpress/interactivity';
+
+/**
+ * Internal dependencies
+ */
 import { assertAnchorElement, assertIsPositiveInt } from './asserts';
 
 const enum STATE_UPDATE_REASON {
@@ -7,9 +18,15 @@ const enum STATE_UPDATE_REASON {
 	HISTORY_CHANGE = 'history-change',
 }
 
+export type State = {
+	page: number;
+	perPage: number;
+	updateReason: string;
+};
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	const { state } = store( 'konomiProfilePagination', {
+	const { state }: { state: State } = store( 'konomiProfilePagination', {
 		state: getServerState(),
 		actions: {
 			updatePagination: withSyncEvent( ( e: Readonly< MouseEvent > ) => {
@@ -96,7 +113,10 @@ export function init(): void {
 				}
 
 				const currentUrl = new URL( window.location.href );
-				currentUrl.searchParams.set( 'user-profile-page', state.page );
+				currentUrl.searchParams.set(
+					'user-profile-page',
+					`${ state.page }`
+				);
 				window.history.pushState(
 					{
 						konomi: { page: state.page },
