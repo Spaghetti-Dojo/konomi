@@ -1,5 +1,11 @@
 import { getServerState, store, withSyncEvent } from '@wordpress/interactivity';
 import type { MouseEvent } from 'react';
+import { assertAnchorElement, assertIsPositiveInt } from './asserts';
+
+const enum STATE_UPDATE_REASON {
+	UPDATE_CURRENT_PAGE = 'page-update',
+	HISTORY_CHANGE = 'history-change',
+}
 
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
@@ -12,8 +18,27 @@ export function init(): void {
 				state.page = extractPageIndexFromHrefAttribute(
 					e.currentTarget
 				);
+				state.updateReason = STATE_UPDATE_REASON.UPDATE_CURRENT_PAGE;
 			} ),
+
+			updatePaginationByHistory: ( e: Readonly< PopStateEvent > ) => {
+				const { state: { konomi = null } = {} } = e;
+
+				if ( konomi === null ) {
+					return;
+				}
+
+				try {
+					assertIsPositiveInt( konomi.page );
+				} catch ( error ) {
+					konomi.page = 1;
+				}
+
+				state.page = konomi.page;
+				state.updateReason = STATE_UPDATE_REASON.HISTORY_CHANGE;
+			},
 		},
+
 		callbacks: {
 			updateTableRows: () => {
 				const rows = document.querySelectorAll(
@@ -58,7 +83,27 @@ export function init(): void {
 						'aria-disabled',
 						linkPage === page ? 'true' : 'false'
 					);
+					anchor.toggleAttribute( 'aria-current', linkPage === page );
 				} );
+			},
+
+			updateHistory: () => {
+				if (
+					state.updateReason !==
+					STATE_UPDATE_REASON.UPDATE_CURRENT_PAGE
+				) {
+					return;
+				}
+
+				const currentUrl = new URL( window.location.href );
+				currentUrl.searchParams.set( 'user-profile-page', state.page );
+				window.history.pushState(
+					{
+						konomi: { page: state.page },
+					},
+					'',
+					currentUrl
+				);
 			},
 		},
 	} );
@@ -69,12 +114,4 @@ function extractPageIndexFromHrefAttribute(
 ): number {
 	const hrefMatch = element.href.match( /\/page-(\d+)/ );
 	return hrefMatch ? parseInt( hrefMatch[ 1 ] ?? '1', 10 ) : 1;
-}
-
-function assertAnchorElement(
-	element: unknown
-): asserts element is HTMLAnchorElement {
-	if ( ! ( element instanceof HTMLAnchorElement ) ) {
-		throw new Error( 'Expected an anchor element' );
-	}
 }

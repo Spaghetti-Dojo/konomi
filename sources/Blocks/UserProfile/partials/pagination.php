@@ -24,15 +24,18 @@ wp_interactivity_state('konomiProfilePagination', [
     'perPage' => $perPage,
     'count' => $count,
     'pages' => $pages,
+    'updateReason' => 'page-update',
 ]);
 ?>
     <nav
         role="navigation"
-        aria-label="Pagination Navigation"
+        aria-label="<?= esc_attr__('User Profile Pagination', 'konomi') ?>"
         data-wp-interactive="konomiProfilePagination"
         class="konomi-user-profile-pagination"
+        data-wp-on-window--popstate="actions.updatePaginationByHistory"
         data-wp-watch--table-rows="callbacks.updateTableRows"
         data-wp-watch--pagination-links="callbacks.updatePaginationLinks"
+        data-wp-watch--update-history="callbacks.updateHistory"
     >
         <ul>
             <?php
