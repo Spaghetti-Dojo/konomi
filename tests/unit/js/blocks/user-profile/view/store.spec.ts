@@ -1,11 +1,11 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { store, getServerState } from '@wordpress/interactivity';
+import type { Store } from '../../../../../../sources/Blocks/UserProfile/view/store';
 import {
 	assertAnchorElement,
 	assertIsPositiveInt,
 } from '../../../../../../sources/Blocks/UserProfile/view/asserts';
 import { init } from '../../../../../../sources/Blocks/UserProfile/view/store';
-import type { State } from '../../../../../../sources/Blocks/UserProfile/view/store';
 
 jest.mock( '@wordpress/interactivity', () => ( {
 	store: jest.fn(),
@@ -20,10 +20,7 @@ jest.mock( '../../../../../../sources/Blocks/UserProfile/view/asserts', () => ( 
 
 describe( 'Interactivity Store', () => {
 	let mockNamespace: string;
-	let mockStore: {
-		state: State;
-		actions: Record<string, ( ...args: any[] ) => void>;
-	};
+	let mockStore: Store;
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -53,7 +50,7 @@ describe( 'Interactivity Store', () => {
 			e.currentTarget.href = '/page-3';
 			jest.mocked( assertAnchorElement ).mockImplementation( () => {
 			} );
-			mockStore.actions.updatePagination( e );
+			mockStore.actions.updatePagination( e as any );
 			expect( e.preventDefault ).toHaveBeenCalled();
 			expect( assertAnchorElement ).toHaveBeenCalledWith( e.currentTarget );
 			expect( mockStore.state.page ).toBe( 3 );
@@ -67,7 +64,7 @@ describe( 'Interactivity Store', () => {
 			const e = { state: { konomi: { page: 2 } } };
 			jest.mocked( assertIsPositiveInt ).mockImplementation( () => {
 			} );
-			mockStore.actions.updatePaginationByHistory( e );
+			mockStore.actions.updatePaginationByHistory( e as any );
 			expect( assertIsPositiveInt ).toHaveBeenCalledWith( 2 );
 			expect( mockStore.state.page ).toBe( 2 );
 			expect( mockStore.state.updateReason ).toBe( 'history-change' );
@@ -78,7 +75,7 @@ describe( 'Interactivity Store', () => {
 			jest.mocked( assertIsPositiveInt ).mockImplementation( () => {
 				throw new Error( 'fail' );
 			} );
-			mockStore.actions.updatePaginationByHistory( e );
+			mockStore.actions.updatePaginationByHistory( e as any );
 			expect( mockStore.state.page ).toBe( 1 );
 			expect( mockStore.state.updateReason ).toBe( 'history-change' );
 		} );
@@ -86,7 +83,7 @@ describe( 'Interactivity Store', () => {
 			init();
 			const e = { state: { konomi: null } };
 			mockStore.state.page = 5;
-			mockStore.actions.updatePaginationByHistory( e );
+			mockStore.actions.updatePaginationByHistory( e as any );
 			expect( mockStore.state.page ).toBe( 5 );
 		} );
 	} );
@@ -112,12 +109,12 @@ describe( 'Interactivity Store', () => {
 			mockStore.state.perPage = 2;
 			mockStore.callbacks.updateTableRows();
 			const rows = document.querySelectorAll( '.konomi-user-profile-item' );
-			expect( rows[ 0 ].getAttribute( 'aria-hidden' ) ).toBe( 'true' );
-			expect( rows[ 1 ].getAttribute( 'aria-hidden' ) ).toBe( 'true' );
-			expect( rows[ 2 ].getAttribute( 'aria-hidden' ) ).toBe( 'false' );
-			expect( rows[ 3 ].getAttribute( 'aria-hidden' ) ).toBe( 'false' );
-			expect( rows[ 4 ].getAttribute( 'aria-hidden' ) ).toBe( 'true' );
-			expect( rows[ 5 ].getAttribute( 'aria-hidden' ) ).toBe( 'true' );
+			expect( rows[ 0 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'true' );
+			expect( rows[ 1 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'true' );
+			expect( rows[ 2 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'false' );
+			expect( rows[ 3 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'false' );
+			expect( rows[ 4 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'true' );
+			expect( rows[ 5 ]!.getAttribute( 'aria-hidden' ) ).toBe( 'true' );
 		} );
 		it( 'should do nothing if no rows found', () => {
 			init();
@@ -140,9 +137,9 @@ describe( 'Interactivity Store', () => {
 			mockStore.callbacks.updatePaginationLinks();
 			const links = document.querySelectorAll( '.konomi-user-profile-pagination a' );
 			expect( assertAnchorElement ).toHaveBeenCalledTimes( 3 );
-			expect( links[ 0 ].getAttribute( 'aria-disabled' ) ).toBe( 'false' );
-			expect( links[ 1 ].getAttribute( 'aria-disabled' ) ).toBe( 'true' );
-			expect( links[ 2 ].getAttribute( 'aria-disabled' ) ).toBe( 'false' );
+			expect( links[ 0 ]!.getAttribute( 'aria-disabled' ) ).toBe( 'false' );
+			expect( links[ 1 ]!.getAttribute( 'aria-disabled' ) ).toBe( 'true' );
+			expect( links[ 2 ]!.getAttribute( 'aria-disabled' ) ).toBe( 'false' );
 		} );
 		it( 'should do nothing if no pagination links found', () => {
 			init();
@@ -161,9 +158,9 @@ describe( 'Interactivity Store', () => {
 			expect( pushStateSpy ).toHaveBeenCalledWith(
 				{ konomi: { page: 4 } },
 				'',
-				expect.objectContaining({
-					href: expect.stringMatching(/user-profile-page=4/)
-				}),
+				expect.objectContaining( {
+					href: expect.stringMatching( /user-profile-page=4/ ),
+				} ),
 			);
 			pushStateSpy.mockRestore();
 		} );

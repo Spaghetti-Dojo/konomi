@@ -24,9 +24,22 @@ export type State = {
 	updateReason: string;
 };
 
+export type Store = Readonly< {
+	state: State;
+	actions: {
+		updatePagination: ( e: Readonly< MouseEvent > ) => void;
+		updatePaginationByHistory: ( e: Readonly< PopStateEvent > ) => void;
+	};
+	callbacks: {
+		updateTableRows: () => void;
+		updatePaginationLinks: () => void;
+		updateHistory: () => void;
+	};
+} >;
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	const { state }: { state: State } = store( 'konomiProfilePagination', {
+	const { state } = store< Store >( 'konomiProfilePagination', {
 		state: getServerState(),
 		actions: {
 			updatePagination: withSyncEvent( ( e: Readonly< MouseEvent > ) => {

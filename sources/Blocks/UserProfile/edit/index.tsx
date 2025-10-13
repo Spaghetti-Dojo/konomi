@@ -24,7 +24,7 @@ function Table(): JSX.Element {
 		<figure className="wp-block-table is-style-stripes alignwide wp-block-konomi-user-profile">
 			<table className="has-fixed-layout">
 				<Thead />
-				<TableBody />
+				<TBody />
 			</table>
 		</figure>
 	);
@@ -42,17 +42,17 @@ function Thead(): JSX.Element {
 	);
 }
 
-function TableBody(): JSX.Element {
+function TBody(): JSX.Element {
 	return (
 		<tbody>
-			<TableRow />
-			<TableRow />
-			<TableRow />
+			<TRow />
+			<TRow />
+			<TRow />
 		</tbody>
 	);
 }
 
-function TableRow(): JSX.Element {
+function TRow(): JSX.Element {
 	return (
 		<tr className="konomi-user-profile-item">
 			<td className="konomi-user-profile-item__title">
