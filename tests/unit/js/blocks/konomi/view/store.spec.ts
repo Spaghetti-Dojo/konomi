@@ -255,6 +255,14 @@ describe( 'Interactivity Store', () => {
 				mockStore.callbacks.toggleLoginModal();
 				expect( loginModalElement ).not.toHaveBeenCalled();
 			} );
+
+			it( 'should do nothing when the user is logged in', () => {
+				init();
+				const elementRef = document.createElement( 'div' );
+				mockGetElementReturnValue( elementRef );
+				mockStore.callbacks.toggleLoginModal();
+				expect( loginModalElement ).not.toHaveBeenCalled();
+			} );
 		} );
 	} );
 } );
