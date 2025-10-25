@@ -15,10 +15,6 @@ $perPage = 10;
 $count = (int) ($data['count'] ?? null);
 $pages = ceil($count / $perPage);
 
-if ($perPage > $count) {
-    return;
-}
-
 wp_interactivity_state('konomiProfilePagination', [
     'page' => 1,
     'perPage' => $perPage,
@@ -26,6 +22,10 @@ wp_interactivity_state('konomiProfilePagination', [
     'pages' => $pages,
     'updateReason' => 'page-update',
 ]);
+
+if ($perPage > $count) {
+    return;
+}
 ?>
     <nav
         role="navigation"
