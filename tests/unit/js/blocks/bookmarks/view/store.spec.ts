@@ -54,8 +54,10 @@ describe( 'Interactivity Store', () => {
 		// @ts-ignore
 		jest.mocked( getContext ).mockImplementation( ( name?: string ) => {
 			switch ( name ) {
-				case 'konomi': return outerMockContext;
-				case 'konomiBookmark': return mockContext;
+				case 'konomi':
+					return outerMockContext;
+				case 'konomiBookmark':
+					return mockContext;
 			}
 		} );
 

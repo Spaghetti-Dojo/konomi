@@ -35,5 +35,9 @@ module.exports = {
 	testEnvironment: 'jsdom',
 	testMatch: [ '<rootDir>/tests/unit/js/**/?(*.)+(spec).ts?(x)' ],
 	moduleNameMapper: mapModulesFromTsConfig( tsConfig ),
+	transform: {
+		"^.+\\.tsx?$": "babel-jest",
+		"^.+\\.svg$": "jest-transformer-svg"
+	},
 	setupFiles: [ '<rootDir>/tests/setup.ts' ],
 } as Config;

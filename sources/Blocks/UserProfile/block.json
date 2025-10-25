@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "konomi/user-profile",
+	"version": "1.0.0",
+	"title": "User Profile",
+	"category": "design",
+	"icon": "smiley",
+	"description": "User Profile",
+	"example": {},
+	"attributes": {},
+	"supports": {
+		"html": false,
+		"interactivity": true,
+		"align": true,
+		"alignWide": true,
+		"multiple": false
+	},
+	"textdomain": "konomi",
+	"editorScript": "file:./dist/js/konomi-user-profile-block.js",
+	"viewScriptModule": "file:./build-module/konomi-user-profile-block-view.js",
+	"style": "file:./dist/css/style-konomi-user-profile-block.css",
+	"render": "file:./render.php"
+}

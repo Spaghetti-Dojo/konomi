@@ -1,0 +1,50 @@
+.konomi-user-profile {
+
+	.wp-block-table {
+
+		tbody {
+
+			tr[aria-hidden="true"] {
+				display: none;
+			}
+		}
+
+		th,
+		td {
+			border-color: transparent;
+		}
+	}
+
+	.konomi-user-profile-pagination {
+		font-size: 1.3rem;
+		margin: 3rem 0;
+
+		ul {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1rem;
+			justify-content: center;
+			list-style: none;
+
+			li {
+				padding: .63rem;
+
+				a {
+					text-decoration: none;
+					transition: all .3s;
+
+					&:hover {
+						font-weight: 700;
+						text-decoration: underline;
+					}
+
+					&[aria-disabled="true"] {
+						font-weight: 700;
+						pointer-events: none;
+						text-decoration: none;
+					}
+				}
+			}
+		}
+	}
+}

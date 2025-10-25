@@ -1,0 +1,228 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BlockComponent should match snapshot 1`] = `
+<div>
+  <div
+    class="mock-block-props"
+  >
+    <figure
+      class="wp-block-table is-style-stripes alignwide wp-block-konomi-user-profile"
+    >
+      <table
+        class="has-fixed-layout"
+      >
+        <thead>
+          <tr>
+            <th
+              class="has-text-align-left"
+            >
+              Title
+            </th>
+            <th
+              class="has-text-align-left"
+            >
+              Excerpt
+            </th>
+            <th
+              class="has-text-align-center"
+            >
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            class="konomi-user-profile-item"
+          >
+            <td
+              class="konomi-user-profile-item__title"
+            >
+              <a
+                href="https://sample.com"
+              >
+                Sample Page
+              </a>
+            </td>
+            <td
+              class="konomi-user-profile-item__excerpt"
+            >
+              This is an example page. It’s different from a blog post because it will stay…
+            </td>
+            <td
+              class="konomi-user-profile-item__actions has-text-align-center"
+            >
+              <div
+                class="konomi"
+              >
+                <div
+                  class="wp-block-group is-nowrap is-layout-flex wp-block-group-is-layout-flex"
+                  style="justify-content: center;"
+                >
+                  <div
+                    class="konomi-reaction"
+                  >
+                    <button
+                      class="wp-block-konomi-reaction is-active"
+                    >
+                      <svg
+                        data-file-name="SvgHeart"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Save this post
+                      </span>
+                    </button>
+                  </div>
+                  <div
+                    class="konomi-bookmark"
+                  >
+                    <button
+                      class="wp-block-konomi-bookmark is-active"
+                    >
+                      <svg
+                        data-file-name="SvgBookmark"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Bookmark this post
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr
+            class="konomi-user-profile-item"
+          >
+            <td
+              class="konomi-user-profile-item__title"
+            >
+              <a
+                href="https://sample.com"
+              >
+                Sample Page
+              </a>
+            </td>
+            <td
+              class="konomi-user-profile-item__excerpt"
+            >
+              This is an example page. It’s different from a blog post because it will stay…
+            </td>
+            <td
+              class="konomi-user-profile-item__actions has-text-align-center"
+            >
+              <div
+                class="konomi"
+              >
+                <div
+                  class="wp-block-group is-nowrap is-layout-flex wp-block-group-is-layout-flex"
+                  style="justify-content: center;"
+                >
+                  <div
+                    class="konomi-reaction"
+                  >
+                    <button
+                      class="wp-block-konomi-reaction is-active"
+                    >
+                      <svg
+                        data-file-name="SvgHeart"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Save this post
+                      </span>
+                    </button>
+                  </div>
+                  <div
+                    class="konomi-bookmark"
+                  >
+                    <button
+                      class="wp-block-konomi-bookmark is-active"
+                    >
+                      <svg
+                        data-file-name="SvgBookmark"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Bookmark this post
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr
+            class="konomi-user-profile-item"
+          >
+            <td
+              class="konomi-user-profile-item__title"
+            >
+              <a
+                href="https://sample.com"
+              >
+                Sample Page
+              </a>
+            </td>
+            <td
+              class="konomi-user-profile-item__excerpt"
+            >
+              This is an example page. It’s different from a blog post because it will stay…
+            </td>
+            <td
+              class="konomi-user-profile-item__actions has-text-align-center"
+            >
+              <div
+                class="konomi"
+              >
+                <div
+                  class="wp-block-group is-nowrap is-layout-flex wp-block-group-is-layout-flex"
+                  style="justify-content: center;"
+                >
+                  <div
+                    class="konomi-reaction"
+                  >
+                    <button
+                      class="wp-block-konomi-reaction is-active"
+                    >
+                      <svg
+                        data-file-name="SvgHeart"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Save this post
+                      </span>
+                    </button>
+                  </div>
+                  <div
+                    class="konomi-bookmark"
+                  >
+                    <button
+                      class="wp-block-konomi-bookmark is-active"
+                    >
+                      <svg
+                        data-file-name="SvgBookmark"
+                      />
+                      <span
+                        class="konomi-label screen-reader-text"
+                      >
+                        Bookmark this post
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
+  </div>
+</div>
+`;

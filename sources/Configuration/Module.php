@@ -39,27 +39,29 @@ class Module implements ServiceModule, ExecutableModule
 
     public function run(ContainerInterface $container): bool
     {
-        add_action('wp_enqueue_scripts', function () use ($container): void {
-            $moduleLocationPath = 'sources/Configuration/client/build-module';
-            $baseUrl = untrailingslashit($this->appProperties->baseUrl() ?? '');
-            $baseDir = untrailingslashit($this->appProperties->basePath());
+        foreach (['wp_enqueue_scripts', 'admin_enqueue_scripts'] as $actionName) {
+            add_action($actionName, function () use ($container): void {
+                $moduleLocationPath = 'sources/Configuration/client/build-module';
+                $baseUrl = untrailingslashit($this->appProperties->baseUrl() ?? '');
+                $baseDir = untrailingslashit($this->appProperties->basePath());
 
-            $configuration = (array) (include "{$baseDir}/{$moduleLocationPath}/konomi-configuration.asset.php");
+                $configuration = (array) (include "{$baseDir}/{$moduleLocationPath}/konomi-configuration.asset.php");
 
-            $dependencies = (array) ($configuration['dependencies'] ?? null);
-            $version = (string) ($configuration['version'] ?? $this->appProperties->version());
+                $dependencies = (array) ($configuration['dependencies'] ?? null);
+                $version = (string) ($configuration['version'] ?? $this->appProperties->version());
 
-            wp_register_script_module(
-                '@konomi/configuration',
-                "{$baseUrl}/{$moduleLocationPath}/konomi-configuration.js",
-                $dependencies,
-                $version
-            );
-            add_filter(
-                'script_module_data_@konomi/configuration',
-                static fn () => $container->get(Configuration::class)->toArray()
-            );
-        });
+                wp_register_script_module(
+                    '@konomi/configuration',
+                    "{$baseUrl}/{$moduleLocationPath}/konomi-configuration.js",
+                    $dependencies,
+                    $version
+                );
+                add_filter(
+                    'script_module_data_@konomi/configuration',
+                    static fn () => $container->get(Configuration::class)->toArray()
+                );
+            });
+        }
 
         return true;
     }
