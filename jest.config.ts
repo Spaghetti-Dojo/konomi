@@ -22,9 +22,7 @@ module.exports = {
 		'<rootDir>/.*/dist',
 		'<rootDir>/.*/build-modules',
 	],
-	testPathIgnorePatterns: [
-		'/tests/.pest/',
-	],
+	testPathIgnorePatterns: [ '/tests/.pest/' ],
 	modulePaths: [ '<rootDir>/sources' ],
 	notifyMode: 'failure',
 	resetMocks: true,
@@ -34,10 +32,12 @@ module.exports = {
 	roots: [ '<rootDir>/sources', '<rootDir>/tests' ],
 	testEnvironment: 'jsdom',
 	testMatch: [ '<rootDir>/tests/unit/js/**/?(*.)+(spec).ts?(x)' ],
-	moduleNameMapper: mapModulesFromTsConfig( tsConfig ),
+	moduleNameMapper: {
+		...mapModulesFromTsConfig( tsConfig ),
+		'\\.svg$': '<rootDir>/__mocks__/svg.js',
+	},
 	transform: {
-		"^.+\\.tsx?$": "babel-jest",
-		"^.+\\.svg$": "jest-transformer-svg"
+		'^.+\\.ts[x]?$': 'babel-jest',
 	},
 	setupFiles: [ '<rootDir>/tests/setup.ts' ],
 } as Config;

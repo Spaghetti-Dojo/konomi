@@ -64,9 +64,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-reaction is-active"
                     >
-                      <svg
-                        data-file-name="SvgHeart"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >
@@ -80,9 +78,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-bookmark is-active"
                     >
-                      <svg
-                        data-file-name="SvgBookmark"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >
@@ -127,9 +123,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-reaction is-active"
                     >
-                      <svg
-                        data-file-name="SvgHeart"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >
@@ -143,9 +137,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-bookmark is-active"
                     >
-                      <svg
-                        data-file-name="SvgBookmark"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >
@@ -190,9 +182,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-reaction is-active"
                     >
-                      <svg
-                        data-file-name="SvgHeart"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >
@@ -206,9 +196,7 @@ exports[`BlockComponent should match snapshot 1`] = `
                     <button
                       class="wp-block-konomi-bookmark is-active"
                     >
-                      <svg
-                        data-file-name="SvgBookmark"
-                      />
+                      <svg />
                       <span
                         class="konomi-label screen-reader-text"
                       >

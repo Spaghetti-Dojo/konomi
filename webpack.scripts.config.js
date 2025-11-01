@@ -59,6 +59,19 @@ const configuration = {
 		),
 	},
 	output: {},
+	module: {
+		...baseConfiguration.module,
+		rules: [
+			...baseConfiguration.module.rules,
+			{
+				test: /\.svg$/i,
+				issuer: /\.[jt]sx?$/,
+				use: [
+					{ loader: '@svgr/webpack', options: { icon: true } },
+				],
+			},
+		],
+	},
 	watchOptions: {
 		ignored: /node_modules/,
 		aggregateTimeout: 300,
@@ -74,19 +87,6 @@ module.exports = [
 		...configuration,
 		entry: {
 			'konomi-icons': path.resolve(__dirname, './sources/Icons/client/index.ts'),
-		},
-		module: {
-			...configuration.module,
-			rules: [
-				...configuration.module.rules,
-				{
-					test: /\.svg$/i,
-					issuer: /\.[jt]sx?$/,
-					use: [
-						{ loader: '@svgr/webpack', options: { icon: true } },
-					],
-				},
-			],
 		},
 		output: {
 			filename: '[name].js',
