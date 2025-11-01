@@ -13,7 +13,7 @@ use SpaghettiDojo\Konomi\Blocks;
 class Context implements Blocks\Context
 {
     use Blocks\PostContextTrait;
-    use Blocks\UserContextTrait;
+    use Blocks\MergeableContextTrait;
 
     public static function new(
         User\UserFactory $userFactory,
@@ -30,12 +30,7 @@ class Context implements Blocks\Context
     }
 
     /**
-     * @return array{
-     *     id: int,
-     *     type: string,
-     *     isUserLoggedIn: bool,
-     *     error: array{ code: string, message: string }
-     * }
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
@@ -47,6 +42,7 @@ class Context implements Blocks\Context
                 'code' => '',
                 'message' => '',
             ],
+            ...$this->extra,
         ];
     }
 
@@ -57,6 +53,6 @@ class Context implements Blocks\Context
 
     private function isUserLoggedIn(): bool
     {
-        return $this->user($this->userFactory)->isLoggedIn();
+        return $this->userFactory->create()->isLoggedIn();
     }
 }

@@ -44,6 +44,19 @@ class Repository
         return $item;
     }
 
+    /**
+     * @return array<Item>
+     */
+    public function all(User $user, ItemGroup $group): array
+    {
+        $this->loadItems($user, $group);
+        $items = $this->registry->all($user, $group);
+
+        do_action('konomi.user.repository.all', $items, $user, $this->storageKey);
+
+        return $items;
+    }
+
     public function save(User $user, Item $item): bool
     {
         if (!$this->canSave($user, $item)) {
@@ -53,13 +66,21 @@ class Repository
         $this->loadItems($user, $item->group());
         $dataToStore = $this->prepareDataToStore($user, $item);
 
-        do_action('konomi.user.repository.save', $item, $user, $item->group(), $this->storageKey);
-
-        return $this->storage->write(
+        $stored = $this->storage->write(
             $user->id(),
             $this->storageKey->for($item->group()),
             $dataToStore
         );
+
+        $stored and do_action(
+            'konomi.user.repository.save-successfully',
+            $item,
+            $user,
+            $item->group(),
+            $this->storageKey
+        );
+
+        return $stored;
     }
 
     private function canSave(User $user, Item $item): bool

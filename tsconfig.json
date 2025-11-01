@@ -1,8 +1,10 @@
 {
 	"compilerOptions": {
 		"target": "ES2022",
-		"checkJs": true,
-		"allowJs": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"checkJs": false,
+		"allowJs": false,
 		"exactOptionalPropertyTypes": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitOverride": true,
@@ -18,9 +20,7 @@
 		"skipLibCheck": true,
 		"esModuleInterop": true,
 		"baseUrl": ".",
-		"module": "ESNext",
-		"moduleResolution": "Bundler",
-		"typeRoots": [ "./node_modules/@types", "./@types" ],
+		"typeRoots": [ "./node_modules/**/@types", "./@types" ],
 		"rootDir": "./",
 		"paths": {
 			"@konomi/wp-types": [ "./@types/wp" ],
@@ -36,5 +36,5 @@
 		}
 	},
 	"include": [ "./sources", "./@types" ],
-	"exclude": [ "**/dist/", "**/build-module/", "node_modules", "tests" ]
+	"exclude": [ "**/dist/", "**/build-module/", "node_modules", "**/tests/" ]
 }

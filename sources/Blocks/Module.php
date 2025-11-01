@@ -11,11 +11,10 @@ use Inpsyde\Modularity\{
     Module\ServiceModule,
     Properties\Properties
 };
-use SpaghettiDojo\Konomi\Blocks\{
-    Rest\AddControllerFactory,
+use SpaghettiDojo\Konomi\Blocks\{Rest\AddControllerFactory,
     Rest\AddSchemaFactory,
-    Rest\AddResponse
-};
+    Rest\AddResponse,
+    UserProfile\ConditionalBlockRender};
 use SpaghettiDojo\Konomi\Rest;
 use SpaghettiDojo\Konomi\User;
 use SpaghettiDojo\Konomi\Post;
@@ -48,6 +47,7 @@ class Module implements ServiceModule, ExecutableModule
                 "{$basePath}/sources/Blocks/blocks-manifest.php"
             ),
             InstanceId::class => static fn () => InstanceId::new(),
+            ConditionalBlockRender::class => static fn () => ConditionalBlockRender::new(),
 
             /*
              * Rest
@@ -92,6 +92,15 @@ class Module implements ServiceModule, ExecutableModule
     }
 
     public function run(ContainerInterface $container): bool
+    {
+        $this->initRest($container);
+        $this->registerBlocks($container);
+        $this->initBlocksConstraints($container);
+
+        return true;
+    }
+
+    private function initRest(ContainerInterface $container): void
     {
         add_action(
             'rest_api_init',
@@ -138,11 +147,25 @@ class Module implements ServiceModule, ExecutableModule
                     ->register();
             }
         );
+    }
 
+    private function registerBlocks(ContainerInterface $container): void
+    {
         /** @var BlockRegistrar $blocksRegistrar */
         $blocksRegistrar = $container->get(BlockRegistrar::class);
         add_action('init', [$blocksRegistrar, 'registerBlockTypes']);
+    }
 
-        return true;
+    private function initBlocksConstraints(ContainerInterface $container): void
+    {
+        /** @var ConditionalBlockRender $conditionalBlockRenderer */
+        $conditionalBlockRenderer = $container->get(ConditionalBlockRender::class);
+
+        add_filter(
+            'pre_render_block',
+            [$conditionalBlockRenderer, 'hideBlocksInProfilePage'],
+            10,
+            2
+        );
     }
 }

@@ -30,7 +30,7 @@ const configuration = {
 		new DependencyExtractionWebpackPlugin({
 			outputFormat: 'php',
 			requestToExternalModule: (request) => {
-				return EXTRACTION_CONFIGURATION.includes(request)
+				return EXTRACTION_CONFIGURATION.includes(request);
 			},
 		}),
 	],
@@ -51,6 +51,11 @@ const configuration = {
 			type: 'module',
 		},
 	},
+	watchOptions: {
+		ignored: /node_modules/,
+		aggregateTimeout: 300,
+		poll: 1000
+	}
 };
 
 module.exports = [
@@ -60,12 +65,12 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-configuration': './sources/Configuration/client/index.ts',
+			'konomi-configuration': path.resolve(__dirname, './sources/Configuration/client/index.ts'),
 		},
 		output: {
 			...configuration.output,
 			filename: '[name].js',
-			path: path.resolve('./sources/Configuration/client/build-module'),
+			path: path.resolve(__dirname, './sources/Configuration/client/build-module'),
 			clean: true,
 		},
 	},
@@ -76,12 +81,12 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-api-fetch': './sources/ApiFetch/client/index.ts',
+			'konomi-api-fetch': path.resolve(__dirname, './sources/ApiFetch/client/index.ts'),
 		},
 		output: {
 			...configuration.output,
 			filename: '[name].js',
-			path: path.resolve('./sources/ApiFetch/client/build-module'),
+			path: path.resolve(__dirname, './sources/ApiFetch/client/build-module'),
 			clean: true,
 		},
 	},
@@ -92,12 +97,12 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-konomi-block-view': './sources/Blocks/Konomi/view/index.ts',
+			'konomi-konomi-block-view': path.resolve(__dirname, './sources/Blocks/Konomi/view/index.ts'),
 		},
 		output: {
 			...configuration.output,
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Konomi/build-module'),
+			path: path.resolve(__dirname, './sources/Blocks/Konomi/build-module'),
 			clean: true,
 		},
 	},
@@ -108,12 +113,12 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-reaction-block-view': './sources/Blocks/Reaction/view/index.ts',
+			'konomi-reaction-block-view': path.resolve(__dirname, './sources/Blocks/Reaction/view/index.ts'),
 		},
 		output: {
 			...configuration.output,
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Reaction/build-module'),
+			path: path.resolve(__dirname, './sources/Blocks/Reaction/build-module'),
 			clean: true,
 		},
 	},
@@ -124,13 +129,29 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-bookmark-block-view': './sources/Blocks/Bookmark/view/index.ts',
+			'konomi-bookmark-block-view': path.resolve(__dirname, './sources/Blocks/Bookmark/view/index.ts'),
 		},
 		output: {
 			...configuration.output,
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Bookmark/build-module'),
+			path: path.resolve(__dirname, './sources/Blocks/Bookmark/build-module'),
 			clean: true,
 		},
-	}
-]
+	},
+
+	/**
+	 * Konomi User Profile Module
+	 */
+	{
+		...configuration,
+		entry: {
+			'konomi-user-profile-block-view': path.resolve(__dirname, './sources/Blocks/UserProfile/view/index.ts'),
+		},
+		output: {
+			...configuration.output,
+			filename: '[name].js',
+			path: path.resolve(__dirname, './sources/Blocks/UserProfile/build-module'),
+			clean: true,
+		},
+	},
+];

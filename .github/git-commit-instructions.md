@@ -1,0 +1,3 @@
+- Avoid overly verbose descriptions or unnecessary details.
+- Title shall not exceed 50 characters
+- Body shall not exceed 72 characters per line and wrap the text

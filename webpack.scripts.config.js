@@ -24,11 +24,14 @@ const EXTRACTION_CONFIGURATION = {
 const configuration = {
 	...baseConfiguration,
 	plugins: [
-		...baseConfiguration.plugins.filter((plugin) => ![
-			'DependencyExtractionWebpackPlugin',
-			'CopyPlugin',
-			'RtlCssPlugin',
-		].includes(plugin.constructor.name)),
+		...baseConfiguration.plugins.filter(
+			(plugin) =>
+				![
+					'DependencyExtractionWebpackPlugin',
+					'CopyPlugin',
+					'RtlCssPlugin',
+				].includes(plugin.constructor.name),
+		),
 		new DependencyExtractionWebpackPlugin({
 			outputFormat: 'php',
 			requestToExternal: (request) => {
@@ -49,9 +52,31 @@ const configuration = {
 	],
 	resolve: {
 		...baseConfiguration.resolve,
-		alias: makeAliases(baseConfiguration.resolve.alias, tsConfig, __dirname),
+		alias: makeAliases(
+			baseConfiguration.resolve.alias,
+			tsConfig,
+			__dirname,
+		),
 	},
 	output: {},
+	module: {
+		...baseConfiguration.module,
+		rules: [
+			...baseConfiguration.module.rules,
+			{
+				test: /\.svg$/i,
+				issuer: /\.[jt]sx?$/,
+				use: [
+					{ loader: '@svgr/webpack', options: { icon: true } },
+				],
+			},
+		],
+	},
+	watchOptions: {
+		ignored: /node_modules/,
+		aggregateTimeout: 300,
+		poll: 1000
+	}
 };
 
 module.exports = [
@@ -61,22 +86,11 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-icons': './sources/Icons/client/index.ts',
-		},
-		module: {
-			...configuration.module,
-			rules: [
-				...configuration.module.rules,
-				{
-					test: /\.svg$/i,
-					issuer: /\.[jt]sx?$/,
-					use: [{ loader: '@svgr/webpack', options: { icon: true } }],
-				},
-			],
+			'konomi-icons': path.resolve(__dirname, './sources/Icons/client/index.ts'),
 		},
 		output: {
 			filename: '[name].js',
-			path: path.resolve('./sources/Icons/client/dist'),
+			path: path.resolve(__dirname, './sources/Icons/client/dist'),
 			clean: true,
 			library: {
 				name: 'konomiIcons',
@@ -92,25 +106,27 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-konomi-block': './sources/Blocks/Konomi/index.ts',
+			'konomi-konomi-block': path.resolve(__dirname, './sources/Blocks/Konomi/index.ts'),
 		},
 		output: {
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Konomi/dist/js'),
+			path: path.resolve(__dirname, './sources/Blocks/Konomi/dist/js'),
 			clean: true,
 		},
 	},
 	{
 		...configuration,
 		entry: {
-			'konomi-konomi-block': './sources/Blocks/Konomi/view/style.scss',
+			'konomi-konomi-block': path.resolve(__dirname, './sources/Blocks/Konomi/view/style.scss'),
 		},
 		output: {
-			path: path.resolve('./sources/Blocks/Konomi/dist/css'),
+			path: path.resolve(__dirname, './sources/Blocks/Konomi/dist/css'),
 			clean: true,
 		},
 		plugins: [
-			...configuration.plugins.filter(plugin => plugin.constructor.name !== 'CleanWebpackPlugin'),
+			...configuration.plugins.filter(
+				(plugin) => plugin.constructor.name !== 'CleanWebpackPlugin',
+			),
 			cleanPluginFor('konomi'),
 		],
 	},
@@ -121,25 +137,28 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-reaction-block': './sources/Blocks/Reaction/index.ts',
+			'konomi-reaction-block': path.resolve(__dirname, './sources/Blocks/Reaction/index.ts'),
 		},
 		output: {
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Reaction/dist/js'),
+			path: path.resolve(__dirname, './sources/Blocks/Reaction/dist/js'),
 			clean: true,
 		},
 	},
 	{
 		...configuration,
 		entry: {
-			'konomi-reaction-block': './sources/Blocks/Reaction/view/style.scss',
+			'konomi-reaction-block':
+				path.resolve(__dirname, './sources/Blocks/Reaction/view/style.scss'),
 		},
 		output: {
-			path: path.resolve('./sources/Blocks/Reaction/dist/css'),
+			path: path.resolve(__dirname, './sources/Blocks/Reaction/dist/css'),
 			clean: true,
 		},
 		plugins: [
-			...configuration.plugins.filter(plugin => plugin.constructor.name !== 'CleanWebpackPlugin'),
+			...configuration.plugins.filter(
+				(plugin) => plugin.constructor.name !== 'CleanWebpackPlugin',
+			),
 			cleanPluginFor('reaction'),
 		],
 	},
@@ -150,38 +169,77 @@ module.exports = [
 	{
 		...configuration,
 		entry: {
-			'konomi-bookmark-block': './sources/Blocks/Bookmark/index.ts',
+			'konomi-bookmark-block': path.resolve(__dirname, './sources/Blocks/Bookmark/index.ts'),
 		},
 		output: {
 			filename: '[name].js',
-			path: path.resolve('./sources/Blocks/Bookmark/dist/js'),
+			path: path.resolve(__dirname, './sources/Blocks/Bookmark/dist/js'),
 			clean: true,
 		},
 	},
 	{
 		...configuration,
 		entry: {
-			'konomi-bookmark-block': './sources/Blocks/Bookmark/view/style.scss',
+			'konomi-bookmark-block':
+				path.resolve(__dirname, './sources/Blocks/Bookmark/view/style.scss'),
 		},
 		output: {
-			path: path.resolve('./sources/Blocks/Bookmark/dist/css'),
+			path: path.resolve(__dirname, './sources/Blocks/Bookmark/dist/css'),
 			clean: true,
 		},
 		plugins: [
-			...configuration.plugins.filter(plugin => plugin.constructor.name !== 'CleanWebpackPlugin'),
+			...configuration.plugins.filter(
+				(plugin) => plugin.constructor.name !== 'CleanWebpackPlugin',
+			),
 			cleanPluginFor('Bookmark'),
+		],
+	},
+
+	/**
+	 * User Profile
+	 */
+	{
+		...configuration,
+		entry: {
+			'konomi-user-profile-block':
+				path.resolve(__dirname, './sources/Blocks/UserProfile/index.ts'),
+		},
+		output: {
+			filename: '[name].js',
+			path: path.resolve(__dirname, './sources/Blocks/UserProfile/dist/js'),
+			clean: true,
+		},
+	},
+	{
+		...configuration,
+		entry: {
+			'konomi-user-profile-block':
+				path.resolve(__dirname, './sources/Blocks/UserProfile/view/style.scss'),
+		},
+		output: {
+			path: path.resolve(__dirname, './sources/Blocks/UserProfile/dist/css'),
+			clean: true,
+		},
+		plugins: [
+			...configuration.plugins.filter(
+				(plugin) => plugin.constructor.name !== 'CleanWebpackPlugin',
+			),
+			cleanPluginFor('UserProfile'),
 		],
 	},
 ];
 
 function cleanPluginFor(blockName) {
-	const normalizedBlockName = blockName.charAt(0).toUpperCase() + blockName.slice(1);
+	const normalizedBlockName =
+		blockName.charAt(0).toUpperCase() + blockName.slice(1);
 	return new CleanWebpackPlugin({
 		cleanAfterEveryBuildPatterns: [
 			path.resolve(
+				__dirname,
 				`./sources/Blocks/${normalizedBlockName}/dist/css/*.js`,
 			),
 			path.resolve(
+				__dirname,
 				`./sources/Blocks/${normalizedBlockName}/dist/css/*.php`,
 			),
 		],

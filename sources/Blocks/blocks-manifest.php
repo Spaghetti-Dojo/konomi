@@ -14,7 +14,7 @@ return array(
 			'konomi/konomi'
 		),
 		'example' => array(
-			
+
 		),
 		'attributes' => array(
 			'inactiveColor' => array(
@@ -44,7 +44,7 @@ return array(
 		'icon' => 'smiley',
 		'description' => 'Konomi',
 		'example' => array(
-			
+
 		),
 		'attributes' => array(
 			'active' => array(
@@ -84,7 +84,7 @@ return array(
 			'konomi/konomi'
 		),
 		'example' => array(
-			
+
 		),
 		'attributes' => array(
 			'inactiveColor' => array(
@@ -92,6 +92,10 @@ return array(
 			),
 			'activeColor' => array(
 				'type' => 'string'
+			),
+			'showCount' => array(
+				'type' => 'boolean',
+				'default' => true
 			)
 		),
 		'supports' => array(
@@ -102,6 +106,34 @@ return array(
 		'editorScript' => 'file:./dist/js/konomi-reaction-block.js',
 		'viewScriptModule' => 'file:./build-module/konomi-reaction-block-view.js',
 		'style' => 'file:./dist/css/style-konomi-reaction-block.css',
+		'render' => 'file:./render.php'
+	),
+	'UserProfile' => array(
+		'$schema' => 'https://schemas.wp.org/trunk/block.json',
+		'apiVersion' => 3,
+		'name' => 'konomi/user-profile',
+		'version' => '1.0.0',
+		'title' => 'User Profile',
+		'category' => 'design',
+		'icon' => 'smiley',
+		'description' => 'User Profile',
+		'example' => array(
+
+		),
+		'attributes' => array(
+			'dummy' => array()
+		),
+		'supports' => array(
+			'html' => false,
+			'interactivity' => true,
+			'align' => true,
+			'alignWide' => true,
+			'multiple' => false
+		),
+		'textdomain' => 'konomi',
+		'editorScript' => 'file:./dist/js/konomi-user-profile-block.js',
+		'viewScriptModule' => 'file:./build-module/konomi-user-profile-block-view.js',
+		'style' => 'file:./dist/css/style-konomi-user-profile-block.css',
 		'render' => 'file:./render.php'
 	)
 );

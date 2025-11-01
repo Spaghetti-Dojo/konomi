@@ -32,10 +32,12 @@
 			"SpaghettiDojo\\Konomi\\": "sources/"
 		},
 		"files": [
+			"sources/Functions/array.php",
 			"sources/Functions/filters.php",
 			"sources/package.php",
 			"sources/Blocks/api.php",
-			"sources/Icons/api.php"
+			"sources/Icons/api.php",
+			"sources/User/api.php"
 		]
 	},
 	"autoload-dev": {
@@ -76,6 +78,7 @@
 		"test:unit:coverage": "@php ./vendor/bin/pest --testsuite=unit --coverage --coverage-clover=coverage-unit.xml",
 		"test:integration:coverage": "@php ./vendor/bin/pest --testsuite=integration --coverage --coverage-clover=coverage-integration.xml",
 		"test:functional:coverage": "@php ./vendor/bin/pest --testsuite=functional --coverage --coverage-clover=coverage-functional.xml",
+		"test:snapshots:update": "@php ./vendor/bin/pest --testsuite=functional --update-snapshots",
 		"tests": [
 			"@test:unit",
 			"@test:integration",

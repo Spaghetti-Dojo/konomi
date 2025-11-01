@@ -39,4 +39,30 @@ class CurrentUser implements User
     {
         return $this->itemRepository->save($this, $item);
     }
+
+    /**
+     * @return array<Item>
+     */
+    public function all(ItemGroup $group): array
+    {
+        return $this->itemRepository->all($this, $group);
+    }
+
+    /**
+     * @return array<int, array<Item>>
+     */
+    public function merge(Item ...$items): array
+    {
+        $collector = [];
+        foreach ($items as $item) {
+            if (!array_key_exists($item->id(), $collector)) {
+                $collector[$item->id()] = [$item];
+                continue;
+            }
+
+            $collector[$item->id()] = [...$collector[$item->id()], $item];
+        }
+
+        return $collector;
+    }
 }

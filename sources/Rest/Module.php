@@ -37,7 +37,7 @@ class Module implements ServiceModule
             Middlewares\Authentication::class => static fn (
                 ContainerInterface $container
             ) => Middlewares\Authentication::new(
-                $container->get(User\CurrentUser::class),
+                $container->get(User\UserFactory::class)->create(),
                 $container->get(ErrorFactory::class)
             ),
         ];

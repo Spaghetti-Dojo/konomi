@@ -87,7 +87,7 @@ describe('User Repository', function (): void {
         expect($result)->toBeTrue();
         expect(($this->stubsCounter)()['update_user_meta'])->toBe(1);
         expect($this->userMetaStorage[1]['_konomi_items.bookmark'][1])->toBe([1, 'product']);
-        expect(did_action('konomi.user.repository.save'))->toBe(1);
+        expect(did_action('konomi.user.repository.save-successfully'))->toBe(1);
     });
 
     it('do not save inactive items', function (): void {
