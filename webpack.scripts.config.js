@@ -59,19 +59,6 @@ const configuration = {
 		),
 	},
 	output: {},
-	module: {
-		...baseConfiguration.module,
-		rules: [
-			...baseConfiguration.module.rules,
-			{
-				test: /\.svg$/i,
-				issuer: /\.[jt]sx?$/,
-				use: [
-					{ loader: '@svgr/webpack', options: { icon: true } },
-				],
-			},
-		],
-	},
 	watchOptions: {
 		ignored: /node_modules/,
 		aggregateTimeout: 300,
