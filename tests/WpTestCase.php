@@ -134,12 +134,18 @@ class WpTestCase extends TestCase
 
     private static function insertUsers(): void
     {
-        self::$users['subscriber'] = wp_insert_user([
+        $result = wp_insert_user([
             'user_login' => 'subscriber',
             'user_pass' => 'password',
             'user_email' => 'subscriber@test.com',
             'role' => 'subscriber',
         ]);
+
+        if ($result instanceof \WP_Error) {
+            throw new \RuntimeException('Unable to create user: ' . $result->get_error_message());
+        }
+
+        self::$users['subscriber'] = (int) $result;
     }
 
     private static function insertPosts(): void
