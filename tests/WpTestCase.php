@@ -142,6 +142,7 @@ class WpTestCase extends TestCase
         ]);
 
         if ($result instanceof \WP_Error) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
             throw new \RuntimeException('Unable to create user: ' . $result->get_error_message());
         }
 
