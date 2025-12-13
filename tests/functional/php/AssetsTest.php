@@ -4,10 +4,6 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Functional;
 
-use SpaghettiDojo\Konomi\Tests\WpLoad;
-
-WpLoad::load();
-
 describe('Assets', function (): void {
     it(
         'Ensure the assets and their dependencies are correctly registered and enqueued',
