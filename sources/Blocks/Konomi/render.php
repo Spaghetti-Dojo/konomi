@@ -21,10 +21,11 @@ $context->instanceId()->reset();
 
 <div
     data-wp-interactive="konomi"
-    class="konomi"
     <?php
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo wp_interactivity_data_wp_context($context->toArray()) ?>
+    echo get_block_wrapper_attributes();
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo wp_interactivity_data_wp_context($context->toArray()); ?>
 >
     <?=
     /*
