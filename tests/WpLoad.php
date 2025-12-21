@@ -20,7 +20,7 @@ class WpLoad
 {
     public static function load(string $dbEngine = 'dbless'): void
     {
-        defined('ABSPATH') or define('ABSPATH', dirname(__DIR__) . '/wordpress/');
+        defined('ABSPATH') or define('ABSPATH', dirname(__DIR__) . '/vendor/roots/wordpress-no-content/');
         defined('WP_REPAIRING') or define('WP_REPAIRING', true);
         defined('DB_ENGINE') or define('DB_ENGINE', $dbEngine);
         defined('WP_CONTENT_DIR') or define('WP_CONTENT_DIR', ABSPATH . 'wp-content');

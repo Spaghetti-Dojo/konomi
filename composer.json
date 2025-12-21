@@ -16,11 +16,11 @@
 	},
 	"require-dev": {
 		"inpsyde/php-coding-standards": "^2.0.0-beta",
-		"roots/wordpress-no-content": "^6.8",
+		"roots/wordpress-no-content": "6.8",
 		"pestphp/pest": "^3.0.0",
 		"brain/monkey": "^2.6",
 		"mockery/mockery": "^1.6",
-		"inpsyde/wp-stubs-versions": "6.7",
+		"inpsyde/wp-stubs-versions": "6.8",
 		"phpmetrics/phpmetrics": "v3.0.0rc8",
 		"phpstan/phpstan": "^2.1",
 		"bnf/phpstan-psr-container": "^1.1",
@@ -55,7 +55,7 @@
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true,
 			"pestphp/pest-plugin": true,
-			"roots/wordpress-core-installer": true
+			"roots/wordpress-core-installer": false
 		}
 	},
 	"repositories": [
@@ -89,7 +89,7 @@
 			"@analysis",
 			"@tests"
 		],
-		"post-install-cmd": "WorDBless\\Composer\\InstallDropin::copy",
-		"post-update-cmd": "WorDBless\\Composer\\InstallDropin::copy"
+		"post-install-cmd": "SpaghettiDojo\\Konomi\\Tests\\InstallWpDropIn::copy",
+		"post-update-cmd": "SpaghettiDojo\\Konomi\\Tests\\InstallWpDropIn::copy"
 	}
 }
