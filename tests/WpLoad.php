@@ -18,7 +18,7 @@ class WpLoad
         defined('WP_REPAIRING') or define('WP_REPAIRING', true);
         defined('DB_ENGINE') or define('DB_ENGINE', 'sqlite');
         defined('WP_CONTENT_DIR') or define('WP_CONTENT_DIR', ABSPATH . 'wp-content');
-        defined('WP_CONTENT_URL') or define('WP_CONTENT_URL', 'https://anything.example');
+        defined('WP_CONTENT_URL') or define('WP_CONTENT_URL', 'https://anything.example/wp-content');
         defined('UPLOADS') or define('UPLOADS', 'wp-content/uploads');
 
         file_exists(ABSPATH . UPLOADS) or mkdir(ABSPATH . UPLOADS);

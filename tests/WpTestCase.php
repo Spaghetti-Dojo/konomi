@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Tests;
 
 use PHPUnit\Framework\TestCase;
+use WorDBless\Sqlite;
 
 // phpcs:disable Inpsyde.CodeQuality.NoAccessors.NoSetter
 
@@ -43,6 +44,7 @@ class WpTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Sqlite::init();
         self::insertUsers();
         self::insertPosts();
     }

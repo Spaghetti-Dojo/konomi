@@ -9,7 +9,8 @@ use SpaghettiDojo\Konomi\User;
 describe('UserProfile', function (): void {
     it('Render the Block Markup', function (): void {
         $this->signInUser('subscriber');
-        $postId = 26;
+        $posts = new \WP_Query(['name' => 'test-post']);
+        $postId = $posts->posts[0]->ID;
 
         // Get current user
         $user = User\currentUser();

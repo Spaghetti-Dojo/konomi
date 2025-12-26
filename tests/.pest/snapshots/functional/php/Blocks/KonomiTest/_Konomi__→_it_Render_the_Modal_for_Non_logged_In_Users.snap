@@ -51,7 +51,7 @@
 
     <p>Please sign in to see your saved favorites.</p>
 
-    <a href="http://example.org/wp-login.php">
+    <a href="http://anything.example/wp-login.php">
         Login    </a>
 
     <button

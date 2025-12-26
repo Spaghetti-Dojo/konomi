@@ -48,3 +48,15 @@ pest()->extends(WpTestCase::class)
         });
     })
     ->in('functional');
+
+expect()->pipe('toMatchSnapshot', function (\Closure $next): mixed {
+    if (is_string($this->value)) {
+        $this->value = preg_replace(
+            '/\?p=\d+/',
+            '?p=1234567890',
+            $this->value
+        );
+    }
+
+    return $next();
+});
