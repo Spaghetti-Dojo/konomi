@@ -1,6 +1,6 @@
 # Konomi
 
-> A WordPress plugin to save posts as favorite using the new Interactive API
+> A WordPress plugin to save posts as favorite using the new Interactivity API
 
 [![Artifacts](https://github.com/spaghetti-dojo/konomi/actions/workflows/artifacts.yml/badge.svg)](https://github.com/spaghettidojo/konomi/actions/workflows/artifacts.yml)
 [![Client Linting](https://github.com/spaghetti-dojo/konomi/actions/workflows/client-linting.yml/badge.svg)](https://github.com/spaghettidojo/konomi/actions/workflows/client-linting.yml)
