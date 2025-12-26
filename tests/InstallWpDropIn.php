@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests;
 
+use WorDBless\Sqlite;
+
 class InstallWpDropIn
 {
     private const array PATHS = [
@@ -34,6 +36,9 @@ class InstallWpDropIn
         if (is_dir($sourceDir)) {
             self::recursiveCopy($sourceDir, self::PATHS['targets']['sqlite-plugin-dir']);
         }
+
+        WpLoad::load();
+        Sqlite::init();
     }
 
     private static function recursiveCopy(string $src, string $dst): void

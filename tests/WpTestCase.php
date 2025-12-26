@@ -5,22 +5,11 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Tests;
 
 use PHPUnit\Framework\TestCase;
-use WorDBless\{
-    Options,
-    PostMeta,
-    Posts,
-    Users
-};
 
 // phpcs:disable Inpsyde.CodeQuality.NoAccessors.NoSetter
 
 class WpTestCase extends TestCase
 {
-    /**
-     * @var array<string, mixed>
-     */
-    private static array $hooks = [];
-
     /** @var array<string, int> */
     private static array $users = [];
 
@@ -41,35 +30,27 @@ class WpTestCase extends TestCase
     public static function setUpWordBless(): void
     {
         WpLoad::load();
-        self::backupHooks();
-        self::insertUsers();
-        self::insertPosts();
     }
 
     public static function tearDownWordBless(): void
     {
-        self::restoreHooks();
-        Options::init()->clear_options();
-        Posts::init()->clear_all_posts();
-        PostMeta::init()->clear_all_meta();
-        Users::init()->clear_all_users();
-        self::clearUploads();
-
         if (self::$userIsLoggedIn) {
             wp_logout();
             self::$userIsLoggedIn = false;
         }
     }
 
-    public static function clearUploads(): void
+    protected function setUp(): void
     {
-        $uploadsFolder = wp_get_upload_dir()['basedir'];
-        $scan = (array) glob(rtrim($uploadsFolder, '/') . '/*');
+        parent::setUp();
+        self::insertUsers();
+        self::insertPosts();
+    }
 
-        foreach ($scan as $path) {
-            $path = (string) $path;
-            $path and self::recursiveDelete($path);
-        }
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        self::cleanUp();
     }
 
     protected function signInUser(string $name): void
@@ -86,50 +67,6 @@ class WpTestCase extends TestCase
         $currentUser or throw new \RuntimeException("Unable to set current user to '{$name}'");
         wp_set_current_user($id, $name);
         self::$userIsLoggedIn = true;
-    }
-
-    private static function recursiveDelete(string $file): void
-    {
-        if (is_file($file)) {
-            unlink($file);
-            return;
-        }
-
-        if (is_dir($file)) {
-            $scan = (array) glob(rtrim($file, '/') . '/*');
-            foreach ($scan as $path) {
-                $path = (string) $path;
-                $path and static::recursiveDelete($path);
-            }
-        }
-    }
-
-    private static function backupHooks(): void
-    {
-        $globals = ['wp_actions', 'wp_current_filter'];
-        foreach ($globals as $key) {
-            self::$hooks[$key] = $GLOBALS[$key];
-        }
-        self::$hooks['wp_filter'] = [];
-        foreach ($GLOBALS['wp_filter'] as $hookName => $hookObject) {
-            is_object($hookObject) and self::$hooks['wp_filter'][$hookName] = clone $hookObject;
-        }
-    }
-
-    private static function restoreHooks(): void
-    {
-        $globals = ['wp_actions', 'wp_current_filter'];
-        foreach ($globals as $key) {
-            if (isset(self::$hooks[$key])) {
-                $GLOBALS[$key] = self::$hooks[$key];
-            }
-        }
-        if (isset(self::$hooks['wp_filter'])) {
-            $GLOBALS['wp_filter'] = [];
-            foreach (self::$hooks['wp_filter'] as $hookName => $hookObject) {
-                is_object($hookObject) and $GLOBALS['wp_filter'][$hookName] = clone $hookObject;
-            }
-        }
     }
 
     private static function insertUsers(): void
@@ -151,7 +88,7 @@ class WpTestCase extends TestCase
 
     private static function insertPosts(): void
     {
-        Posts::init()->insert_post(
+        wp_insert_post(
             [
                 'post_title' => 'Test Post',
                 'post_name' => 'test-post',
@@ -160,9 +97,36 @@ class WpTestCase extends TestCase
                 'post_type' => 'post',
                 'post_date' => '2023-01-01 12:00:00',
             ],
-            [
-                'ID' => 26,
-            ]
         );
+    }
+
+    private static function cleanUp(): void
+    {
+        global $wpdb;
+
+        $tables = [
+            'commentmeta',
+            'comments',
+            'links',
+            'options',
+            'postmeta',
+            'posts',
+            'term_relationships',
+            'term_taxonomy',
+            'termmeta',
+            'terms',
+            'usermeta',
+            'users',
+        ];
+
+        foreach ($tables as $table) {
+            $fullTable = $wpdb->prefix . $table;
+
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->query("DELETE FROM {$fullTable}");
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        }
+
+        wp_cache_flush();
     }
 }
