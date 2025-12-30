@@ -36,8 +36,10 @@ add_action(
         autoload(__DIR__);
         $package = package();
         $properties = $package->properties();
+        $templatesSourcePath = untrailingslashit($properties->basePath()) . '/sources/Blocks/';
 
         $package
+            ->addModule(Template\Module::new($templatesSourcePath))
             ->addModule(Configuration\Module::new($properties, '/sources/Icons/icons'))
             ->addModule(ApiFetch\Module::new($properties))
             ->addModule(Icons\Module::new($properties))

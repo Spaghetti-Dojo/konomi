@@ -12,7 +12,8 @@
 	"minimum-stability": "stable",
 	"require": {
 		"php": ">=8.4",
-		"inpsyde/modularity": "^1.5"
+		"inpsyde/modularity": "^1.5",
+		"mustache/mustache": "^3.0"
 	},
 	"require-dev": {
 		"inpsyde/php-coding-standards": "^2.0.0-beta",
@@ -37,7 +38,8 @@
 			"sources/package.php",
 			"sources/Blocks/api.php",
 			"sources/Icons/api.php",
-			"sources/User/api.php"
+			"sources/User/api.php",
+			"sources/Template/api.php"
 		]
 	},
 	"autoload-dev": {

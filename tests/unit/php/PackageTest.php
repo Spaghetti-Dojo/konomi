@@ -13,6 +13,7 @@ describe('Package', function (): void {
             'Inpsyde\Modularity\Properties\Properties',
         );
         $properties->shouldReceive('new')->andReturnSelf();
+        $properties->shouldReceive('basePath')->andReturn('/foo/bar');
 
         $package = \Mockery::mock(
             'alias:Inpsyde\Modularity\Package',

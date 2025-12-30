@@ -9,14 +9,14 @@ use SpaghettiDojo\Konomi\User;
 describe('UserProfile', function (): void {
     it('Render the Block Markup', function (): void {
         $this->signInUser('subscriber');
+        $user = User\currentUser();
+
         $posts = new \WP_Query(['name' => 'test-post']);
         $postId = $posts->posts[0]->ID;
 
-        // Get current user
-        $user = User\currentUser();
-
-        expect($user->findItem(26, User\ItemGroup::BOOKMARK)->isActive())->toBeFalse();
-        expect($user->findItem(26, User\ItemGroup::REACTION)->isActive())->toBeFalse();
+        // No items are stored at the beginning
+        expect($user->findItem($postId, User\ItemGroup::BOOKMARK)->isValid())->toBeFalse()
+            ->and($user->findItem($postId, User\ItemGroup::REACTION)->isValid())->toBeFalse();
 
         // Create and save a reaction item for the post
         $reactionItem = User\Item::new($postId, 'post', true);

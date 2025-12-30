@@ -1,0 +1,16 @@
+<dialog class="konomi-login-modal">
+    <h2>{{dialog.title}}</h2>
+
+    <p>{{dialog.message}}</p>
+
+    <a href="{{{dialog.loginPageUrl}}}">
+        {{dialog.loginPageLabel}}
+    </a>
+
+    <button class="konomi-login-modal-closer" data-wp-on--click="actions.closeLoginModal">
+        {{{dialog.closeIcon}}}
+        <span class="screen-reader-text">
+            {{dialog.closeLabel}}
+        </span>
+    </button>
+</dialog>

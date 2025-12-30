@@ -16,6 +16,11 @@
 		<exclude-pattern>*/dist/*</exclude-pattern>
 		<exclude-pattern>*/build-module/*</exclude-pattern>
 	</rule>
+
+	<rule ref="WordPress.Security.EscapeOutput.OutputNotEscaped">
+		<exclude-pattern>*/render.php</exclude-pattern>
+	</rule>
+
 	<rule ref="Inpsyde.CodeQuality.StaticClosure.PossiblyStaticClosure">
 		<exclude-pattern>*/tests/*</exclude-pattern>
 	</rule>

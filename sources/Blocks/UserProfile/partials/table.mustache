@@ -1,0 +1,24 @@
+<figure {{{table.attributes}}}>
+	<table class="has-fixed-layout">
+		<thead>
+			<tr>
+				<th class="has-text-align-left">{{table.titleLabel}}</th>
+				<th class="has-text-align-left">{{table.excerptLabel}}</th>
+				<th class="has-text-align-center">{{table.actionsLabel}}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{{#table.rows}}
+			<tr class="konomi-user-profile-item">
+				<td class="konomi-user-profile-item__title">
+					<a href="{{{permalink}}}">{{title}}</a>
+				</td>
+				<td class="konomi-user-profile-item__excerpt">{{excerpt}}</td>
+				<td class="konomi-user-profile-item__actions has-text-align-center">
+					{{{actions}}}
+				</td>
+			</tr>
+		{{/table.rows}}
+		</tbody>
+	</table>
+</figure>

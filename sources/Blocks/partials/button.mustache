@@ -1,0 +1,19 @@
+{{#button.label}}
+	<button
+		{{{ attributes }}}
+		style="anchor-name: {{{button.anchor}}}"
+		data-wp-class--is-active="context.isActive"
+		data-wp-on-async--click="actions.toggleStatus"
+		data-wp-run--maybe-show-login-modal="konomi::callbacks.toggleLoginModal"
+	>
+		{{{button.icon}}}
+
+		<span class="konomi-label screen-reader-text">
+			{{button.label}}
+		</span>
+
+		{{#button.showCount}}
+			<span class="konomi-count" data-wp-text="context.count"></span>
+		{{/button.showCount}}
+	</button>
+{{/button.label}}

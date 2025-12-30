@@ -81,7 +81,7 @@ function kses(string $content): string
 }
 
 /**
- * @param array<positive-int> $ids
+ * @param list<int> $ids
  * @param callable(\WP_Post $post): void $callback
  */
 function loop(array $ids, callable $callback): void

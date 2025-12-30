@@ -1,0 +1,21 @@
+{{#pagination}}
+	<nav
+		role="navigation"
+		aria-label="{{pagination.ariaLabel}}"
+		class="konomi-user-profile-pagination"
+		data-wp-interactive="konomiProfilePagination"
+		data-wp-on-window--popstate="actions.updatePaginationByHistory"
+		data-wp-watch--table-rows="callbacks.updateTableRows"
+		data-wp-watch--pagination-links="callbacks.updatePaginationLinks"
+		data-wp-watch--update-history="callbacks.updateHistory"
+	>
+		<ul>
+			{{#pagination.links}}
+				<li>
+					<a href="{{{url}}}"
+					   data-wp-on--click="actions.updatePagination">{{index}}</a>
+				</li>
+			{{/pagination.links}}
+		</ul>
+	</nav>
+{{/pagination}}

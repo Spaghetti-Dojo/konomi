@@ -1,9 +1,6 @@
 
-<div class="konomi-user-profile konomi-user-profile--logged-out">
-    <h2>It&#039;s seems you&#039;re logged out</h2>
-
-    <p>Please sign in to see your saved favorites.</p>
-
-    <a href="http://anything.example/wp-login.php">
-        Login    </a>
-</div>
+		<div class="konomi-user-profile konomi-user-profile--logged-out">
+			<h2>It's seems you're logged out</h2>
+			<p>Please sign in to see your saved favorites.</p>
+			<a href="http://anything.example/wp-login.php">Login</a>
+		</div>

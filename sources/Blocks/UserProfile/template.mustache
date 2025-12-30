@@ -1,0 +1,7 @@
+{{#isLoggedIn}}
+	{{> UserProfile/partials/logged-in }}
+{{/isLoggedIn}}
+
+{{^isLoggedIn}}
+	{{> UserProfile/partials/logged-out }}
+{{/isLoggedIn}}
