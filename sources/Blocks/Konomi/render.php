@@ -24,8 +24,12 @@ $context->instanceId()->reset();
     <?php
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     echo get_block_wrapper_attributes();
+    ?>
+
+    <?php
     // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-    echo wp_interactivity_data_wp_context($context->toArray()); ?>
+    echo wp_interactivity_data_wp_context($context->toArray());
+    ?>
 >
     <?=
     /*
