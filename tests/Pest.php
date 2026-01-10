@@ -57,6 +57,13 @@ expect()->pipe('toMatchSnapshot', function (\Closure $next): mixed {
             $this->value
         );
     }
+    if (is_string($this->value)) {
+        $this->value = preg_replace(
+            '/{"id":\d+/',
+            '{"id":1234567890',
+            $this->value
+        );
+    }
 
     return $next();
 });

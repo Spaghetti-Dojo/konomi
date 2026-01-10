@@ -9,6 +9,6 @@ namespace SpaghettiDojo\Konomi\Rest;
  */
 enum Method: string
 {
-    case POST = \WP_REST_Server::CREATABLE;
-    case GET = \WP_REST_Server::READABLE;
+    case POST = 'POST';
+    case GET = 'GET';
 }

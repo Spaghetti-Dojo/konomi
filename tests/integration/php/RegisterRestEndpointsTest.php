@@ -64,6 +64,10 @@ beforeEach(function (): void {
 
 test('Register Rest Endpoints With Middlewares', function (): void {
     $handler = null;
+    // Simple mock, not interested in the real value.
+    Functions\expect('rest_get_endpoint_args_for_schema')->once()->andReturn([
+        'key' => ['required' => true],
+    ]);
     Functions\when('register_rest_route')->alias(
         function (string $namespace, string $route, array $args) use (&$handler): bool {
             $handler = $args['callback'];
@@ -73,6 +77,7 @@ test('Register Rest Endpoints With Middlewares', function (): void {
             expect($args['methods'])->toContain(Rest\Method::POST->value);
             expect(isset($args['schema']))->toBeTrue();
             expect($args['permission_callback'])->toBe('__return_true');
+            expect($args['args'])->toBe(['key' => ['required' => true]]);
 
             return true;
         }
