@@ -12,6 +12,9 @@
 				"wp-content/plugins/wordpress-importer": "https://downloads.wordpress.org/plugin/wordpress-importer.0.7.zip",
 				"wp-content/themes/twentytwentyfour": "https://downloads.wordpress.org/theme/twentytwentyfour.1.0.zip"
 			}
+		},
+		"tests": {
+			"phpVersion": "8.4"
 		}
 	},
 	"config": {
