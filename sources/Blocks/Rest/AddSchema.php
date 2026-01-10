@@ -34,17 +34,31 @@ class AddSchema implements Rest\Schema
             'title' => $this->title,
             'type' => 'object',
             'properties' => [
-                'id' => [
+                'meta' => [
+                    'type' => 'object',
                     'required' => true,
-                    'type' => 'integer',
-                ],
-                'type' => [
-                    'required' => true,
-                    'type' => 'string',
-                ],
-                'isActive' => [
-                    'required' => true,
-                    'type' => 'boolean',
+                    'additionalProperties' => false,
+                    'context' => ['edit'],
+                    'patternProperties' => [
+                        '^_[a-z]+' => [
+                            'type' => 'object',
+                            'required' => true,
+                            'properties' => [
+                                'id' => [
+                                    'required' => true,
+                                    'type' => 'integer',
+                                ],
+                                'type' => [
+                                    'required' => true,
+                                    'type' => 'string',
+                                ],
+                                'isActive' => [
+                                    'required' => true,
+                                    'type' => 'boolean',
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ];

@@ -19,6 +19,10 @@ trait RestRegistTrait
         register_rest_route($this->namespace, $this->route, [
             'methods' => $this->method->value,
             'callback' => $handler,
+            'args' => rest_get_endpoint_args_for_schema(
+                $this->schema->toArray(),
+                $this->method->value
+            ),
             'schema' => [
                 'schema' => $this->schema->toArray(),
                 '$schema' => 'http://json-schema.org/draft-04/schema#',

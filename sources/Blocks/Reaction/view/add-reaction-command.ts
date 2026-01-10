@@ -14,6 +14,9 @@ export function addReaction( payload: Payload ): Promise< void > {
 	return apiFetch( {
 		path: '/konomi/v1/user-reaction/',
 		method: 'POST',
-		data: payload,
+		data: {
+			...payload,
+			context: 'edit',
+		},
 	} );
 }

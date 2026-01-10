@@ -14,6 +14,9 @@ export function addBookmark( payload: Payload ): Promise< void > {
 	return apiFetch( {
 		path: '/konomi/v1/user-bookmark/',
 		method: 'POST',
-		data: payload,
+		data: {
+			...payload,
+			context: 'edit',
+		},
 	} );
 }

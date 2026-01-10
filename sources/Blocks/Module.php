@@ -108,7 +108,7 @@ class Module implements ServiceModule, ExecutableModule
                 Rest\Route::post(
                     'konomi/v1',
                     '/user-reaction',
-                    $container->get(AddSchemaFactory::class)->create('React Rest Api Schema'),
+                    $container->get(AddSchemaFactory::class)->create('user-reaction'),
                     $container->get(AddControllerFactory::class)->create(
                         User\ItemGroup::REACTION,
                         AddResponse::new(
@@ -131,7 +131,7 @@ class Module implements ServiceModule, ExecutableModule
                 Rest\Route::post(
                     'konomi/v1',
                     '/user-bookmark',
-                    $container->get(AddSchemaFactory::class)->create('React Rest Api Schema'),
+                    $container->get(AddSchemaFactory::class)->create('user-bookmark'),
                     $container->get(AddControllerFactory::class)->create(
                         User\ItemGroup::BOOKMARK,
                         AddResponse::new(
