@@ -72,13 +72,15 @@ class Repository
             $dataToStore
         );
 
-        $stored and do_action(
-            'konomi.user.repository.save-successfully',
-            $item,
-            $user,
-            $item->group(),
-            $this->storageKey
-        );
+        $stored
+            ? do_action(
+                'konomi.user.repository.save-successfully',
+                $item,
+                $user,
+                $item->group(),
+                $this->storageKey
+            )
+            : $this->rollbackRegistry($user, $item);
 
         return $stored;
     }
@@ -109,6 +111,18 @@ class Repository
             static fn (Item $item) => [$item->id(), $item->type()],
             $this->registry->all($user, $group)
         );
+    }
+
+    private function rollbackRegistry(User $user, Item $item): void
+    {
+        $item->isActive()
+            ? $this->registry->unset($user, $item)
+            : $this->registry->set($user, $this->itemFactory->create(
+                $item->id(),
+                $item->type(),
+                true,
+                $item->group()
+            ));
     }
 
     private function loadItems(User $user, ItemGroup $group): void
