@@ -113,10 +113,7 @@ describe('User Repository', function (): void {
         // Make update_user_meta return false to simulate storage write failure
         Functions\when('update_user_meta')->justReturn(false);
 
-        // Load items first to populate registry
-        $this->repository->find($user, 1, User\ItemGroup::BOOKMARK);
-
-        // Verify item is not in registry before save
+        // Verify an item is not in the registry before save
         $foundBefore = $this->repository->find($user, 3, User\ItemGroup::BOOKMARK);
         expect($foundBefore->id())->toBe(0); // null item
 
@@ -125,7 +122,7 @@ describe('User Repository', function (): void {
 
         expect($result)->toBeFalse();
 
-        // Verify registry was rolled back - item should not be in registry
+        // Verify registry was rolled back - item should not be in the registry
         $foundAfter = $this->repository->find($user, 3, User\ItemGroup::BOOKMARK);
         expect($foundAfter->id())->toBe(0); // null item - rollback successful
     });
@@ -133,9 +130,6 @@ describe('User Repository', function (): void {
     it('rollback registry when storage write fails for inactive item', function (): void {
         $user = User\CurrentUser::new($this->repository);
         $inactiveItem = User\Item::new(1, 'product', false);
-
-        // Load items first to populate registry with item 1
-        $this->repository->find($user, 1, User\ItemGroup::REACTION);
 
         // Verify item is in registry before save
         $foundBefore = $this->repository->find($user, 1, User\ItemGroup::REACTION);
