@@ -99,6 +99,11 @@ class ItemRegistry
             : [];
     }
 
+    public function replace(ItemRegistry $registry): void
+    {
+        $this->items = $registry->items;
+    }
+
     private function keyFor(User $user, ItemGroup $group): string
     {
         try {

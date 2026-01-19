@@ -64,6 +64,7 @@ class Repository
         }
 
         $this->loadItems($user, $item->group());
+        $registrySnapshot = clone $this->registry;
         $dataToStore = $this->prepareDataToStore($user, $item);
 
         $stored = $this->storage->write(
@@ -80,7 +81,7 @@ class Repository
                 $item->group(),
                 $this->storageKey
             )
-            : $this->rollbackRegistry($user, $item);
+            : $this->rollbackRegistry($registrySnapshot);
 
         return $stored;
     }
@@ -113,16 +114,9 @@ class Repository
         );
     }
 
-    private function rollbackRegistry(User $user, Item $item): void
+    private function rollbackRegistry(ItemRegistry $registry): void
     {
-        $item->isActive()
-            ? $this->registry->unset($user, $item)
-            : $this->registry->set($user, $this->itemFactory->create(
-                $item->id(),
-                $item->type(),
-                true,
-                $item->group()
-            ));
+        $this->registry->replace($registry);
     }
 
     private function loadItems(User $user, ItemGroup $group): void
