@@ -105,4 +105,85 @@ describe('User Repository', function (): void {
             2 => [2, 'page'],
         ]);
     });
+
+    it('rollback registry when storage write fails for a new active item', function (): void {
+        $user = User\CurrentUser::new($this->repository);
+        $item = User\Item::new(3, 'post', true, User\ItemGroup::BOOKMARK);
+
+        // Make update_user_meta return false to simulate storage write failure
+        Functions\when('update_user_meta')->justReturn(false);
+
+        // Verify an item is not in the registry before save
+        $foundBefore = $this->repository->find($user, 3, User\ItemGroup::BOOKMARK);
+        expect($foundBefore->id())->toBe(0); // null item
+
+        // Attempt to save (will fail)
+        $result = $this->repository->save($user, $item);
+
+        expect($result)->toBeFalse();
+
+        // Verify registry was rolled back - item should not be in the registry
+        $foundAfter = $this->repository->find($user, 3, User\ItemGroup::BOOKMARK);
+        expect($foundAfter->id())->toBe(0); // null item - rollback successful
+    });
+
+    it('rollback registry when storage write fails for inactive item', function (): void {
+        $user = User\CurrentUser::new($this->repository);
+        $inactiveItem = User\Item::new(1, 'product', false);
+
+        // Verify item is in registry before save
+        $foundBefore = $this->repository->find($user, 1, User\ItemGroup::REACTION);
+        expect($foundBefore->id())->toBe(1);
+
+        // Make update_user_meta return false to simulate storage write failure
+        Functions\when('update_user_meta')->justReturn(false);
+
+        // Attempt to save inactive item (will fail)
+        $result = $this->repository->save($user, $inactiveItem);
+
+        expect($result)->toBeFalse();
+
+        // Verify registry was rolled back - item should still be in the registry as active
+        $foundAfter = $this->repository->find($user, 1, User\ItemGroup::REACTION);
+        expect($foundAfter->id())->toBe(1); // item restored - rollback successful
+        expect($foundAfter->isActive())->toBeTrue(); // restored as active
+    });
+
+    it('replace method restores entire registry state on rollback with multiple items', function (): void {
+        $user = User\CurrentUser::new($this->repository);
+
+        // Load initial items from storage (items 1 and 2)
+        $itemsBefore = $this->repository->all($user, User\ItemGroup::REACTION);
+        expect($itemsBefore)->toHaveCount(2);
+        expect($itemsBefore[1]->id())->toBe(1);
+        expect($itemsBefore[2]->id())->toBe(2);
+
+        // Make update_user_meta return false to simulate storage write failure
+        Functions\when('update_user_meta')->justReturn(false);
+
+        // Attempt to save a new item (will fail)
+        $newItem = User\Item::new(3, 'post', true);
+        $result = $this->repository->save($user, $newItem);
+
+        expect($result)->toBeFalse();
+
+        // Verify replace method restored the entire registry - all original items should be present
+        $itemsAfter = $this->repository->all($user, User\ItemGroup::REACTION);
+        expect($itemsAfter)->toHaveCount(2); // Should have same count as before
+        expect($itemsAfter[1]->id())->toBe(1); // Original item 1 still present
+        expect($itemsAfter[2]->id())->toBe(2); // Original item 2 still present
+        expect(isset($itemsAfter[3]))->toBeFalse(); // New item 3 should not be present
+
+        // Verify individual items can still be found
+        $found1 = $this->repository->find($user, 1, User\ItemGroup::REACTION);
+        expect($found1->id())->toBe(1);
+        expect($found1->isActive())->toBeTrue();
+
+        $found2 = $this->repository->find($user, 2, User\ItemGroup::REACTION);
+        expect($found2->id())->toBe(2);
+        expect($found2->isActive())->toBeTrue();
+
+        $found3 = $this->repository->find($user, 3, User\ItemGroup::REACTION);
+        expect($found3->id())->toBe(0); // Should be null item - not in registry
+    });
 });
