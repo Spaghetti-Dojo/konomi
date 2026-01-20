@@ -17,6 +17,9 @@ on:
             - 'resources/**.ts'
             - 'resources/**.tsx'
             - 'resources/**.scss'
+            - 'tests/**.php'
+            - 'tests/**/**.ts'
+            - 'tests/**/**.tsx'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

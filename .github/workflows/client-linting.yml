@@ -16,6 +16,8 @@ on:
             - 'resources/**.ts'
             - 'resources/**.tsx'
             - 'resources/**.scss'
+            - 'tests/**/**.ts'
+            - 'tests/**/**.tsx'
 
 jobs:
     client-linting:
