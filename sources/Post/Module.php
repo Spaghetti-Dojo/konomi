@@ -32,6 +32,12 @@ class Module implements ServiceModule, ExecutableModule
                 $container->get(Repository::class)
             ),
             Storage::class => static fn () => Storage::new(),
+            ItemRegistryKey::class => static fn () => ItemRegistryKey::new(),
+            ItemRegistry::class => static fn (
+                ContainerInterface $container
+            ) => ItemRegistry::new(
+                $container->get(ItemRegistryKey::class)
+            ),
             RawDataAssert::class => static fn () => RawDataAssert::new(),
             StorageKey::class => static fn () => StorageKey::new('_konomi_items'),
             Repository::class => static fn (
@@ -40,7 +46,8 @@ class Module implements ServiceModule, ExecutableModule
                 $container->get(StorageKey::class),
                 $container->get(Storage::class),
                 $container->get(RawDataAssert::class),
-                $container->get(User\ItemFactory::class)
+                $container->get(User\ItemFactory::class),
+                $container->get(ItemRegistry::class)
             ),
         ];
     }
