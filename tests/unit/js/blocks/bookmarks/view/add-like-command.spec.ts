@@ -29,7 +29,10 @@ describe( 'addBookmark', () => {
 		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: '/konomi/v1/user-bookmark/',
 			method: 'POST',
-			data: mockPayload,
+			data: {
+				...mockPayload,
+				context: 'edit',
+			},
 		} );
 	} );
 

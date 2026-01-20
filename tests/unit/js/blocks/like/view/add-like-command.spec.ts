@@ -29,7 +29,10 @@ describe( 'addReaction', () => {
 		expect( apiFetch ).toHaveBeenCalledWith( {
 			path: '/konomi/v1/user-reaction/',
 			method: 'POST',
-			data: mockPayload,
+			data: {
+				...mockPayload,
+				context: 'edit',
+			},
 		} );
 	} );
 
