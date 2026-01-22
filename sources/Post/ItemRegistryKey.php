@@ -24,7 +24,7 @@ class ItemRegistryKey
     {
         $groupValue = $group->value;
 
-        if (!$postId) {
+        if ($postId <= 0) {
             throw new \UnexpectedValueException(
                 'Item Registry Key cannot be generated with empty post ID value'
             );

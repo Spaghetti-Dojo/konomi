@@ -127,7 +127,6 @@ class Repository
         yield from $this->rawDataAsserter->ensureDataStructure($storedData);
     }
 
-
     /**
      * @param RawItems $rawItems
      * @return User\Item
