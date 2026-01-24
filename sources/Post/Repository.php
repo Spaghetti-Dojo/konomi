@@ -14,8 +14,6 @@ use SpaghettiDojo\Konomi\User;
  * @phpstan-import-type RawItems from RawDataAssert
  * @phpstan-import-type StoredData from RawDataAssert
  * @phpstan-import-type GeneratorStoredData from RawDataAssert
- *
- * TODO This Collection require caching the data from the Storage
  */
 class Repository
 {
@@ -24,16 +22,18 @@ class Repository
         Storage $storage,
         RawDataAssert $rawDataAsserter,
         User\ItemFactory $itemFactory,
+        ItemRegistry $registry
     ): Repository {
 
-        return new self($key, $storage, $rawDataAsserter, $itemFactory);
+        return new self($key, $storage, $rawDataAsserter, $itemFactory, $registry);
     }
 
     final private function __construct(
         readonly private StorageKey $key,
         readonly private Storage $storage,
         readonly private RawDataAssert $rawDataAsserter,
-        readonly private User\ItemFactory $itemFactory
+        readonly private User\ItemFactory $itemFactory,
+        readonly private ItemRegistry $registry
     ) {
     }
 
@@ -42,44 +42,80 @@ class Repository
      */
     public function find(int $entityId, User\ItemGroup $group): array
     {
-        $result = [];
-        foreach ($this->read($entityId, $group) as $userId => $rawItems) {
-            $result[$userId] = $this->unserialize($rawItems, $group);
-        }
-        return $result;
+        $this->loadItems($entityId, $group);
+        return $this->registry->all($entityId, $group);
     }
 
     public function save(User\Item $item, User\User $user): bool
     {
-        if (!$item->isValid()) {
+        if (!$this->canSave($user, $item)) {
             return false;
         }
 
-        $data = iterator_to_array($this->read($item->id(), $item->group()));
-        $toStoreData = $this->toggleItem($data, $item, $user);
+        $this->loadItems($item->id(), $item->group());
+        $registrySnapshot = clone $this->registry;
+        $dataToStore = $this->prepareDataToStore($item, $user);
 
         do_action('konomi.post.collection.save', $item, $user, $this->key);
 
-        return $this->storage->write(
+        $stored = $this->storage->write(
             $item->id(),
             "{$this->key->for($item->group())}",
-            $toStoreData
+            $dataToStore
         );
+
+        $stored or $this->rollbackRegistry($registrySnapshot);
+
+        return $stored;
+    }
+
+    private function canSave(User\User $user, User\Item $item): bool
+    {
+        return $user->id() > 0 && $item->isValid();
     }
 
     /**
-     * @param StoredData $data
      * @return StoredData
      */
-    private function toggleItem(array $data, User\Item $item, User\User $user): array
+    private function prepareDataToStore(User\Item $item, User\User $user): array
     {
-        $data[$user->id()] ??= [];
+        $postId = $item->id();
+        $userId = $user->id();
 
-        self::has($item, $data, $user)
-            ? self::removeItem($item, $data, $user)
-            : self::addItem($item, $data, $user);
+        $item->isActive()
+            ? $this->registry->set($postId, $userId, $item)
+            : $this->registry->unset($postId, $userId, $item->group());
 
-        return $data;
+        return $this->serializeData($postId, $item->group());
+    }
+
+    /**
+     * @return StoredData
+     */
+    private function serializeData(int $postId, User\ItemGroup $group): array
+    {
+        $result = [];
+        foreach ($this->registry->all($postId, $group) as $userId => $item) {
+            $result[$userId] = [[$item->id(), $item->type()]];
+        }
+        return $result;
+    }
+
+    private function rollbackRegistry(ItemRegistry $registry): void
+    {
+        $this->registry->replace($registry);
+    }
+
+    private function loadItems(int $postId, User\ItemGroup $group): void
+    {
+        if ($this->registry->hasGroup($postId, $group)) {
+            return;
+        }
+
+        foreach ($this->read($postId, $group) as $userId => $rawItems) {
+            $item = $this->unserialize($rawItems, $group);
+            $item->isValid() and $this->registry->set($postId, $userId, $item);
+        }
     }
 
     /**
@@ -89,35 +125,6 @@ class Repository
     {
         $storedData = $this->storage->read($entityId, $this->key->for($group));
         yield from $this->rawDataAsserter->ensureDataStructure($storedData);
-    }
-
-    /**
-     * @param StoredData $data
-     */
-    private static function has(User\Item $item, array $data, User\User $user): bool
-    {
-        return in_array([$item->id(), $item->type()], $data[$user->id()], true);
-    }
-
-    /**
-     * @param StoredData $data
-     */
-    private static function removeItem(User\Item $item, array &$data, User\User $user): void
-    {
-        $data[$user->id()] = array_filter(
-            $data[$user->id()],
-            static fn (array $entry) => $entry[0] !== $item->id() && $entry[1] !== $item->type()
-        );
-    }
-
-    /**
-     * @param StoredData $data
-     */
-    private static function addItem(User\Item $item, array &$data, User\User $user): void
-    {
-        $data[$user->id()] = [
-            [$item->id(), $item->type()],
-        ];
     }
 
     /**

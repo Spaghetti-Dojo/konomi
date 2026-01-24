@@ -29,11 +29,13 @@ beforeEach(function (): void {
             User\RawDataAssert::new()
         )
     );
+    $postItemRegistryKey = Post\ItemRegistryKey::new();
     $this->repository = Post\Repository::new(
         Post\StorageKey::new('_konomi_items'),
         Post\Storage::new(),
         Post\RawDataAssert::new(),
-        User\ItemFactory::new()
+        User\ItemFactory::new(),
+        Post\ItemRegistry::new($postItemRegistryKey)
     );
 });
 
@@ -98,8 +100,8 @@ describe('Post Repository', function (): void {
 
         expect($result)
             ->toBeTrue()
-            ->and($this->postMetaStorage[1]['_konomi_items.reaction'][$this->wpUser->ID])
-            ->toBeEmpty();
+            ->and(isset($this->postMetaStorage[1]['_konomi_items.reaction'][$this->wpUser->ID]))
+            ->toBeFalse();
     });
 
     it('do not store invalid items', function (): void {
@@ -111,5 +113,55 @@ describe('Post Repository', function (): void {
             ->toBeFalse()
             ->and($this->postMetaStorage[-1]['_konomi_items.reaction'][$this->wpUser->ID] ?? [])
             ->toBeEmpty();
+    });
+
+    it('rollback registry when storage write fails for a new active item', function (): void {
+        Functions\when('update_post_meta')->justReturn(false);
+
+        $itemToStore = User\Item::new(50, 'post', true);
+
+        $found = $this->repository->find(50, User\ItemGroup::REACTION);
+        expect($found)->toBeEmpty();
+
+        $saved = $this->repository->save($itemToStore, $this->currentUser);
+        expect($saved)->toBeFalse();
+
+        $afterSaving = $this->repository->find(50, User\ItemGroup::REACTION);
+        expect($afterSaving)->toBeEmpty();
+    });
+
+    it('rollback registry when storage write fails for inactive item', function (): void {
+        $itemToStore = User\Item::new(10, 'post', true);
+        $this->repository->save($itemToStore, $this->currentUser);
+
+        $found = $this->repository->find(10, User\ItemGroup::REACTION);
+        expect($found[$this->wpUser->ID]->isActive())->toBeTrue();
+
+        Functions\when('update_post_meta')->justReturn(false);
+
+        $inactiveItem = User\Item::new(10, 'post', false);
+        $result = $this->repository->save($inactiveItem, $this->currentUser);
+        expect($result)->toBeFalse();
+
+        $afterSaving = $this->repository->find(10, User\ItemGroup::REACTION);
+        expect($afterSaving[$this->wpUser->ID]->isActive())->toBeTrue();
+    });
+
+    it('replace method restores entire registry state on rollback with multiple users', function (): void {
+        $find = $this->repository->find(10, User\ItemGroup::REACTION);
+        expect($find)->toHaveCount(10);
+
+        Functions\when('update_post_meta')->justReturn(false);
+
+        $itemToStore = User\Item::new(10, 'post', false);
+        $afterSaving = $this->repository->save($itemToStore, $this->currentUser);
+        expect($afterSaving)->toBeFalse();
+
+        $rolledBack = $this->repository->find(10, User\ItemGroup::REACTION);
+
+        foreach ($find as $userId => $item) {
+            expect($rolledBack[$userId]->id())->toBe($item->id());
+            expect($rolledBack[$userId]->isActive())->toBeTrue();
+        }
     });
 });
