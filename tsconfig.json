@@ -23,11 +23,14 @@
 		"typeRoots": [ "./node_modules/**/@types", "./@types" ],
 		"rootDir": "./",
 		"paths": {
+			"@external/zod": [ "./resources/modules/zod" ],
+			"@external/effect-js": [ "./resources/modules/effect-js" ],
 			"@konomi/wp-types": [ "./@types/wp" ],
 			"@konomi/types": [ "./@types" ],
 			"@konomi/api-fetch": [ "./sources/ApiFetch/client" ],
 			"@konomi/configuration": [ "./sources/Configuration/client" ],
 			"@konomi/icons": [ "./sources/Icons/client" ],
+			"@konomi/schema": [ "./resources/modules/schema" ],
 			"@wordpress/block-editor": [
 				"./node_modules/@wordpress/block-editor/src"
 			],
@@ -35,6 +38,6 @@
 			"@test/helpers": [ "./tests/helpers.ts" ]
 		}
 	},
-	"include": [ "./sources", "./@types" ],
+	"include": [ "./sources", "./@types", "./resources/modules" ],
 	"exclude": [ "**/dist/", "**/build-module/", "node_modules", "**/tests/" ]
 }

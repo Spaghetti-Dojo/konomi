@@ -17,6 +17,9 @@ const EXTRACTION_CONFIGURATION = [
 	'@konomi/configuration',
 	'@konomi/api-fetch',
 	'@konomi/icons',
+	'@konomi/schema',
+	'@external/zod',
+	'@external/effect-js'
 ];
 
 const configuration = {
@@ -151,6 +154,24 @@ module.exports = [
 			...configuration.output,
 			filename: '[name].js',
 			path: path.resolve(__dirname, './sources/Blocks/UserProfile/build-module'),
+			clean: true,
+		},
+	},
+
+	/*
+	 * Reusable Modules
+	 */
+	{
+		...configuration,
+		entry: {
+			'external-zod': path.resolve(__dirname, './resources/modules/zod/index.ts'),
+			'external-effect-js': path.resolve(__dirname, './resources/modules/effect-js/index.ts'),
+			'konomi-schema': path.resolve(__dirname, './resources/modules/schema/index.ts'),
+		},
+		output: {
+			...configuration.output,
+			filename: '[name].js',
+			path: path.resolve(__dirname, './build-modules'),
 			clean: true,
 		},
 	},

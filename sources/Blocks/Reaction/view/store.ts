@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { Effect } from '@external/effect-js';
+import { sanitizeContext } from '@konomi/schema';
+
+/**
  * WordPress dependencies
  */
 import { getContext, store } from '@wordpress/interactivity';
@@ -11,20 +17,23 @@ import type {
 	Context as OuterContext,
 	ResponseError,
 } from '../../Konomi/view/store';
+import { contextSchema } from './schema';
 
 export type Context = {
 	isActive: boolean;
 	count: number;
 };
 
+const STORE_NAME = 'konomiReaction';
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	const { actions } = store( 'konomiReaction', {
+	const { actions } = store( STORE_NAME, {
 		state: {},
 
 		actions: {
 			toggleStatus: (): void => {
-				const context = getContext< Context >( 'konomiReaction' );
+				const context = getContext< Context >( STORE_NAME );
 
 				context.isActive = ! context.isActive;
 				context.count = context.isActive
@@ -45,8 +54,7 @@ export function init(): void {
 				}
 
 				try {
-					const reactionContext =
-						getContext< Context >( 'konomiReaction' );
+					const reactionContext = getContext< Context >( STORE_NAME );
 					yield addReaction( {
 						meta: {
 							_reaction: {
@@ -67,11 +75,19 @@ export function init(): void {
 			},
 
 			revertStatus: (): void => {
-				const context = getContext< Context >( 'konomiReaction' );
+				const context = getContext< Context >( STORE_NAME );
 				context.count = context.isActive
 					? context.count - 1
 					: context.count + 1;
 				context.isActive = ! context.isActive;
+			},
+		},
+
+		callbacks: {
+			init(): void {
+				Effect.runPromise(
+					sanitizeContext( contextSchema, STORE_NAME )
+				);
 			},
 		},
 	} );
