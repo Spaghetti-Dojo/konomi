@@ -34,6 +34,7 @@ module.exports = {
 	testMatch: [ '<rootDir>/tests/unit/js/**/?(*.)+(spec).ts?(x)' ],
 	moduleNameMapper: {
 		...mapModulesFromTsConfig( tsConfig ),
+		'@external/effect-js': '<rootDir>/__mocks__/@external/effect-js.ts',
 		'\\.svg$': '<rootDir>/__mocks__/svg.js',
 	},
 	transform: {

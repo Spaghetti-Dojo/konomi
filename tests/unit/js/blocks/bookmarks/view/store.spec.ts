@@ -1,13 +1,12 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+import { Effect } from '@external/effect-js';
 
-import {
-	getContext,
-	store,
-} from '@wordpress/interactivity';
+import { getContext, store } from '@wordpress/interactivity';
+import { sanitizeContext } from '@konomi/schema';
 
 import { init } from '../../../../../../sources/Blocks/Bookmark/view/store';
 import { addBookmark } from '../../../../../../sources/Blocks/Bookmark/view/add-bookmark-command';
-
+import { contextSchema } from '../../../../../../sources/Blocks/Bookmark/view/schema';
 import type { Context as OuterContext } from '../../../../../../sources/Blocks/Konomi/view/store';
 import type { Context } from '../../../../../../sources/Blocks/Bookmark/view/store';
 
@@ -18,6 +17,17 @@ jest.mock( '@wordpress/interactivity', () => ( {
 	store: jest.fn(),
 	useLayoutEffect: jest.fn(),
 } ) );
+
+jest.mock( '@konomi/schema', () => ( {
+	sanitizeContext: jest.fn(),
+} ) );
+
+jest.mock(
+	'../../../../../../sources/Blocks/Bookmark/view/schema',
+	() => ( {
+		contextSchema: {},
+	} ),
+);
 
 jest.mock(
 	'../../../../../../sources/Blocks/Bookmark/view/add-bookmark-command',
@@ -31,6 +41,7 @@ describe( 'Interactivity Store', () => {
 	let mockStore: {
 		state: Record<string, unknown>;
 		actions: Record<string, ( ...args: any[] ) => void>;
+		callbacks: Record<string, ( ...args: any[] ) => void>;
 	};
 	let mockContext: Context;
 	let outerMockContext: OuterContext;
@@ -61,7 +72,7 @@ describe( 'Interactivity Store', () => {
 			}
 		} );
 
-		mockStore = { state: {}, actions: {} };
+		mockStore = { state: {}, actions: {}, callbacks: {} };
 		jest.mocked( store ).mockImplementation(
 			( namespace: string, config: any ) => {
 				mockNamespace = namespace;
@@ -69,12 +80,28 @@ describe( 'Interactivity Store', () => {
 				return { actions: config.actions };
 			},
 		);
+
+		jest.mocked( sanitizeContext ).mockReturnValue(
+			Effect.succeed( null ) as any,
+		);
 	} );
 
 	describe( 'store', () => {
 		it( 'should be initialized with the correct namespace', () => {
 			init();
 			expect( mockNamespace ).toEqual( 'konomiBookmark' );
+		} );
+	} );
+
+	describe( 'callbacks', () => {
+		it( 'should sanitize context on init', async () => {
+			init();
+			await mockStore.callbacks.init();
+
+			expect( sanitizeContext ).toHaveBeenCalledWith(
+				contextSchema,
+				'konomiBookmark'
+			);
 		} );
 	} );
 
