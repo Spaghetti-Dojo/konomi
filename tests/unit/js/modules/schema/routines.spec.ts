@@ -68,20 +68,16 @@ describe('sanitizeContext', () => {
 		expect(getContext).toHaveBeenCalled();
 	});
 
-	it('handles invalid context by calling error handler', async () => {
+	it('fails on invalid context and calls onError', async () => {
 		const onError = jest.fn();
 		jest.mocked(getServerContext).mockReturnValue({ isActive: 'yes' } as any);
 		jest.mocked(getContext).mockReturnValue({});
 
-		const result = await Effect.runPromise(
-			sanitizeContext(schema, storeName, onError)
-		);
+		await expect(
+			Effect.runPromise(sanitizeContext(schema, storeName, onError))
+		).rejects.toThrow();
 
-		expect(result).toBeNull();
-		expect(onError).toHaveBeenCalledWith({
-			message: 'Failed to initialize context',
-			severity: 'error',
-		});
+		expect(onError).toHaveBeenCalled();
 	});
 });
 
@@ -111,18 +107,16 @@ describe('sanitizeConfiguration', () => {
 		expect(clientConfig).toEqual(serverConfig);
 	});
 
-	it('handles invalid configuration by calling error handler', async () => {
+	it('fails on invalid configuration and calls onError', async () => {
 		const onError = jest.fn();
 		jest.mocked(getConfig).mockReturnValue({ apiUrl: 123 } as any);
 
-		const result = await Effect.runPromise(
-			sanitizeConfiguration(schema, storeName, onError)
-		);
+		await expect(
+			Effect.runPromise(
+				sanitizeConfiguration(schema, storeName, onError)
+			)
+		).rejects.toThrow();
 
-		expect(result).toBeNull();
-		expect(onError).toHaveBeenCalledWith({
-			message: 'Failed to initialize configuration',
-			severity: 'error',
-		});
+		expect(onError).toHaveBeenCalled();
 	});
 });

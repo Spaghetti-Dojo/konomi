@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Effect } from '@external/effect-js';
+import { Effect, pipe } from '@external/effect-js';
 import { sanitizeContext, type ErrorMessage } from '@konomi/schema';
 
 /**
@@ -57,24 +57,18 @@ export function init(): void {
 
 		callbacks: {
 			init(): void {
-				Effect.runPromise(
-					sanitizeContext(
-						contextSchema,
-						STORE_NAME,
-						( errorMessage: ErrorMessage ) => {
-							doAction(
-								'konomi.sanitizationError',
-								errorMessage
-							);
-						}
-					)
-				).catch( () => {
-					/*
-					 * Errors are handled via the WordPress hooks system.
-					 * The sanitizeContext function never rejects, so this
-					 * catch is here only to satisfy Promise handling requirements.
-					 */
-				} );
+				pipe(
+					sanitizeContext( contextSchema, STORE_NAME ),
+					Effect.catchAllCause( () => {
+						const errorMessage: ErrorMessage = {
+							message: 'Failed to initialize context',
+							severity: 'error',
+						};
+						doAction( 'konomi.sanitizationError', errorMessage );
+						return Effect.succeed( null );
+					} ),
+					Effect.runPromise
+				);
 			},
 
 			maybeRenderResponseError: (): void => {

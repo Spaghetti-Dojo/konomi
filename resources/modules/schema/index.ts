@@ -18,11 +18,6 @@ export type ErrorMessage = Readonly< {
 	severity: 'error' | 'warning' | 'info';
 } >;
 
-/**
- * Error handler callback type.
- */
-export type ErrorHandler = ( errorMessage: ErrorMessage ) => void;
-
 // eslint-disable-next-line @typescript-eslint/max-params
 export function sanitize< S extends z.ZodType >(
 	configuration: unknown,
@@ -59,9 +54,9 @@ export function sanitizeState< S extends z.ZodType >(
 
 export function sanitizeContext< S extends z.ZodType >(
 	schema: S,
-	_storeName: string,
-	onError?: ErrorHandler
-): Effect.Effect< null, never > {
+	storeName: string,
+	onError?: ( error: Readonly< Cause.Cause< Error > > ) => void
+): Effect.Effect< null, Cause.Cause< Error > > {
 	return pipe(
 		Effect.succeed( getServerContext() ),
 		Effect.flatMap( ( context: any ) => sanitize( context, schema ) ),
@@ -71,24 +66,17 @@ export function sanitizeContext< S extends z.ZodType >(
 		} ),
 		Effect.andThen( () => null ),
 		// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-		Effect.catchAllCause( () => {
-			const errorMessage: ErrorMessage = {
-				message: 'Failed to initialize context',
-				severity: 'error',
-			};
-			if ( onError ) {
-				onError( errorMessage );
-			}
-			return Effect.succeed( null );
-		} )
+		Effect.catchAllCause( ( error ) =>
+			catchInitializationIssues( error, storeName, onError )
+		)
 	);
 }
 
 export function sanitizeConfiguration< S extends z.ZodType >(
 	schema: S,
-	_storeName: string,
-	onError?: ErrorHandler
-): Effect.Effect< null, never > {
+	storeName: string,
+	onError?: ( error: Readonly< Cause.Cause< Error > > ) => void
+): Effect.Effect< null, Cause.Cause< Error > > {
 	return pipe(
 		Effect.succeed( getConfig() ),
 		Effect.flatMap( ( config: any ) => sanitize( config, schema ) ),
@@ -98,16 +86,9 @@ export function sanitizeConfiguration< S extends z.ZodType >(
 		} ),
 		Effect.andThen( () => null ),
 		// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-		Effect.catchAllCause( () => {
-			const errorMessage: ErrorMessage = {
-				message: 'Failed to initialize configuration',
-				severity: 'error',
-			};
-			if ( onError ) {
-				onError( errorMessage );
-			}
-			return Effect.succeed( null );
-		} )
+		Effect.catchAllCause( ( error ) =>
+			catchInitializationIssues( error, storeName, onError )
+		)
 	);
 }
 
