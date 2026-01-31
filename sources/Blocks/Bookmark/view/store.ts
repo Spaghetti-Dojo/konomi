@@ -77,7 +77,7 @@ export function init(): void {
 
 		callbacks: {
 			init(): void {
-				pipe(
+				void pipe(
 					sanitizeContext( contextSchema, STORE_NAME ),
 					Effect.catchAllCause( () => {
 						const errorMessage: ErrorMessage = {
