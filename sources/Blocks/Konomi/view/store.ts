@@ -57,7 +57,7 @@ export function init(): void {
 
 		callbacks: {
 			init(): void {
-				void pipe(
+				const routine = pipe(
 					sanitizeContext( contextSchema, STORE_NAME ),
 					Effect.catchAllCause( () => {
 						const errorMessage: ErrorMessage = {
@@ -66,9 +66,9 @@ export function init(): void {
 						};
 						doAction( 'konomi.sanitizationError', errorMessage );
 						return Effect.succeed( null );
-					} ),
-					Effect.runPromise
+					} )
 				);
+				Effect.runPromise( routine );
 			},
 
 			maybeRenderResponseError: (): void => {

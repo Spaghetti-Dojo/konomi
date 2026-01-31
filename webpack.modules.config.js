@@ -20,7 +20,6 @@ const EXTRACTION_CONFIGURATION = [
 	'@konomi/schema',
 	'@external/zod',
 	'@external/effect-js',
-	'@wordpress/hooks',
 ];
 
 const configuration = {
@@ -34,7 +33,15 @@ const configuration = {
 		new DependencyExtractionWebpackPlugin({
 			outputFormat: 'php',
 			requestToExternalModule: (request) => {
-				return EXTRACTION_CONFIGURATION.includes(request);
+				// Handle custom konomi and external packages
+				if (EXTRACTION_CONFIGURATION.includes(request)) {
+					return true;
+				}
+				// Handle WordPress packages
+				if (request.startsWith('@wordpress/')) {
+					return true;
+				}
+				return false;
 			},
 		}),
 	],
