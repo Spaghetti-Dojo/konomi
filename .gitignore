@@ -1,5 +1,6 @@
 /.psalm
 /.idea
+/build-modules
 /sources/**/dist/
 /sources/**/build-*/
 /coverage
