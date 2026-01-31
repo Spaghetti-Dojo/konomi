@@ -69,7 +69,11 @@ export function init(): void {
 						}
 					)
 				).catch( () => {
-					// Errors are handled via hooks, silently ignore rejections
+					/*
+					 * Errors are handled via the WordPress hooks system.
+					 * The sanitizeContext function never rejects, so this
+					 * catch is here only to satisfy Promise handling requirements.
+					 */
 				} );
 			},
 
