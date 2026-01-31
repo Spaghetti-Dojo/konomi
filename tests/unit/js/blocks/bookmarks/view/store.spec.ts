@@ -100,7 +100,8 @@ describe( 'Interactivity Store', () => {
 
 			expect( sanitizeContext ).toHaveBeenCalledWith(
 				contextSchema,
-				'konomiBookmark'
+				'konomiBookmark',
+				expect.any(Function)
 			);
 		} );
 	} );

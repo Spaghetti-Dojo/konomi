@@ -19,7 +19,8 @@ const EXTRACTION_CONFIGURATION = [
 	'@konomi/icons',
 	'@konomi/schema',
 	'@external/zod',
-	'@external/effect-js'
+	'@external/effect-js',
+	'@wordpress/hooks',
 ];
 
 const configuration = {

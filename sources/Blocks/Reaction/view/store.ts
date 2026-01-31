@@ -2,12 +2,13 @@
  * External dependencies
  */
 import { Effect } from '@external/effect-js';
-import { sanitizeContext } from '@konomi/schema';
+import { sanitizeContext, type ErrorMessage } from '@konomi/schema';
 
 /**
  * WordPress dependencies
  */
 import { getContext, store } from '@wordpress/interactivity';
+import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -86,8 +87,19 @@ export function init(): void {
 		callbacks: {
 			init(): void {
 				Effect.runPromise(
-					sanitizeContext( contextSchema, STORE_NAME )
-				);
+					sanitizeContext(
+						contextSchema,
+						STORE_NAME,
+						( errorMessage: ErrorMessage ) => {
+							doAction(
+								'konomi.sanitizationError',
+								errorMessage
+							);
+						}
+					)
+				).catch( () => {
+					// Errors are handled via hooks, silently ignore rejections
+				} );
 			},
 		},
 	} );
