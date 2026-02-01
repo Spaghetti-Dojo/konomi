@@ -12,6 +12,11 @@ import { doAction } from '@wordpress/hooks';
 export type SanitizationError = Readonly< Cause.Cause< Error > >;
 
 /**
+ * Nested cause type used in Effect.catchAllCause callbacks.
+ */
+export type SanitizationCause = Cause.Cause< Cause.Cause< Error > >;
+
+/**
  * Severity levels aligned with PSR-3 logging specification.
  */
 export enum Severity {
@@ -27,7 +32,7 @@ export type ErrorMessage = Readonly< {
 	message: string;
 	severity: Severity;
 	// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-	cause?: Cause.Cause< Cause.Cause< Error > >;
+	cause?: SanitizationCause;
 } >;
 
 /**
@@ -41,14 +46,14 @@ export function publishSanitizeError(
 	message: string,
 	severity: Severity,
 	// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-	cause?: Cause.Cause< Cause.Cause< Error > >
+	cause?: SanitizationCause
 ): void {
 	const errorMessage: ErrorMessage = {
 		message,
 		severity,
 		...(cause && { cause }),
 	};
-	doAction( 'konomi.schema.sanitize-error', errorMessage );
+	doAction( 'konomi.schema.sanitize_error', errorMessage );
 }
 
 // eslint-disable-next-line @typescript-eslint/max-params
