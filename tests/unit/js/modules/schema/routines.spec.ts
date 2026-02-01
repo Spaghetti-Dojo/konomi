@@ -78,7 +78,6 @@ describe('sanitizeContext', () => {
 		).rejects.toThrow();
 
 		expect(onError).toHaveBeenCalled();
-		// TODO: Once pub/sub is integrated, verify message publication
 	});
 });
 
@@ -119,6 +118,5 @@ describe('sanitizeConfiguration', () => {
 		).rejects.toThrow();
 
 		expect(onError).toHaveBeenCalled();
-		// TODO: Once pub/sub is integrated, verify message publication
 	});
 });

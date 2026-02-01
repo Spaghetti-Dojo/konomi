@@ -1,8 +1,12 @@
 /**
  * External dependencies
  */
-import { Effect } from '@external/effect-js';
-import { sanitizeContext } from '@konomi/schema';
+import { Effect, pipe } from '@external/effect-js';
+import {
+	sanitizeContext,
+	publishSanitizeError,
+	Severity,
+} from '@konomi/schema';
 
 /**
  * WordPress dependencies
@@ -85,9 +89,19 @@ export function init(): void {
 
 		callbacks: {
 			init(): void {
-				Effect.runPromise(
-					sanitizeContext( contextSchema, STORE_NAME )
+				const routine = pipe(
+					sanitizeContext( contextSchema, STORE_NAME ),
+					// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+					Effect.catchAllCause( ( cause ) => {
+						publishSanitizeError(
+							'Failed to initialize context',
+							Severity.ERROR,
+							cause
+						);
+						return Effect.succeed( null );
+					} )
 				);
+				Effect.runPromise( routine );
 			},
 		},
 	} );
