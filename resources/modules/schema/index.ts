@@ -7,16 +7,49 @@ import {
 	getServerContext,
 	getServerState,
 } from '@wordpress/interactivity';
+import { doAction } from '@wordpress/hooks';
 
 export type SanitizationError = Readonly< Cause.Cause< Error > >;
+
+/**
+ * Severity levels aligned with PSR-3 logging specification.
+ */
+export enum Severity {
+	ERROR = 'error',
+	WARNING = 'warning',
+	INFO = 'info',
+}
 
 /**
  * Error message structure aligned with PSR-3 logging specification.
  */
 export type ErrorMessage = Readonly< {
 	message: string;
-	severity: 'error' | 'warning' | 'info';
+	severity: Severity;
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+	cause?: Cause.Cause< Cause.Cause< Error > >;
 } >;
+
+/**
+ * Publishes a sanitization error via WordPress hooks.
+ *
+ * @param message - Human-readable error message
+ * @param severity - Error severity level
+ * @param cause - Optional error cause for debugging
+ */
+export function publishSanitizeError(
+	message: string,
+	severity: Severity,
+	// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+	cause?: Cause.Cause< Cause.Cause< Error > >
+): void {
+	const errorMessage: ErrorMessage = {
+		message,
+		severity,
+		...(cause && { cause }),
+	};
+	doAction( 'konomi.schema.sanitize-error', errorMessage );
+}
 
 // eslint-disable-next-line @typescript-eslint/max-params
 export function sanitize< S extends z.ZodType >(

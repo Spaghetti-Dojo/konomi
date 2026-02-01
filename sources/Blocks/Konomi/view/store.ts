@@ -2,7 +2,11 @@
  * External dependencies
  */
 import { Effect, pipe } from '@external/effect-js';
-import { sanitizeContext, type ErrorMessage } from '@konomi/schema';
+import {
+	sanitizeContext,
+	publishSanitizeError,
+	Severity,
+} from '@konomi/schema';
 
 /**
  * WordPress dependencies
@@ -13,7 +17,6 @@ import {
 	useLayoutEffect,
 	store,
 } from '@wordpress/interactivity';
-import { doAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -59,12 +62,13 @@ export function init(): void {
 			init(): void {
 				const routine = pipe(
 					sanitizeContext( contextSchema, STORE_NAME ),
-					Effect.catchAllCause( () => {
-						const errorMessage: ErrorMessage = {
-							message: 'Failed to initialize context',
-							severity: 'error',
-						};
-						doAction( 'konomi.sanitizationError', errorMessage );
+					// eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+					Effect.catchAllCause( ( cause ) => {
+						publishSanitizeError(
+							'Failed to initialize context',
+							Severity.ERROR,
+							cause
+						);
 						return Effect.succeed( null );
 					} )
 				);
