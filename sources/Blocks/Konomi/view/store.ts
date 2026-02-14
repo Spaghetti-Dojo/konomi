@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { Effect } from '@external/effect-js';
+import { sanitizeContext } from '@konomi/schema';
+
+/**
  * WordPress dependencies
  */
 import {
@@ -13,6 +19,7 @@ import {
  */
 import { loginModalElement } from './elements/login-modal-element';
 import { renderMessage } from './popover';
+import { contextSchema } from './schema';
 
 export type ResponseError = Readonly< {
 	code: string;
@@ -33,21 +40,29 @@ export type Context = {
 	};
 };
 
+const STORE_NAME = 'konomi';
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	store( 'konomi', {
+	store( STORE_NAME, {
 		state: {},
 
 		actions: {
 			closeLoginModal: () => {
-				const context = getContext< Context >( 'konomi' );
+				const context = getContext< Context >( STORE_NAME );
 				context.loginRequired = false;
 			},
 		},
 
 		callbacks: {
+			init(): void {
+				Effect.runPromise(
+					sanitizeContext( contextSchema, STORE_NAME )
+				);
+			},
+
 			maybeRenderResponseError: (): void => {
-				const context = getContext< Context >( 'konomi' );
+				const context = getContext< Context >( STORE_NAME );
 				// eslint-disable-next-line react-hooks/rules-of-hooks
 				useLayoutEffect( () => {
 					const element = getElement();
@@ -70,7 +85,7 @@ export function init(): void {
 					return;
 				}
 
-				const context = getContext< Context >( 'konomi' );
+				const context = getContext< Context >( STORE_NAME );
 				if ( context.isUserLoggedIn ) {
 					return;
 				}

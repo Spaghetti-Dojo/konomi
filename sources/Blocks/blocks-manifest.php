@@ -14,7 +14,7 @@ return array(
 			'konomi/konomi'
 		),
 		'example' => array(
-
+			
 		),
 		'attributes' => array(
 			'inactiveColor' => array(
@@ -44,7 +44,7 @@ return array(
 		'icon' => 'smiley',
 		'description' => 'Konomi',
 		'example' => array(
-
+			
 		),
 		'attributes' => array(
 			'active' => array(
@@ -84,7 +84,7 @@ return array(
 			'konomi/konomi'
 		),
 		'example' => array(
-
+			
 		),
 		'attributes' => array(
 			'inactiveColor' => array(
@@ -118,10 +118,10 @@ return array(
 		'icon' => 'smiley',
 		'description' => 'User Profile',
 		'example' => array(
-
+			
 		),
 		'attributes' => array(
-			'dummy' => array()
+			
 		),
 		'supports' => array(
 			'html' => false,

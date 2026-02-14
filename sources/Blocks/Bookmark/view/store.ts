@@ -1,4 +1,10 @@
 /**
+ * External dependencies
+ */
+import { Effect } from '@external/effect-js';
+import { sanitizeContext } from '@konomi/schema';
+
+/**
  * WordPress dependencies
  */
 import { getContext, store } from '@wordpress/interactivity';
@@ -7,6 +13,7 @@ import { getContext, store } from '@wordpress/interactivity';
  * Internal dependencies
  */
 import { addBookmark } from './add-bookmark-command';
+import { contextSchema } from './schema';
 import type {
 	Context as OuterContext,
 	ResponseError,
@@ -16,14 +23,16 @@ export type Context = {
 	isActive: boolean;
 };
 
+const STORE_NAME = 'konomiBookmark';
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	const { actions } = store( 'konomiBookmark', {
+	const { actions } = store( STORE_NAME, {
 		state: {},
 
 		actions: {
 			toggleStatus: (): void => {
-				const context = getContext< Context >( 'konomiBookmark' );
+				const context = getContext< Context >( STORE_NAME );
 				context.isActive = ! context.isActive;
 				actions.updateUserPreferences();
 			},
@@ -39,7 +48,7 @@ export function init(): void {
 				}
 
 				try {
-					const context = getContext< Context >( 'konomiBookmark' );
+					const context = getContext< Context >( STORE_NAME );
 					yield addBookmark( {
 						meta: {
 							_bookmark: {
@@ -60,8 +69,16 @@ export function init(): void {
 			},
 
 			revertStatus: (): void => {
-				const context = getContext< Context >( 'konomiBookmark' );
+				const context = getContext< Context >( STORE_NAME );
 				context.isActive = ! context.isActive;
+			},
+		},
+
+		callbacks: {
+			init(): void {
+				Effect.runPromise(
+					sanitizeContext( contextSchema, STORE_NAME )
+				);
 			},
 		},
 	} );

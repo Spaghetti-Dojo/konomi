@@ -2,6 +2,7 @@
 .github
 
 build-module
+build-modules
 dist
 vendor
 node_modules

@@ -2,16 +2,19 @@
  * External dependencies
  */
 import type { MouseEvent } from 'react';
+import { Effect } from '@external/effect-js';
+import { sanitizeState } from '@konomi/schema';
 
 /**
  * WordPress dependencies
  */
-import { getServerState, store, withSyncEvent } from '@wordpress/interactivity';
+import { store, withSyncEvent } from '@wordpress/interactivity';
 
 /**
  * Internal dependencies
  */
 import { assertAnchorElement, assertIsPositiveInt } from './asserts';
+import { stateSchema } from './schema';
 
 const enum STATE_UPDATE_REASON {
 	UPDATE_CURRENT_PAGE = 'page-update',
@@ -37,10 +40,12 @@ export type Store = Readonly< {
 	};
 } >;
 
+const STORE_NAME = 'konomiProfilePagination';
+
 // eslint-disable-next-line max-lines-per-function
 export function init(): void {
-	const { state } = store< Store >( 'konomiProfilePagination', {
-		state: getServerState(),
+	const { state } = store< Store >( STORE_NAME, {
+		state: Effect.runSync( sanitizeState( stateSchema, STORE_NAME ) ),
 		actions: {
 			updatePagination: withSyncEvent( ( e: Readonly< MouseEvent > ) => {
 				e.preventDefault();
