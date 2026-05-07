@@ -1,17 +1,15 @@
-/.psalm
+# IDEs & Editors
 /.idea
-/sources/**/dist/
-/sources/**/build-*/
-/coverage
-/coverage.xml
-/coverage-unit.xml
-/coverage-integration.xml
-/coverage-functional.xml
+/.psalm
+
+# OS
+.DS_Store
+
+# Dependencies
 /vendor/
 /node_modules/
-/php-metrics
-/wordpress
 
+# Yarn
 /.pnp.*
 /.yarn/*
 !/.yarn/patches
@@ -19,3 +17,20 @@
 !/.yarn/releases
 !/.yarn/sdks
 !/.yarn/versions
+
+# Build Artifacts
+/sources/**/dist/
+/sources/**/build-*/
+
+# Test Coverage
+/coverage
+/coverage.xml
+/coverage-unit.xml
+/coverage-integration.xml
+/coverage-functional.xml
+
+# Tools & Reports
+/php-metrics
+
+# Runtime
+/wordpress
