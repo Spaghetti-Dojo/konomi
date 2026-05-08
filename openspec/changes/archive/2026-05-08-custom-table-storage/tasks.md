@@ -27,4 +27,3 @@
 
 - [x] 4.1 Run full test suite — all existing tests pass
 - [x] 4.2 Run PHPStan static analysis — no new errors
-- [ ] 4.3 Manual smoke test: activate plugin, verify table created, perform reaction/bookmark, verify data in custom table
