@@ -8,10 +8,10 @@ use Brain\Monkey\Functions;
 use SpaghettiDojo\Konomi\User;
 
 beforeEach(function (): void {
-    $this->storage = User\Storage::new();
+    $this->storage = User\MetaStorage::new();
 });
 
-describe('Storage', function (): void {
+describe('MetaStorage', function (): void {
     it('returns empty array for invalid ID', function (): void {
         expect($this->storage->read(0, 'test_key'))->toBe([]);
     });

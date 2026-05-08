@@ -26,7 +26,7 @@ class Module implements ServiceModule
     public function services(): array
     {
         return [
-            Storage::class => static fn () => Storage::new(),
+            Storage::class => static fn () => MetaStorage::new(),
             UserFactory::class => static fn (
                 ContainerInterface $container
             ) => UserFactory::new(
