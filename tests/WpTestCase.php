@@ -6,6 +6,7 @@ namespace SpaghettiDojo\Konomi\Tests;
 
 use PHPUnit\Framework\TestCase;
 use WorDBless\Sqlite;
+use SpaghettiDojo\Konomi\Database;
 
 // phpcs:disable Inpsyde.CodeQuality.NoAccessors.NoSetter
 
@@ -45,6 +46,7 @@ class WpTestCase extends TestCase
     {
         parent::setUp();
         Sqlite::init();
+        self::createKonomiTables();
         self::insertUsers();
         self::insertPosts();
     }
@@ -129,6 +131,14 @@ class WpTestCase extends TestCase
             // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         }
 
+        Database\SchemaManager::new(Database\InteractionsTable::new($wpdb->prefix))->drop();
+
         wp_cache_flush();
+    }
+
+    private static function createKonomiTables(): void
+    {
+        global $wpdb;
+        Database\SchemaManager::new(Database\InteractionsTable::new($wpdb->prefix))->create();
     }
 }
