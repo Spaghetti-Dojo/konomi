@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Post;
 
-use SpaghettiDojo\Konomi\Database\InteractionsTable;
-use SpaghettiDojo\Konomi\Database\StorageKeyParser;
+use SpaghettiDojo\Konomi\Database;
 
 /**
  * @internal
@@ -13,16 +12,16 @@ use SpaghettiDojo\Konomi\Database\StorageKeyParser;
 class TableStorage implements Storage
 {
     public static function new(
-        InteractionsTable $table,
-        StorageKeyParser $keyParser
+        Database\InteractionsTable $table,
+        Database\StorageKeyParser $keyParser
     ): TableStorage {
 
         return new self($table, $keyParser);
     }
 
     final private function __construct(
-        private readonly InteractionsTable $table,
-        private readonly StorageKeyParser $keyParser
+        private readonly Database\InteractionsTable $table,
+        private readonly Database\StorageKeyParser $keyParser
     ) {
     }
 
