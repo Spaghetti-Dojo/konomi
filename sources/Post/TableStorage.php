@@ -78,7 +78,6 @@ class TableStorage implements Storage
         $tableName = $this->table->name();
         $wpdb->query('START TRANSACTION');
 
-        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $deleted = $wpdb->query(
             $wpdb->prepare(
                 'DELETE FROM %i WHERE entity_id = %d AND group_key = %s',
@@ -87,7 +86,6 @@ class TableStorage implements Storage
                 $key
             )
         );
-        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
         if ($deleted === false) {
             $wpdb->query('ROLLBACK');
