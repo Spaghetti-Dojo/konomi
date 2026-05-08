@@ -10,8 +10,8 @@ Defines `TableStorage` implementations for Post and User domains that read from 
 The system SHALL provide a `Post\TableStorage` class that implements `Post\Storage` interface, reading from and writing to `{prefix}konomi_interactions` via `$wpdb`, treating the post ID as `entity_id`.
 
 #### Scenario: Read existing post interactions
-- **WHEN** `read($postId, $key)` is called with a valid post ID and key
-- **THEN** it SHALL return an array in the format `[userId => [[entityId, entityType]]]` matching rows in the table WHERE `entity_id` matches `$postId` and `group_key` matches the parsed group
+- **WHEN** `read($postId, $key)` is called with a valid post ID and a non-empty `$key`
+- **THEN** it SHALL return an array in the format `[userId => [[entityId, entityType]]]` matching rows in the table WHERE `entity_id` matches `$postId` and `group_key` equals `$key`
 
 #### Scenario: Read with no data
 - **WHEN** `read($postId, $key)` is called and no rows exist for that post and group
@@ -41,8 +41,8 @@ The system SHALL provide a `Post\TableStorage` class that implements `Post\Stora
 The system SHALL provide a `User\TableStorage` class that implements `User\Storage` interface, reading from and writing to `{prefix}konomi_interactions` via `$wpdb`, filtering by `user_id` and returning `entity_id` values as item IDs.
 
 #### Scenario: Read existing user interactions
-- **WHEN** `read($userId, $key)` is called with a valid user ID and key
-- **THEN** it SHALL return an array in the format `[[entityId, entityType], ...]` matching rows in the table WHERE `user_id` matches and `group_key` matches the parsed group
+- **WHEN** `read($userId, $key)` is called with a valid user ID and a non-empty `$key`
+- **THEN** it SHALL return an array in the format `[[entityId, entityType], ...]` matching rows in the table WHERE `user_id` matches and `group_key` equals `$key`
 
 #### Scenario: Read with no data
 - **WHEN** `read($userId, $key)` is called and no rows exist for that user and group
@@ -68,17 +68,6 @@ The system SHALL provide a `User\TableStorage` class that implements `User\Stora
 - **WHEN** `write()` deletes existing rows and inserts new ones
 - **THEN** both operations SHALL execute within a single database transaction
 
-### Requirement: Key parsing extracts group
-Both `TableStorage` implementations SHALL parse the `$key` parameter (format `base.group`) to extract the `group_key` value for database queries.
-
-#### Scenario: Key with valid format
-- **WHEN** key is `_konomi_items.reaction`
-- **THEN** the group_key used in queries SHALL be `reaction`
-
-#### Scenario: Key with invalid format
-- **WHEN** key contains no dot separator
-- **THEN** `read` SHALL return empty array and `write` SHALL return `false`
-
 ### Requirement: Module wiring uses TableStorage
 `Post\Module` and `User\Module` SHALL wire `TableStorage` as the implementation for `Storage` interface in their service definitions.
 
@@ -89,3 +78,33 @@ Both `TableStorage` implementations SHALL parse the `$key` parameter (format `ba
 #### Scenario: User module wires TableStorage
 - **WHEN** the User module registers services
 - **THEN** `User\Storage::class` SHALL resolve to a `User\TableStorage` instance
+
+### Requirement: StorageKey produces sanitized group
+`Post\StorageKey` and `User\StorageKey` SHALL accept an `ItemGroup` and return its `value` after validating that it contains only `[a-z0-9_]` characters and is non-empty.
+
+#### Scenario: Valid group
+- **WHEN** `StorageKey::for($group)` is called with `ItemGroup` value `"reaction"`
+- **THEN** it SHALL return `"reaction"`
+
+#### Scenario: Invalid characters
+- **WHEN** `StorageKey::for($group)` is called with a value containing characters outside `[a-z0-9_]`
+- **THEN** it SHALL throw `\UnexpectedValueException`
+
+#### Scenario: Empty group
+- **WHEN** `StorageKey::for($group)` is called with an empty value
+- **THEN** it SHALL throw `\InvalidArgumentException`
+
+#### Scenario: Construction takes no base
+- **WHEN** `StorageKey::new()` is called
+- **THEN** it SHALL accept no arguments and return a usable instance
+
+### Requirement: MetaStorage owns the meta_key base prefix
+`Post\MetaStorage` and `User\MetaStorage` SHALL define a private `BASE` constant equal to `'_konomi_items'` and SHALL compose the WordPress `meta_key` as `{BASE}.{$key}` on every read and write.
+
+#### Scenario: Write composes the meta_key
+- **WHEN** `MetaStorage::write($id, "reaction", $data)` is called
+- **THEN** the underlying `update_*_meta` call SHALL use `meta_key` `"_konomi_items.reaction"`
+
+#### Scenario: Read composes the meta_key
+- **WHEN** `MetaStorage::read($id, "reaction")` is called
+- **THEN** the underlying `get_*_meta` call SHALL use `meta_key` `"_konomi_items.reaction"`

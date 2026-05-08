@@ -22,7 +22,7 @@ beforeEach(function (): void {
     $itemRegistryKey = User\ItemRegistryKey::new();
     $this->currentUser = User\CurrentUser::new(
         User\Repository::new(
-            User\StorageKey::new('_konomi_items'),
+            User\StorageKey::new(),
             User\MetaStorage::new(),
             User\ItemFactory::new(),
             User\ItemRegistry::new($itemRegistryKey),
@@ -31,7 +31,7 @@ beforeEach(function (): void {
     );
     $postItemRegistryKey = Post\ItemRegistryKey::new();
     $this->repository = Post\Repository::new(
-        Post\StorageKey::new('_konomi_items'),
+        Post\StorageKey::new(),
         Post\MetaStorage::new(),
         Post\RawDataAssert::new(),
         User\ItemFactory::new(),

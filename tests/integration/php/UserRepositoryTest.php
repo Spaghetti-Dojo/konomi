@@ -24,7 +24,7 @@ beforeEach(function (): void {
 
     $itemRegistryKey = User\ItemRegistryKey::new();
     $this->repository = User\Repository::new(
-        User\StorageKey::new('_konomi_items'),
+        User\StorageKey::new(),
         User\MetaStorage::new(),
         User\ItemFactory::new(),
         User\ItemRegistry::new($itemRegistryKey),

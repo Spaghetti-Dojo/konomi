@@ -11,18 +11,13 @@ use SpaghettiDojo\Konomi\Database;
  */
 class TableStorage implements Storage
 {
-    public static function new(
-        Database\InteractionsTable $table,
-        Database\StorageKeyParser $keyParser
-    ): TableStorage {
-
-        return new self($table, $keyParser);
+    public static function new(Database\InteractionsTable $table): TableStorage
+    {
+        return new self($table);
     }
 
-    final private function __construct(
-        private readonly Database\InteractionsTable $table,
-        private readonly Database\StorageKeyParser $keyParser
-    ) {
+    final private function __construct(private readonly Database\InteractionsTable $table)
+    {
     }
 
     /**
@@ -34,11 +29,6 @@ class TableStorage implements Storage
             return [];
         }
 
-        $group = $this->keyParser->group($key);
-        if ($group === '') {
-            return [];
-        }
-
         global $wpdb;
 
         $tableName = $this->table->name();
@@ -46,7 +36,7 @@ class TableStorage implements Storage
             'SELECT entity_id, entity_type FROM %i WHERE user_id = %d AND group_key = %s',
             $tableName,
             $id,
-            $group
+            $key
         ), ARRAY_A);
 
         if (!is_array($rows)) {
@@ -83,11 +73,6 @@ class TableStorage implements Storage
             return false;
         }
 
-        $group = $this->keyParser->group($key);
-        if ($group === '') {
-            return false;
-        }
-
         global $wpdb;
 
         $tableName = $this->table->name();
@@ -99,7 +84,7 @@ class TableStorage implements Storage
                 'DELETE FROM %i WHERE user_id = %d AND group_key = %s',
                 $tableName,
                 $id,
-                $group
+                $key
             )
         );
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -124,7 +109,7 @@ class TableStorage implements Storage
                     'entity_id' => $entityId,
                     'user_id' => $id,
                     'entity_type' => $entityType,
-                    'group_key' => $group,
+                    'group_key' => $key,
                 ],
                 ['%d', '%d', '%s', '%s']
             );

@@ -30,8 +30,7 @@ class Module implements ServiceModule
             Storage::class => static fn (
                 ContainerInterface $container
             ) => TableStorage::new(
-                $container->get(Database\InteractionsTable::class),
-                $container->get(Database\StorageKeyParser::class)
+                $container->get(Database\InteractionsTable::class)
             ),
             UserFactory::class => static fn (
                 ContainerInterface $container
@@ -47,7 +46,7 @@ class Module implements ServiceModule
                 $container->get(ItemRegistryKey::class)
             ),
             RawDataAssert::class => static fn () => RawDataAssert::new(),
-            StorageKey::class => static fn () => StorageKey::new('_konomi_items'),
+            StorageKey::class => static fn () => StorageKey::new(),
             Repository::class => static fn (
                 ContainerInterface $container
             ) => Repository::new(

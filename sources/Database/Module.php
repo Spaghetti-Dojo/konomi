@@ -37,7 +37,6 @@ class Module implements ServiceModule, ExecutableModule
             ) => SchemaManager::new(
                 $container->get(InteractionsTable::class)
             ),
-            StorageKeyParser::class => static fn () => StorageKeyParser::new(),
         ];
     }
 

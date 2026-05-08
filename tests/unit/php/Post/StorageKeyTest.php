@@ -8,42 +8,17 @@ use SpaghettiDojo\Konomi\Post\StorageKey;
 use SpaghettiDojo\Konomi\User\ItemGroup;
 
 describe('new', function (): void {
-    it('creates a new instance with a valid base key', function (): void {
-        $base = 'test_base';
-        $storageKey = StorageKey::new($base);
-        expect($storageKey)->toBeInstanceOf(StorageKey::class);
-    });
-
-    it('throws an assertion error when base key is empty', function (): void {
-        expect(static fn () => StorageKey::new('')->for(ItemGroup::BOOKMARK))->toThrow(\InvalidArgumentException::class);
+    it('creates a new instance', function (): void {
+        expect(StorageKey::new())->toBeInstanceOf(StorageKey::class);
     });
 });
 
 describe('for', function (): void {
-    it('generates a valid storage key for REACTION group', function (): void {
-        $base = 'test_base';
-        $storageKey = StorageKey::new($base);
-        $key = $storageKey->for(ItemGroup::REACTION);
-        expect($key)->toBe('test_base.reaction');
+    it('returns the sanitized group value for REACTION', function (): void {
+        expect(StorageKey::new()->for(ItemGroup::REACTION))->toBe('reaction');
     });
 
-    it('generates a valid storage key for BOOKMARK group', function (): void {
-        $base = 'test_base';
-        $storageKey = StorageKey::new($base);
-        $key = $storageKey->for(ItemGroup::BOOKMARK);
-        expect($key)->toBe('test_base.bookmark');
-    });
-
-    it('sanitizes the key by removing non-alphanumeric characters', function (): void {
-        $base = 'test-base!@#';
-        $storageKey = StorageKey::new($base);
-        $key = $storageKey->for(ItemGroup::REACTION);
-        expect($key)->toBe('testbase.reaction');
-    });
-
-    it('throws a RuntimeException when key is empty after sanitization', function (): void {
-        $base = '!@#$%^&*()';
-        $storageKey = StorageKey::new($base);
-        expect(fn () => $storageKey->for(ItemGroup::REACTION))->toThrow(\UnexpectedValueException::class, 'Storage key cannot be empty after sanitization');
+    it('returns the sanitized group value for BOOKMARK', function (): void {
+        expect(StorageKey::new()->for(ItemGroup::BOOKMARK))->toBe('bookmark');
     });
 });

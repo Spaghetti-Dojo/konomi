@@ -9,6 +9,8 @@ namespace SpaghettiDojo\Konomi\User;
  */
 class MetaStorage implements Storage
 {
+    private const BASE = '_konomi_items';
+
     public static function new(): MetaStorage
     {
         return new self();
@@ -27,7 +29,7 @@ class MetaStorage implements Storage
             return [];
         }
 
-        $data = get_user_meta($id, $key, true);
+        $data = get_user_meta($id, self::BASE . '.' . $key, true);
         return is_array($data) ? $data : [];
     }
 
@@ -40,6 +42,6 @@ class MetaStorage implements Storage
             return false;
         }
 
-        return (bool) update_user_meta($id, $key, $data);
+        return (bool) update_user_meta($id, self::BASE . '.' . $key, $data);
     }
 }
