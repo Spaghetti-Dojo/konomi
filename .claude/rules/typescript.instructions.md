@@ -1,7 +1,7 @@
 ---
 paths:
-  - "sources/client/**/*.ts"
-  - "sources/client/**/*.tsx"
+  - "sources/**/*.ts"
+  - "sources/**/*.tsx"
 ---
 
 # TypeScript Instructions
