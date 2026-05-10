@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SpaghettiDojo\Konomi\Tests\Unit\User;
+namespace SpaghettiDojo\Konomi\Tests\Unit\Storage;
 
-use SpaghettiDojo\Konomi\User\StorageKey;
+use SpaghettiDojo\Konomi\Storage\StorageKey;
 use SpaghettiDojo\Konomi\User\ItemGroup;
 
 describe('new', function (): void {

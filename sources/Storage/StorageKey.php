@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SpaghettiDojo\Konomi\User;
+namespace SpaghettiDojo\Konomi\Storage;
+
+use SpaghettiDojo\Konomi\User;
 
 class StorageKey
 {
@@ -19,7 +21,7 @@ class StorageKey
      * @throws \InvalidArgumentException If ItemGroup value is empty
      * @throws \UnexpectedValueException If ItemGroup value contains invalid characters
      */
-    public function for(ItemGroup $group): string
+    public function for(User\ItemGroup $group): string
     {
         $value = $group->value;
 

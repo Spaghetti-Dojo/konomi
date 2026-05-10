@@ -10,6 +10,7 @@ use Inpsyde\Modularity\{
     Module\ModuleClassNameIdTrait
 };
 use SpaghettiDojo\Konomi\Database;
+use SpaghettiDojo\Konomi\Storage;
 
 class Module implements ServiceModule
 {
@@ -27,11 +28,6 @@ class Module implements ServiceModule
     public function services(): array
     {
         return [
-            Storage::class => static fn (
-                ContainerInterface $container
-            ) => TableStorage::new(
-                $container->get(Database\InteractionsTable::class)
-            ),
             UserFactory::class => static fn (
                 ContainerInterface $container
             ) => UserFactory::new(
@@ -45,16 +41,16 @@ class Module implements ServiceModule
             ) => ItemRegistry::new(
                 $container->get(ItemRegistryKey::class)
             ),
-            RawDataAssert::class => static fn () => RawDataAssert::new(),
-            StorageKey::class => static fn () => StorageKey::new(),
             Repository::class => static fn (
                 ContainerInterface $container
             ) => Repository::new(
-                $container->get(StorageKey::class),
-                $container->get(Storage::class),
+                Storage\StorageKey::new(),
+                Storage\TableStorage::new(
+                    $container->get(Database\InteractionsTable::class),
+                    Storage\Axis::User
+                ),
                 $container->get(ItemFactory::class),
-                $container->get(ItemRegistry::class),
-                $container->get(RawDataAssert::class)
+                $container->get(ItemRegistry::class)
             ),
         ];
     }
