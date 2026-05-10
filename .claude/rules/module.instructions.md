@@ -1,6 +1,6 @@
 ---
 paths:
-  - "sources/server/**/Module.php"
+  - "sources/**/Module.php"
 ---
 
 # Server Module Architecture

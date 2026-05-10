@@ -1,6 +1,6 @@
 ---
 paths:
-    - 'sources/client/**/*.scss'
+    - 'sources/**/*.scss'
 ---
 
 ## Project Conventions
