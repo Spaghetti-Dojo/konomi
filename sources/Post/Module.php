@@ -10,6 +10,8 @@ use Inpsyde\Modularity\{
     Module\ExecutableModule,
     Module\ModuleClassNameIdTrait
 };
+use SpaghettiDojo\Konomi\Database;
+use SpaghettiDojo\Konomi\Storage;
 use SpaghettiDojo\Konomi\User;
 
 class Module implements ServiceModule, ExecutableModule
@@ -31,21 +33,20 @@ class Module implements ServiceModule, ExecutableModule
             Post::class => static fn (ContainerInterface $container) => Post::new(
                 $container->get(Repository::class)
             ),
-            Storage::class => static fn () => Storage::new(),
             ItemRegistryKey::class => static fn () => ItemRegistryKey::new(),
             ItemRegistry::class => static fn (
                 ContainerInterface $container
             ) => ItemRegistry::new(
                 $container->get(ItemRegistryKey::class)
             ),
-            RawDataAssert::class => static fn () => RawDataAssert::new(),
-            StorageKey::class => static fn () => StorageKey::new('_konomi_items'),
             Repository::class => static fn (
                 ContainerInterface $container
             ) => Repository::new(
-                $container->get(StorageKey::class),
-                $container->get(Storage::class),
-                $container->get(RawDataAssert::class),
+                Storage\StorageKey::new(),
+                Storage\TableStorage::new(
+                    $container->get(Database\InteractionsTable::class),
+                    Storage\Axis::Entity
+                ),
                 $container->get(User\ItemFactory::class),
                 $container->get(ItemRegistry::class)
             ),

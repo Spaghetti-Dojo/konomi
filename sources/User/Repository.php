@@ -4,33 +4,28 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\User;
 
+use SpaghettiDojo\Konomi\Storage;
+
 /**
  * @internal
- *
- * @phpstan-type EntityId = int
- * @phpstan-type EntityType = string
- * @phpstan-type RawItem = array{0: EntityId, 1: EntityType}
- * @phpstan-type RawItems = array<array-key, RawItem>
  */
 class Repository
 {
     public static function new(
-        StorageKey $key,
-        Storage $storage,
+        Storage\StorageKey $key,
+        Storage\Storage $storage,
         ItemFactory $itemFactory,
-        ItemRegistry $registry,
-        RawDataAssert $rawDataAsserter
+        ItemRegistry $registry
     ): Repository {
 
-        return new self($key, $storage, $itemFactory, $registry, $rawDataAsserter);
+        return new self($key, $storage, $itemFactory, $registry);
     }
 
     final private function __construct(
-        readonly private StorageKey $storageKey,
-        readonly private Storage $storage,
+        readonly private Storage\StorageKey $storageKey,
+        readonly private Storage\Storage $storage,
         readonly private ItemFactory $itemFactory,
         readonly private ItemRegistry $registry,
-        readonly private RawDataAssert $rawDataAsserter
     ) {
     }
 
@@ -65,12 +60,12 @@ class Repository
 
         $this->loadItems($user, $item->group());
         $registrySnapshot = clone $this->registry;
-        $dataToStore = $this->prepareDataToStore($user, $item);
+        $records = $this->prepareDataToStore($user, $item);
 
         $stored = $this->storage->write(
             $user->id(),
             $this->storageKey->for($item->group()),
-            $dataToStore
+            $records
         );
 
         $stored
@@ -92,7 +87,7 @@ class Repository
     }
 
     /**
-     * @return RawItems
+     * @return list<Storage\Record>
      */
     private function prepareDataToStore(User $user, Item $item): array
     {
@@ -104,14 +99,15 @@ class Repository
     }
 
     /**
-     * @return RawItems
+     * @return list<Storage\Record>
      */
     private function serializeData(User $user, ItemGroup $group): array
     {
-        return \array_map(
-            static fn (Item $item) => [$item->id(), $item->type()],
-            $this->registry->all($user, $group)
-        );
+        $records = [];
+        foreach ($this->registry->all($user, $group) as $item) {
+            $records[] = new Storage\Record($item->id(), $user->id(), $item->type());
+        }
+        return $records;
     }
 
     private function rollbackRegistry(ItemRegistry $registry): void
@@ -125,23 +121,14 @@ class Repository
             return;
         }
 
-        foreach ($this->read($user, $group) as [$entityId, $entityType]) {
+        foreach ($this->storage->read($user->id(), $this->storageKey->for($group)) as $record) {
             $item = $this->itemFactory->create(
-                $entityId,
-                $entityType,
+                $record->entityId,
+                $record->entityType,
                 true,
                 $group
             );
             $item->isValid() and $this->registry->set($user, $item);
         }
-    }
-
-    /**
-     * @return \Generator<RawItem>
-     */
-    private function read(User $user, ItemGroup $group): \Generator
-    {
-        $storedData = $this->storage->read($user->id(), $this->storageKey->for($group));
-        yield from $this->rawDataAsserter->ensureDataStructure($storedData);
     }
 }
