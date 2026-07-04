@@ -65,7 +65,7 @@ final readonly class ActivationTasks
     /**
      * @return list<Task>
      */
-    public function getActivationTasks(): array
+    public function activationTasks(): array
     {
         return array_values($this->activationTasks->getArrayCopy());
     }
@@ -73,7 +73,7 @@ final readonly class ActivationTasks
     /**
      * @return list<Task>
      */
-    public function getDeactivationTasks(): array
+    public function deactivationTasks(): array
     {
         return array_values($this->deactivationTasks->getArrayCopy());
     }
@@ -81,7 +81,7 @@ final readonly class ActivationTasks
     /**
      * @return list<Task>
      */
-    public function getUninstallTasks(): array
+    public function uninstallTasks(): array
     {
         return array_values($this->uninstallTasks->getArrayCopy());
     }

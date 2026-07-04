@@ -22,7 +22,7 @@ use Inpsyde\Modularity\Properties\PluginProperties;
  * is safe because WordPress re-includes the main plugin file during uninstall,
  * which re-runs the bootstrap and repopulates the registry in the same request.
  */
-final class ActivationExecute
+class ActivationExecute
 {
     private static ?ActivationTasks $uninstallTasks = null;
 
@@ -31,6 +31,7 @@ final class ActivationExecute
         ActivationTasks $tasks,
         ContainerInterface $container
     ): self {
+
         return new self($properties, $tasks, $container);
     }
 
@@ -63,7 +64,7 @@ final class ActivationExecute
         register_activation_hook(
             $this->properties->pluginMainFile(),
             function (): void {
-                foreach ($this->tasks->getActivationTasks() as $task) {
+                foreach ($this->tasks->activationTasks() as $task) {
                     $task();
                 }
             }
@@ -75,7 +76,7 @@ final class ActivationExecute
         register_deactivation_hook(
             $this->properties->pluginMainFile(),
             function (): void {
-                foreach ($this->tasks->getDeactivationTasks() as $task) {
+                foreach ($this->tasks->deactivationTasks() as $task) {
                     $task();
                 }
             }
@@ -99,7 +100,7 @@ final class ActivationExecute
 
     public static function executeUninstallTasks(): void
     {
-        foreach (self::$uninstallTasks?->getUninstallTasks() ?? [] as $task) {
+        foreach (self::$uninstallTasks?->uninstallTasks() ?? [] as $task) {
             $task();
         }
     }
