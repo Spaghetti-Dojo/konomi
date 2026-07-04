@@ -5,23 +5,25 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Database;
 
 use Psr\Container\ContainerInterface;
+use SpaghettiDojo\Konomi\Activation\{
+    Activable,
+    ActivationTasks
+};
 use Inpsyde\Modularity\{
     Module\ServiceModule,
-    Module\ExecutableModule,
-    Module\ModuleClassNameIdTrait,
-    Properties\PluginProperties
+    Module\ModuleClassNameIdTrait
 };
 
-class Module implements ServiceModule, ExecutableModule
+class Module implements ServiceModule, Activable
 {
     use ModuleClassNameIdTrait;
 
-    public static function new(PluginProperties $appProperties): self
+    public static function new(): self
     {
-        return new self($appProperties);
+        return new self();
     }
 
-    final private function __construct(private readonly PluginProperties $appProperties)
+    final private function __construct()
     {
     }
 
@@ -40,29 +42,14 @@ class Module implements ServiceModule, ExecutableModule
         ];
     }
 
-    public function run(ContainerInterface $container): bool
+    public function activate(ActivationTasks $tasks, ContainerInterface $container): void
     {
-        $pluginFile = $this->appProperties->pluginMainFile();
-
-        register_activation_hook(
-            $pluginFile,
-            static function () use ($container): void {
-                $container->get(SchemaManager::class)->create();
-            }
-        );
-
-        register_uninstall_hook(
-            $pluginFile,
-            // phpcs:ignore Inpsyde.CodeQuality.StaticClosure.PossiblyStaticClosure
-            [self::class, 'onUninstall']
-        );
-
-        return true;
-    }
-
-    public static function onUninstall(): void
-    {
-        global $wpdb;
-        SchemaManager::new(InteractionsTable::new($wpdb->prefix))->drop();
+        $tasks
+            ->addActivationTask(
+                static fn () => $container->get(SchemaManager::class)->create()
+            )
+            ->addUninstallTask(
+                static fn () => $container->get(SchemaManager::class)->drop()
+            );
     }
 }
