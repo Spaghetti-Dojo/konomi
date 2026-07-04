@@ -18,6 +18,8 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi;
 
+use Inpsyde\Modularity\Properties\PluginProperties;
+
 add_action(
     'plugins_loaded',
     static function () {
@@ -35,6 +37,7 @@ add_action(
 
         autoload(__DIR__);
         $package = package();
+        /** @var PluginProperties $properties */
         $properties = $package->properties();
 
         $package
