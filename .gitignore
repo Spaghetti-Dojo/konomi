@@ -36,7 +36,7 @@
 /wordpress
 
 # AI
+.claude/worktrees/
 graphify-out/
 docs/superposers
-
-/.claude/worktrees/
+graphify-out
