@@ -72,16 +72,16 @@ The system SHALL provide a single `SpaghettiDojo\Konomi\Storage\TableStorage` cl
 - **WHEN** the DELETE or any INSERT fails during `write`
 - **THEN** the transaction SHALL be rolled back and `write` SHALL return `false`
 
-### Requirement: Module wiring binds shared Storage with the module's Axis
-`Post\Module` and `User\Module` SHALL bind `SpaghettiDojo\Konomi\Storage\Storage::class` in their `services()` definitions to a `TableStorage` instance constructed with the appropriate `Axis`.
+### Requirement: Module wiring constructs an axis-bound TableStorage per Repository
+`Post\Module` and `User\Module` SHALL construct a `TableStorage` instance with the appropriate `Axis` inline within their `Repository::class` service definition and inject it as the `Storage\Storage` dependency. No standalone `SpaghettiDojo\Konomi\Storage\Storage::class` container binding SHALL be registered; the storage driver is swapped by overriding the module's `Repository::class` binding.
 
 #### Scenario: Post module wires Axis::Entity
-- **WHEN** the Post module registers services
-- **THEN** `Storage\Storage::class` SHALL resolve to `Storage\TableStorage::new($interactionsTable, Storage\Axis::Entity)`
+- **WHEN** the Post module registers the `Repository::class` service
+- **THEN** the `Storage\Storage` injected into `Post\Repository` SHALL be `Storage\TableStorage::new($interactionsTable, Storage\Axis::Entity)`
 
 #### Scenario: User module wires Axis::User
-- **WHEN** the User module registers services
-- **THEN** `Storage\Storage::class` SHALL resolve to `Storage\TableStorage::new($interactionsTable, Storage\Axis::User)`
+- **WHEN** the User module registers the `Repository::class` service
+- **THEN** the `Storage\Storage` injected into `User\Repository` SHALL be `Storage\TableStorage::new($interactionsTable, Storage\Axis::User)`
 
 ### Requirement: Repositories consume Record-typed Storage with flat serialization
 `Post\Repository` and `User\Repository` SHALL consume the shared `Storage` interface, accepting `list<Record>` from `read()` and emitting `list<Record>` to `write()`. Both repositories SHALL build the records list by iterating their registry and instantiating one `Record` per registry entry.
@@ -118,7 +118,7 @@ The system SHALL provide a single `SpaghettiDojo\Konomi\Storage\StorageKey` clas
 - **THEN** it SHALL accept no arguments and return a usable instance
 
 ### Requirement: MetaStorage exists only as documented reference impl
-The repository SHALL provide a `docs/storage-drivers.md` document that includes: a description of the `Storage` interface contract, a reference `MetaStorage` implementation showing how to back `Storage` by `wp_postmeta` and `wp_usermeta`, and a container-override snippet showing how to rebind `Storage\Storage::class` from a consumer plugin or site. No `MetaStorage` class SHALL exist in `sources/`.
+The repository SHALL provide a `docs/storage-drivers.md` document that includes: a description of the `Storage` interface contract, a reference `MetaStorage` implementation showing how to back `Storage` by `wp_postmeta` and `wp_usermeta`, and a container-override snippet showing how to swap the storage driver by overriding each module's `Repository::class` binding from a consumer plugin or site. No `MetaStorage` class SHALL exist in `sources/`.
 
 #### Scenario: Documentation present
 - **WHEN** the repository is checked out
