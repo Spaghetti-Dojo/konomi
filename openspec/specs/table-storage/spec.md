@@ -2,107 +2,104 @@
 
 ## Purpose
 
-Defines `TableStorage` implementations for Post and User domains that read from and write to the custom `konomi_interactions` table, replacing meta-based storage as the wired implementation of the `Storage` interfaces.
+Defines a single shared, axis-bound `Storage` interface and its `TableStorage` implementation that read from and write to the custom `konomi_interactions` table. The storage layer exchanges a `Record` DTO (rather than per-module array shapes) and is configured with an `Axis` at construction so the same `TableStorage` serves both the Post and User domains, filtering by `entity_id` or `user_id` respectively.
 
 ## Requirements
 
-### Requirement: Post TableStorage implements Post\Storage
-The system SHALL provide a `Post\TableStorage` class that implements `Post\Storage` interface, reading from and writing to `{prefix}konomi_interactions` via `$wpdb`, treating the post ID as `entity_id`.
+### Requirement: Shared Storage interface uses Record DTO
+The system SHALL provide a `SpaghettiDojo\Konomi\Storage\Storage` interface with two methods: `read(int $id, string $groupKey): list<Record>` and `write(int $id, string $groupKey, array $records): bool`. The `$records` parameter SHALL be a `list<Record>`. The interface SHALL replace the per-module `Post\Storage` and `User\Storage` interfaces.
 
-#### Scenario: Read existing post interactions
-- **WHEN** `read($postId, $key)` is called with a valid post ID and a non-empty `$key`
-- **THEN** it SHALL return an array in the format `[userId => [[entityId, entityType]]]` matching rows in the table WHERE `entity_id` matches `$postId` and `group_key` equals `$key`
+#### Scenario: Read returns a list of Record DTOs
+- **WHEN** `read($id, $groupKey)` is called on any `Storage` implementation
+- **THEN** it SHALL return a `list<Record>`, where each `Record` exposes readonly `entityId`, `userId`, and `entityType` properties
 
-#### Scenario: Read with no data
-- **WHEN** `read($postId, $key)` is called and no rows exist for that post and group
-- **THEN** it SHALL return an empty array
+#### Scenario: Write accepts a list of Record DTOs
+- **WHEN** `write($id, $groupKey, $records)` is called
+- **THEN** the implementation SHALL persist exactly the rows described by the supplied `Record` list, scoped to the given `(id, groupKey)`
 
-#### Scenario: Read with invalid ID
-- **WHEN** `read($postId, $key)` is called with `$postId <= 0` or empty `$key`
-- **THEN** it SHALL return an empty array
+### Requirement: Record DTO shape
+The system SHALL provide a `SpaghettiDojo\Konomi\Storage\Record` readonly value object with three public readonly properties: `entityId: int`, `userId: int`, `entityType: string`. The class SHALL be `final`.
 
-#### Scenario: Write post interactions
-- **WHEN** `write($postId, $key, $data)` is called with valid data
-- **THEN** it SHALL replace all rows for that post and group in the table and return `true`
+#### Scenario: Construction
+- **WHEN** `new Record($entityId, $userId, $entityType)` is invoked
+- **THEN** the resulting instance SHALL expose those values via readonly public properties of the declared types
 
-#### Scenario: Write empty data clears rows
-- **WHEN** `write($postId, $key, [])` is called
-- **THEN** it SHALL delete all rows for that post and group and return `true`
+### Requirement: Axis enum drives table-side filter column
+The system SHALL provide a `SpaghettiDojo\Konomi\Storage\Axis` enum with cases `Entity` and `User`, and a method `column(): string` returning `"entity_id"` for `Entity` and `"user_id"` for `User`. Adding any new case SHALL force `match` updates at every consumption site.
 
-#### Scenario: Write with invalid ID
-- **WHEN** `write($postId, $key, $data)` is called with `$postId <= 0` or empty `$key`
+#### Scenario: Entity axis maps to entity_id
+- **WHEN** `Axis::Entity->column()` is called
+- **THEN** it SHALL return `"entity_id"`
+
+#### Scenario: User axis maps to user_id
+- **WHEN** `Axis::User->column()` is called
+- **THEN** it SHALL return `"user_id"`
+
+### Requirement: Shared TableStorage is axis-bound at construction
+The system SHALL provide a single `SpaghettiDojo\Konomi\Storage\TableStorage` class implementing the shared `Storage` interface, taking `Database\InteractionsTable` and `Axis` via constructor. The configured `Axis` SHALL determine which column is used as the filter for both `read` and `write`. The class SHALL replace `Post\TableStorage` and `User\TableStorage`.
+
+#### Scenario: Read filters by axis-resolved column
+- **WHEN** `read($id, $groupKey)` is called on a `TableStorage` constructed with a given `Axis`
+- **THEN** it SHALL execute `SELECT entity_id, user_id, entity_type FROM {table} WHERE {axis.column()} = $id AND group_key = $groupKey`
+
+#### Scenario: Read with invalid id or empty key
+- **WHEN** `read($id, $groupKey)` is called with `$id <= 0` or `$groupKey === ""`
+- **THEN** it SHALL return an empty list without querying the database
+
+#### Scenario: Read maps rows to Record at boundary
+- **WHEN** the underlying query returns rows
+- **THEN** each row SHALL be passed through a `mapRow` step that returns either a `Record` for valid rows or `null` for malformed rows
+- **AND** rows mapping to `null` SHALL be skipped from the returned list
+- **AND** `entity_id`, `user_id` SHALL be cast to non-negative integers and `entity_type` to a non-empty string for a row to be considered valid
+
+#### Scenario: Write filters and replaces by axis-resolved column
+- **WHEN** `write($id, $groupKey, $records)` is called
+- **THEN** it SHALL execute `DELETE FROM {table} WHERE {axis.column()} = $id AND group_key = $groupKey` followed by one `INSERT` per `Record`, all within a single database transaction
+
+#### Scenario: Write with invalid id or empty key
+- **WHEN** `write($id, $groupKey, $records)` is called with `$id <= 0` or `$groupKey === ""`
 - **THEN** it SHALL return `false` without modifying data
 
-#### Scenario: Write is transactional
-- **WHEN** `write()` deletes existing rows and inserts new ones
-- **THEN** both operations SHALL execute within a single database transaction
+#### Scenario: Write enforces axis invariant on each Record
+- **WHEN** `write($id, $groupKey, $records)` is called with a configured `Axis`
+- **THEN** for each `Record`, the field corresponding to `Axis::column()` SHALL be set to `$id` before insertion (overriding any divergent value on the input `Record`)
 
-### Requirement: Post TableStorage write persists only the first item per user
-`Post\TableStorage::write()` SHALL, for each `userId => $rawItems` entry in the input array, persist only `$rawItems[0]` and ignore any additional indices. This codifies existing behavior and prevents regressions during the internal split between payload building and DB execution.
-
-#### Scenario: Multiple items under the same user
-- **WHEN** `write($postId, $key, [$userId => [[$entityId1, $type1], [$entityId2, $type2]]])` is called with valid IDs
-- **THEN** only one row SHALL be inserted for `$userId` using `$entityId1` and `$type1`, and the second tuple SHALL be ignored
-
-#### Scenario: Single item under a user
-- **WHEN** `write($postId, $key, [$userId => [[$entityId, $type]]])` is called with valid IDs
-- **THEN** exactly one row SHALL be inserted for `$userId` with `$entityId` and `$type`
-
-### Requirement: Post TableStorage read returns one row per user
-`Post\TableStorage::read()` SHALL return at most one entry per `userId` in the result map, even when multiple rows exist in the table for the same `(entity_id, group_key, user_id)` combination. The list-of-list shape `[userId => [[entityId, entityType]]]` is preserved for downstream consumer consistency.
-
-#### Scenario: Multiple rows for the same user
-- **WHEN** `read($postId, $key)` is called and the underlying table contains more than one row for the same `user_id`
-- **THEN** the returned map SHALL contain a single entry per `userId`, each holding a one-element list with the last seen `[entityId, entityType]` tuple
-
-#### Scenario: Distinct users
-- **WHEN** `read($postId, $key)` is called and rows exist for distinct user IDs
-- **THEN** the returned map SHALL contain one entry per distinct `userId`
-
-### Requirement: User TableStorage implements User\Storage
-The system SHALL provide a `User\TableStorage` class that implements `User\Storage` interface, reading from and writing to `{prefix}konomi_interactions` via `$wpdb`, filtering by `user_id` and returning `entity_id` values as item IDs.
-
-#### Scenario: Read existing user interactions
-- **WHEN** `read($userId, $key)` is called with a valid user ID and a non-empty `$key`
-- **THEN** it SHALL return an array in the format `[[entityId, entityType], ...]` matching rows in the table WHERE `user_id` matches and `group_key` equals `$key`
-
-#### Scenario: Read with no data
-- **WHEN** `read($userId, $key)` is called and no rows exist for that user and group
-- **THEN** it SHALL return an empty array
-
-#### Scenario: Read with invalid ID
-- **WHEN** `read($userId, $key)` is called with `$userId <= 0` or empty `$key`
-- **THEN** it SHALL return an empty array
-
-#### Scenario: Write user interactions
-- **WHEN** `write($userId, $key, $data)` is called with valid data
-- **THEN** it SHALL replace all rows for that user and group in the table and return `true`
-
-#### Scenario: Write empty data clears rows
-- **WHEN** `write($userId, $key, [])` is called
-- **THEN** it SHALL delete all rows for that user and group and return `true`
-
-#### Scenario: Write with invalid ID
-- **WHEN** `write($userId, $key, $data)` is called with `$userId <= 0` or empty `$key`
-- **THEN** it SHALL return `false` without modifying data
+#### Scenario: Write empty list clears scope
+- **WHEN** `write($id, $groupKey, [])` is called with valid `$id` and `$groupKey`
+- **THEN** existing rows for that `(axis.column() = $id, group_key = $groupKey)` SHALL be deleted and the call SHALL return `true`
 
 #### Scenario: Write is transactional
-- **WHEN** `write()` deletes existing rows and inserts new ones
-- **THEN** both operations SHALL execute within a single database transaction
+- **WHEN** the DELETE or any INSERT fails during `write`
+- **THEN** the transaction SHALL be rolled back and `write` SHALL return `false`
 
-### Requirement: Module wiring uses TableStorage
-`Post\Module` and `User\Module` SHALL wire `TableStorage` as the implementation for `Storage` interface in their service definitions.
+### Requirement: Module wiring binds shared Storage with the module's Axis
+`Post\Module` and `User\Module` SHALL bind `SpaghettiDojo\Konomi\Storage\Storage::class` in their `services()` definitions to a `TableStorage` instance constructed with the appropriate `Axis`.
 
-#### Scenario: Post module wires TableStorage
+#### Scenario: Post module wires Axis::Entity
 - **WHEN** the Post module registers services
-- **THEN** `Post\Storage::class` SHALL resolve to a `Post\TableStorage` instance
+- **THEN** `Storage\Storage::class` SHALL resolve to `Storage\TableStorage::new($interactionsTable, Storage\Axis::Entity)`
 
-#### Scenario: User module wires TableStorage
+#### Scenario: User module wires Axis::User
 - **WHEN** the User module registers services
-- **THEN** `User\Storage::class` SHALL resolve to a `User\TableStorage` instance
+- **THEN** `Storage\Storage::class` SHALL resolve to `Storage\TableStorage::new($interactionsTable, Storage\Axis::User)`
 
-### Requirement: StorageKey produces sanitized group
-`Post\StorageKey` and `User\StorageKey` SHALL accept an `ItemGroup` and return its `value` after validating that it contains only `[a-z0-9_]` characters and is non-empty.
+### Requirement: Repositories consume Record-typed Storage with flat serialization
+`Post\Repository` and `User\Repository` SHALL consume the shared `Storage` interface, accepting `list<Record>` from `read()` and emitting `list<Record>` to `write()`. Both repositories SHALL build the records list by iterating their registry and instantiating one `Record` per registry entry.
+
+#### Scenario: Post repository serializes one Record per userId
+- **WHEN** `Post\Repository::save($item, $user)` calls the underlying `Storage::write()`
+- **THEN** the records list SHALL contain exactly one `Record($item->id(), $userId, $item->type())` per `$userId` currently held in the registry for the post and group
+
+#### Scenario: User repository serializes one Record per entityId
+- **WHEN** `User\Repository::save($user, $item)` calls the underlying `Storage::write()`
+- **THEN** the records list SHALL contain exactly one `Record($entityId, $user->id(), $entityType)` per item currently held in the registry for the user and group
+
+#### Scenario: Registry rollback on write failure
+- **WHEN** `Storage::write()` returns `false` from a repository `save()` call
+- **THEN** the in-memory registry SHALL be restored to the snapshot captured before the save mutation
+
+### Requirement: Shared StorageKey deduplication
+The system SHALL provide a single `SpaghettiDojo\Konomi\Storage\StorageKey` class that produces sanitized group strings. The class SHALL replace per-module `Post\StorageKey` and `User\StorageKey`. The constructor SHALL take no arguments.
 
 #### Scenario: Valid group
 - **WHEN** `StorageKey::for($group)` is called with `ItemGroup` value `"reaction"`
@@ -116,17 +113,17 @@ The system SHALL provide a `User\TableStorage` class that implements `User\Stora
 - **WHEN** `StorageKey::for($group)` is called with an empty value
 - **THEN** it SHALL throw `\InvalidArgumentException`
 
-#### Scenario: Construction takes no base
+#### Scenario: Construction takes no arguments
 - **WHEN** `StorageKey::new()` is called
 - **THEN** it SHALL accept no arguments and return a usable instance
 
-### Requirement: MetaStorage owns the meta_key base prefix
-`Post\MetaStorage` and `User\MetaStorage` SHALL define a private `BASE` constant equal to `'_konomi_items'` and SHALL compose the WordPress `meta_key` as `{BASE}.{$key}` on every read and write.
+### Requirement: MetaStorage exists only as documented reference impl
+The repository SHALL provide a `docs/storage-drivers.md` document that includes: a description of the `Storage` interface contract, a reference `MetaStorage` implementation showing how to back `Storage` by `wp_postmeta` and `wp_usermeta`, and a container-override snippet showing how to rebind `Storage\Storage::class` from a consumer plugin or site. No `MetaStorage` class SHALL exist in `sources/`.
 
-#### Scenario: Write composes the meta_key
-- **WHEN** `MetaStorage::write($id, "reaction", $data)` is called
-- **THEN** the underlying `update_*_meta` call SHALL use `meta_key` `"_konomi_items.reaction"`
+#### Scenario: Documentation present
+- **WHEN** the repository is checked out
+- **THEN** `docs/storage-drivers.md` SHALL exist and SHALL contain a reference `MetaStorage` example for both post and user backends along with a DI override snippet
 
-#### Scenario: Read composes the meta_key
-- **WHEN** `MetaStorage::read($id, "reaction")` is called
-- **THEN** the underlying `get_*_meta` call SHALL use `meta_key` `"_konomi_items.reaction"`
+#### Scenario: No MetaStorage in sources
+- **WHEN** the codebase is searched
+- **THEN** no `MetaStorage` class SHALL exist under `sources/Post/`, `sources/User/`, or `sources/Storage/`
