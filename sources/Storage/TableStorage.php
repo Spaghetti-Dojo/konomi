@@ -11,21 +11,20 @@ use SpaghettiDojo\Konomi\Database;
  */
 class TableStorage implements Storage
 {
-    public static function new(Database\InteractionsTable $table, Axis $axis): TableStorage
+    public static function new(Database\InteractionsTable $table): TableStorage
     {
-        return new self($table, $axis);
+        return new self($table);
     }
 
     final private function __construct(
         private readonly Database\InteractionsTable $table,
-        private readonly Axis $axis,
     ) {
     }
 
     /**
      * @return list<Record>
      */
-    public function read(int $id, string $groupKey): array
+    public function read(Axis $axis, int $id, string $groupKey): array
     {
         if ($id <= 0 || $groupKey === '') {
             return [];
@@ -33,7 +32,7 @@ class TableStorage implements Storage
 
         global $wpdb;
 
-        $column = $this->axis->column();
+        $column = $axis->column();
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, Inpsyde.CodeQuality.LineLength.TooLong
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT entity_id, user_id, entity_type FROM %i WHERE {$column} = %d AND group_key = %s",
@@ -61,7 +60,7 @@ class TableStorage implements Storage
     /**
      * @param list<Record> $records
      */
-    public function write(int $id, string $groupKey, array $records): bool
+    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
     {
         if ($id <= 0 || $groupKey === '') {
             return false;
@@ -70,7 +69,7 @@ class TableStorage implements Storage
         global $wpdb;
 
         $tableName = $this->table->name();
-        $column = $this->axis->column();
+        $column = $axis->column();
 
         $wpdb->query('START TRANSACTION');
 
@@ -92,8 +91,8 @@ class TableStorage implements Storage
 
         foreach ($records as $record) {
             $payload = [
-                'entity_id' => $this->axis === Axis::Entity ? $id : $record->entityId,
-                'user_id' => $this->axis === Axis::User ? $id : $record->userId,
+                'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
+                'user_id' => $axis === Axis::User ? $id : $record->userId,
                 'entity_type' => $record->entityType,
                 'group_key' => $groupKey,
             ];
