@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Helpers;
 
+use SpaghettiDojo\Konomi\Storage\Axis;
 use SpaghettiDojo\Konomi\Storage\Record;
 use SpaghettiDojo\Konomi\Storage\Storage;
 use SpaghettiDojo\Konomi\User;
@@ -24,7 +25,7 @@ class InMemoryStorage implements Storage
         return new self();
     }
 
-    public function read(int $id, string $groupKey): array
+    public function read(Axis $axis, int $id, string $groupKey): array
     {
         if ($id <= 0 || $groupKey === '') {
             return [];
@@ -33,7 +34,7 @@ class InMemoryStorage implements Storage
         return $this->data[self::keyFor($id, $groupKey)] ?? [];
     }
 
-    public function write(int $id, string $groupKey, array $records): bool
+    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
     {
         if ($id <= 0 || $groupKey === '') {
             return false;

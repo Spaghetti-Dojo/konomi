@@ -26,24 +26,24 @@ dataset('axes', [
 
 describe('TableStorage validation', function (): void {
     it('returns empty list for invalid id on read', function (Axis $axis): void {
-        $storage = TableStorage::new(InteractionsTable::new('wp_'), $axis);
-        expect($storage->read(0, 'reaction'))->toBe([])
-            ->and($storage->read(-1, 'reaction'))->toBe([]);
+        $storage = TableStorage::new(InteractionsTable::new('wp_'));
+        expect($storage->read($axis, 0, 'reaction'))->toBe([])
+            ->and($storage->read($axis, -1, 'reaction'))->toBe([]);
     })->with('axes');
 
     it('returns empty list for empty key on read', function (Axis $axis): void {
-        $storage = TableStorage::new(InteractionsTable::new('wp_'), $axis);
-        expect($storage->read(1, ''))->toBe([]);
+        $storage = TableStorage::new(InteractionsTable::new('wp_'));
+        expect($storage->read($axis, 1, ''))->toBe([]);
     })->with('axes');
 
     it('returns false for invalid id on write', function (Axis $axis): void {
-        $storage = TableStorage::new(InteractionsTable::new('wp_'), $axis);
-        expect($storage->write(0, 'reaction', []))->toBeFalse()
-            ->and($storage->write(-1, 'reaction', []))->toBeFalse();
+        $storage = TableStorage::new(InteractionsTable::new('wp_'));
+        expect($storage->write($axis, 0, 'reaction', []))->toBeFalse()
+            ->and($storage->write($axis, -1, 'reaction', []))->toBeFalse();
     })->with('axes');
 
     it('returns false for empty key on write', function (Axis $axis): void {
-        $storage = TableStorage::new(InteractionsTable::new('wp_'), $axis);
-        expect($storage->write(1, '', [new Record(1, 1, 'post')]))->toBeFalse();
+        $storage = TableStorage::new(InteractionsTable::new('wp_'));
+        expect($storage->write($axis, 1, '', [new Record(1, 1, 'post')]))->toBeFalse();
     })->with('axes');
 });

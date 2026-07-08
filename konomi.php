@@ -39,6 +39,7 @@ $properties = $package->properties();
 $modules = [
     Configuration\Module::new($properties, '/sources/Icons/icons'),
     Database\Module::new(),
+    Storage\Module::new(),
     ApiFetch\Module::new($properties),
     Icons\Module::new($properties),
     User\Module::new(),

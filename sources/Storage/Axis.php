@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Storage;
 
-/**
- * @internal
- */
 enum Axis
 {
     case Entity;
