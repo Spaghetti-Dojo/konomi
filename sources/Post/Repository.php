@@ -52,6 +52,7 @@ class Repository
         do_action('konomi.post.collection.save', $item, $user, $this->key);
 
         $stored = $this->storage->write(
+            Storage\Axis::Entity,
             $item->id(),
             $this->key->for($item->group()),
             $records
@@ -105,7 +106,7 @@ class Repository
             return;
         }
 
-        foreach ($this->storage->read($postId, $this->key->for($group)) as $record) {
+        foreach ($this->storage->read(Storage\Axis::Entity, $postId, $this->key->for($group)) as $record) {
             $item = $this->itemFactory->create($record->entityId, $record->entityType, true, $group);
             $item->isValid() and $this->registry->set($postId, $record->userId, $item);
         }

@@ -63,6 +63,7 @@ class Repository
         $records = $this->prepareDataToStore($user, $item);
 
         $stored = $this->storage->write(
+            Storage\Axis::User,
             $user->id(),
             $this->storageKey->for($item->group()),
             $records
@@ -121,7 +122,7 @@ class Repository
             return;
         }
 
-        foreach ($this->storage->read($user->id(), $this->storageKey->for($group)) as $record) {
+        foreach ($this->storage->read(Storage\Axis::User, $user->id(), $this->storageKey->for($group)) as $record) {
             $item = $this->itemFactory->create(
                 $record->entityId,
                 $record->entityType,

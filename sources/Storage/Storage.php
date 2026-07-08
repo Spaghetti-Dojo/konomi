@@ -9,10 +9,10 @@ interface Storage
     /**
      * @return list<Record>
      */
-    public function read(int $id, string $groupKey): array;
+    public function read(Axis $axis, int $id, string $groupKey): array;
 
     /**
      * @param list<Record> $records
      */
-    public function write(int $id, string $groupKey, array $records): bool;
+    public function write(Axis $axis, int $id, string $groupKey, array $records): bool;
 }

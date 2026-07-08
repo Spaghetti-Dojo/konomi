@@ -10,7 +10,6 @@ use Inpsyde\Modularity\{
     Module\ExecutableModule,
     Module\ModuleClassNameIdTrait
 };
-use SpaghettiDojo\Konomi\Database;
 use SpaghettiDojo\Konomi\Storage;
 use SpaghettiDojo\Konomi\User;
 
@@ -43,10 +42,7 @@ class Module implements ServiceModule, ExecutableModule
                 ContainerInterface $container
             ) => Repository::new(
                 Storage\StorageKey::new(),
-                Storage\TableStorage::new(
-                    $container->get(Database\InteractionsTable::class),
-                    Storage\Axis::Entity
-                ),
+                $container->get(Storage\Storage::class),
                 $container->get(User\ItemFactory::class),
                 $container->get(ItemRegistry::class)
             ),
