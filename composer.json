@@ -46,7 +46,10 @@
 			"SpaghettiDojo\\Konomi\\Tests\\Unit\\": "tests/unit/php",
 			"SpaghettiDojo\\Konomi\\Tests\\Integration\\": "tests/integration/php",
 			"SpaghettiDojo\\Konomi\\Tests\\Functional\\": "tests/functional/php"
-		}
+		},
+		"files": [
+			"tests/Helpers/functions.php"
+		]
 	},
 	"config": {
 		"platform": {
