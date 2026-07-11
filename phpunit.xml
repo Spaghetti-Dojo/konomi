@@ -24,6 +24,7 @@
 		<exclude>
 			<directory>./sources/**/**/build-module</directory>
 			<directory>./sources/**/**/dist</directory>
+			<file>./sources/Blocks/blocks-manifest.php</file>
 		</exclude>
 	</source>
 

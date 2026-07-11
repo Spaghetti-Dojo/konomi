@@ -67,6 +67,7 @@ class Module implements ServiceModule, ExecutableModule
                 $container->get(User\UserFactory::class),
                 $container->get(InstanceId::class)
             ),
+            Konomi\HookedContent::class => static fn () => Konomi\HookedContent::new(),
 
             /*
              * Reaction
@@ -96,6 +97,7 @@ class Module implements ServiceModule, ExecutableModule
         $this->initRest($container);
         $this->registerBlocks($container);
         $this->initBlocksConstraints($container);
+        $this->initBlockHooks($container);
 
         return true;
     }
@@ -166,6 +168,19 @@ class Module implements ServiceModule, ExecutableModule
             [$conditionalBlockRenderer, 'hideBlocksInProfilePage'],
             10,
             2
+        );
+    }
+
+    private function initBlockHooks(ContainerInterface $container): void
+    {
+        /** @var Konomi\HookedContent $hookedContent */
+        $hookedContent = $container->get(Konomi\HookedContent::class);
+
+        add_filter(
+            'hooked_block_konomi/konomi',
+            [$hookedContent, 'injectDefaultInnerBlocks'],
+            10,
+            5
         );
     }
 }

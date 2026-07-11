@@ -41,7 +41,7 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/wordpress/*</exclude-pattern>
 	<exclude-pattern>*/dist/*</exclude-pattern>
-	<exclude-pattern>*/tests/helpers/*</exclude-pattern>
+	<exclude-pattern>*/tests/Helpers/*</exclude-pattern>
 	<exclude-pattern>*/tests/fixtures/*</exclude-pattern>
 	<exclude-pattern>*/tests/stubs/*</exclude-pattern>
 	<exclude-pattern>sources/Blocks/blocks-manifest.php</exclude-pattern>

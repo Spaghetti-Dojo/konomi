@@ -5,14 +5,28 @@ declare(strict_types=1);
 namespace SpaghettiDojo\Konomi\Tests\Unit;
 
 use Brain\Monkey\Functions;
+use Psr\Container\ContainerInterface;
+use SpaghettiDojo\Konomi\Activation\ActivationExecute;
 
 describe('Package', function (): void {
-    it('bootstrap the package during plugins_loaded action', function (): void {
+    it('bootstrap the package and register the lifecycle logic at plugin load', function (): void {
         $properties = \Mockery::mock(
             'alias:Inpsyde\Modularity\Properties\PluginProperties',
             'Inpsyde\Modularity\Properties\Properties',
         );
         $properties->shouldReceive('new')->andReturnSelf();
+
+        $activation = \Mockery::mock(ActivationExecute::class);
+        $activation->expects('prepare');
+        $activation->expects('registerActivationLogic');
+        $activation->expects('registerDeactivationLogic');
+        $activation->expects('registerUninstallLogic');
+
+        $container = \Mockery::mock(ContainerInterface::class);
+        $container
+            ->shouldReceive('get')
+            ->with(ActivationExecute::class)
+            ->andReturn($activation);
 
         $package = \Mockery::mock(
             'alias:Inpsyde\Modularity\Package',
@@ -22,7 +36,8 @@ describe('Package', function (): void {
         );
         $package->shouldReceive('new')->with($properties)->andReturn($package);
         $package->shouldReceive('addModule')->andReturnSelf();
-
+        $package->shouldReceive('container')->andReturn($container);
+        $package->expects('build');
         $package->expects('boot');
 
         Functions\expect('add_action')

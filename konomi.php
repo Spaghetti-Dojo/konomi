@@ -18,33 +18,54 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi;
 
+use Inpsyde\Modularity\Properties\PluginProperties;
+use SpaghettiDojo\Konomi\Activation\ActivationExecute;
+
+function autoload(string $projectRoot): void
+{
+    $autoloadFile = "{$projectRoot}/vendor/autoload.php";
+    if (!\is_readable($autoloadFile)) {
+        return;
+    }
+    require_once $autoloadFile;
+}
+
+autoload(__DIR__);
+
+$package = package();
+/** @var PluginProperties $properties */
+$properties = $package->properties();
+
+$modules = [
+    Configuration\Module::new($properties, '/sources/Icons/icons'),
+    Database\Module::new(),
+    Storage\Module::new(),
+    ApiFetch\Module::new($properties),
+    Icons\Module::new($properties),
+    User\Module::new(),
+    Post\Module::new(),
+    Rest\Module::new(),
+    Blocks\Module::new($properties),
+    Activation\Module::new(),
+];
+
+foreach ($modules as $module) {
+    $package->addModule($module);
+}
+
+$package->build();
+
+// Register the plugin lifecycle hooks at top level scope, after the container is
+// built but before the deferred `boot()` on `plugins_loaded`. This is early
+// enough for WordPress to catch the activation hook, which fires before
+// `plugins_loaded` for the plugin being activated.
+$activation = $package->container()->get(ActivationExecute::class);
+$activation->prepare($modules);
+$activation->registerActivationLogic();
+$activation->registerDeactivationLogic();
+$activation->registerUninstallLogic();
+
 add_action(
     'plugins_loaded',
-    static function () {
-        // phpcs:disable Squiz.PHP.InnerFunctions.NotAllowed
-        function autoload(string $projectRoot): void
-        {
-            // phpcs:enable Squiz.PHP.InnerFunctions.NotAllowed
-
-            $autoloadFile = "{$projectRoot}/vendor/autoload.php";
-            if (!\is_readable($autoloadFile)) {
-                return;
-            }
-            require_once $autoloadFile;
-        }
-
-        autoload(__DIR__);
-        $package = package();
-        $properties = $package->properties();
-
-        $package
-            ->addModule(Configuration\Module::new($properties, '/sources/Icons/icons'))
-            ->addModule(ApiFetch\Module::new($properties))
-            ->addModule(Icons\Module::new($properties))
-            ->addModule(User\Module::new())
-            ->addModule(Post\Module::new())
-            ->addModule(Rest\Module::new())
-            ->addModule(Blocks\Module::new($properties))
-            ->boot();
-    }
+    static fn () => $package->boot()
 );

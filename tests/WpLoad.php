@@ -29,7 +29,13 @@ class WpLoad
         // phpcs:enable Inpsyde.CodeQuality.VariablesName.SnakeCaseVar
 
         require_once ABSPATH . 'wp-includes/plugin.php';
-        require_once dirname(__DIR__) . '/konomi.php';
+
+        // Load the plugin the same way core does: during muplugins_loaded, after
+        // wp-includes/functions.php is available (get_file_data) and before plugins_loaded
+        // fires, so the plugin's own plugins_loaded/boot registration still lands in time.
+        add_action('muplugins_loaded', static function (): void {
+            require_once dirname(__DIR__) . '/konomi.php';
+        });
 
         require_once ABSPATH . '/wp-settings.php';
         require_once ABSPATH . 'wp-admin/includes/admin.php';
