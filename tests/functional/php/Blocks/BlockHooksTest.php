@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Functional\Blocks;
 
+use SpaghettiDojo\Konomi\Blocks\Konomi\HookedContent;
+
 // Block Hooks auto-insertion of `konomi/konomi` after `core/post-title`. The hooked
 // instance is inserted bare by WordPress; the `hooked_block_konomi/konomi` filter
 // (SpaghettiDojo\Konomi\Blocks\Konomi\HookedContent) must populate it with the default
@@ -47,7 +49,7 @@ describe('Block Hooks', function (): void {
     });
 
     it('does not override a block that already has inner blocks', function (): void {
-        $hookedContent = \SpaghettiDojo\Konomi\Blocks\Konomi\HookedContent::new();
+        $hookedContent = HookedContent::new();
 
         $alreadyPopulated = [
             'blockName' => 'konomi/konomi',
@@ -68,5 +70,20 @@ describe('Block Hooks', function (): void {
         );
 
         expect($result)->toBe($alreadyPopulated);
+    });
+
+    it('leaves a suppressed (non-array) hooked block untouched', function (): void {
+        $hookedContent = HookedContent::new();
+
+        // A prior filter may have returned null to suppress the insertion.
+        $result = $hookedContent->injectDefaultInnerBlocks(
+            null,
+            'konomi/konomi',
+            'after',
+            null,
+            null
+        );
+
+        expect($result)->toBeNull();
     });
 });
