@@ -7,7 +7,7 @@
  * Author: Guido Scialfa
  * Author URI: https://guidoscialfa.com/
  * Description: A WordPress plugin to save posts as favorite using the new Interactive API.
- * Version: 0.1.0
+ * Version: 0.3.0
  * Text Domain: konomi
  */
 
