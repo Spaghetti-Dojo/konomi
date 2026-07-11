@@ -131,7 +131,7 @@ class WpTestCase extends TestCase
             // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         }
 
-        Database\SchemaManager::new(Database\InteractionsTable::new($wpdb->prefix))->drop();
+        Database\SchemaManager::new($wpdb, Database\InteractionsTable::new($wpdb->prefix))->drop();
 
         wp_cache_flush();
     }
@@ -139,6 +139,9 @@ class WpTestCase extends TestCase
     private static function createKonomiTables(): void
     {
         global $wpdb;
-        Database\SchemaManager::new(Database\InteractionsTable::new($wpdb->prefix))->create();
+        Database\SchemaManager::new(
+            $wpdb,
+            Database\InteractionsTable::new($wpdb->prefix)
+        )->create();
     }
 }

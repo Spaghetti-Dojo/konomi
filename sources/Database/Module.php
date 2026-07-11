@@ -34,11 +34,15 @@ class Module implements ServiceModule, Activable
                 global $wpdb;
                 return InteractionsTable::new($wpdb->prefix);
             },
-            SchemaManager::class => static fn (
+            SchemaManager::class => static function (
                 ContainerInterface $container
-            ) => SchemaManager::new(
-                $container->get(InteractionsTable::class)
-            ),
+            ): SchemaManager {
+                global $wpdb;
+                return SchemaManager::new(
+                    $wpdb,
+                    $container->get(InteractionsTable::class)
+                );
+            },
         ];
     }
 

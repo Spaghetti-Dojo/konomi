@@ -12,23 +12,21 @@ namespace SpaghettiDojo\Konomi\Database;
  *
  * @internal
  */
-class SchemaManager
+readonly class SchemaManager
 {
-    public static function new(InteractionsTable $table): SchemaManager
+    public static function new(\wpdb $wpdb, InteractionsTable $table): SchemaManager
     {
-        return new self($table);
+        return new self($wpdb, $table);
     }
 
-    final private function __construct(private readonly InteractionsTable $table)
+    final private function __construct(private \wpdb $wpdb, private InteractionsTable $table)
     {
     }
 
     public function create(): void
     {
-        global $wpdb;
-
         $tableName = $this->table->name();
-        $charsetCollate = $wpdb->get_charset_collate();
+        $charsetCollate = $this->wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE {$tableName} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -47,12 +45,10 @@ class SchemaManager
 
     public function drop(): void
     {
-        global $wpdb;
-
         $tableName = $this->table->name();
 
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $wpdb->query("DROP TABLE IF EXISTS {$tableName}");
+        $this->wpdb->query("DROP TABLE IF EXISTS {$tableName}");
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     }
 }
