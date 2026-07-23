@@ -1,6 +1,10 @@
 # Storage Drivers
 
-Konomi persists user/entity interactions through the `SpaghettiDojo\Konomi\Storage\Storage` interface. Core ships a single implementation, `Storage\TableStorage`, which writes to the `{prefix}konomi_interactions` custom table. The driver is registered once as a shared container service (`Storage\Storage::class`) and consumed by both the Post and User repositories. This document describes the contract and shows how to swap in an alternative driver (e.g. WordPress meta) the Modularity way, via an [Extending Module](https://inpsyde.github.io/modularity/Modules/#extendingmodule).
+Konomi persists user/entity interactions through the `SpaghettiDojo\Konomi\Storage\Storage` interface. Core ships a
+single implementation, `Storage\TableStorage`, which writes to the `{prefix}konomi_interactions` custom table. The
+driver is registered once as a shared container service (`Storage\Storage::class`) and consumed by both the Post and
+User repositories. This document describes the contract and shows how to swap in an alternative driver (e.g. WordPress
+meta) the Modularity way, via an [Extending Module](https://inpsyde.github.io/modularity/Modules/#extendingmodule).
 
 ## The `Storage` interface
 
@@ -17,7 +21,8 @@ interface Storage
 }
 ```
 
-The same storage instance serves both the Post and User domains. There is a single `konomi_interactions` table; the `Axis` supplied per call tells the driver which column the bare `$id` addresses:
+The same storage instance serves both the Post and User domains. There is a single `konomi_interactions` table; the
+`Axis` supplied per call tells the driver which column the bare `$id` addresses:
 
 ```php
 enum Axis
@@ -42,13 +47,17 @@ final class Record
 }
 ```
 
-`$id` is the axis identifier (a post id under `Axis::Entity`, a user id under `Axis::User`). `$groupKey` is a sanitized `User\ItemGroup` value (e.g. `"reaction"`, `"bookmark"`).
+`$id` is the axis identifier (a post id under `Axis::Entity`, a user id under `Axis::User`). `$groupKey` is a sanitized
+`User\ItemGroup` value (e.g. `"reaction"`, `"bookmark"`).
 
-`read` returns every record scoped to `($axis, $id, $groupKey)`. `write` replaces the entire scope: existing rows for that `(axis column = $id, groupKey)` are deleted and the supplied `$records` are inserted. An empty `$records` list clears the scope. Implementations should be transactional — partial writes must roll back and return `false`.
+`read` returns every record scoped to `($axis, $id, $groupKey)`. `write` replaces the entire scope: existing rows for
+that `(axis column = $id, groupKey)` are deleted and the supplied `$records` are inserted. An empty `$records` list
+clears the scope. Implementations should be transactional — partial writes must roll back and return `false`.
 
 ## Reference: meta-backed driver
 
-The example below stores each scope as a single serialized array on `wp_postmeta` (for `Axis::Entity`) or `wp_usermeta` (for `Axis::User`). A single implementation branches on the `Axis` it receives. Copy and adapt as needed.
+The example below stores each scope as a single serialized array on `wp_postmeta` (for `Axis::Entity`) or `wp_usermeta`
+(for `Axis::User`). A single implementation branches on the `Axis` it receives. Copy and adapt as needed.
 
 ```php
 namespace MyPlugin\Storage;
@@ -126,7 +135,10 @@ final class MetaStorage implements Storage
 
 ## Extending the storage service
 
-Konomi registers the driver once, under the `Storage\Storage::class` id (see `Storage\Module`). To swap it from a consumer plugin or site, extend that service with an [`ExtendingModule`](https://inpsyde.github.io/modularity/Modules/#extendingmodule) — you do **not** re-register the repositories:
+Konomi registers the driver once, under the `Storage\Storage::class` id (see `Storage\Module`). To swap it from a
+consumer plugin or site, extend that service with an
+[`ExtendingModule`](https://inpsyde.github.io/modularity/Modules/#extendingmodule) — you do **not** re-register the
+repositories:
 
 ```php
 use Inpsyde\Modularity\Module\ExtendingModule;
@@ -162,10 +174,15 @@ Add the extending module after Konomi's bundled modules so its extension is appl
 \SpaghettiDojo\Konomi\package()->addModule(StorageOverrideModule::new());
 ```
 
-Because there is a single shared service, one extension swaps the driver for **both** the Post and User repositories. The custom driver receives the `Axis` on every call and can branch on it when the backend differs per axis (as the `MetaStorage` reference does).
+Because there is a single shared service, one extension swaps the driver for **both** the Post and User repositories.
+The custom driver receives the `Axis` on every call and can branch on it when the backend differs per axis (as the
+`MetaStorage` reference does).
 
 ## Notes
 
 - `groupKey` is operation scope, not row data — `write` always replaces the entire `($axis, $id, $groupKey)` slice.
-- `TableStorage` enforces an axis invariant: the column corresponding to the call's `Axis` is forced to `$id` regardless of the value carried on a `Record`. Custom drivers should preserve that invariant if they rely on the same shape.
-- Validation is the driver's responsibility at the read boundary: `read` must return only well-formed `Record`s. Repositories assume the type is the contract.
+- `TableStorage` enforces an axis invariant: the column corresponding to the call's `Axis` is forced to `$id`
+    regardless of the value carried on a `Record`. Custom drivers should preserve that invariant if they rely on the
+    same shape.
+- Validation is the driver's responsibility at the read boundary: `read` must return only well-formed `Record`s.
+    Repositories assume the type is the contract.

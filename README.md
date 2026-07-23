@@ -10,7 +10,7 @@
 ## Documentation
 
 | Module                                       | What you can do                                                                                                                          |
-|----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | [Blocks](./docs/blocks.md)                   | Reaction, bookmark, and container blocks — render them, extend the Konomi block via Block Hooks, and build your own Context-driven block |
 | [Rest](./docs/rest.md)                       | Register custom REST endpoints with a typed route builder, schemas, and a composable middleware chain                                    |
 | [User](./docs/user.md)                       | Read & write a user's reactions and bookmarks — get the current user, query items, save/toggle, and hook save events                     |

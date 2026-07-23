@@ -1,8 +1,13 @@
 # User
 
-The `SpaghettiDojo\Konomi\User` module is the entry point for reading and writing the interactions (reactions and bookmarks) that belong to a user. A single value object — `User\Item` — represents one interaction: a post id, a type, an active flag, and an `ItemGroup` (reaction or bookmark). The `User` object is the façade you work with; a `User\Repository` persists items through the shared [`Storage`](./storage.md) driver on the `Axis::User` axis.
+The `SpaghettiDojo\Konomi\User` module is the entry point for reading and writing the interactions (reactions and
+bookmarks) that belong to a user. A single value object — `User\Item` — represents one interaction: a post id, a type,
+an active flag, and an `ItemGroup` (reaction or bookmark). The `User` object is the façade you work with; a
+`User\Repository` persists items through the shared [`Storage`](./storage.md) driver on the `Axis::User` axis.
 
-This document is a how-to for developers building on Konomi: how to get the current user, read their saved items, and create/save an item — plus the `konomi.user.repository.save-successfully` action the [Post module](./post.md) listens to.
+This document is a how-to for developers building on Konomi: how to get the current user, read their saved items, and
+create/save an item — plus the `konomi.user.repository.save-successfully` action the [Post module](./post.md) listens
+to.
 
 ## What you can do
 
@@ -16,7 +21,8 @@ This document is a how-to for developers building on Konomi: how to get the curr
 
 ### 1. Get the current user
 
-`currentUser()` (in `sources/User/api.php`) resolves the `UserFactory` from the container and returns a `User\User` wrapping `wp_get_current_user()`.
+`currentUser()` (in `sources/User/api.php`) resolves the `UserFactory` from the container and returns a `User\User`
+wrapping `wp_get_current_user()`.
 
 ```php
 use function SpaghettiDojo\Konomi\User\currentUser;
@@ -41,7 +47,8 @@ $userId = $user->id(); // 0 when not logged in
 
 ### 2. Read a user's saved items
 
-`all()` returns every stored `Item` for one `ItemGroup`. The group is an enum with exactly two cases — `ItemGroup::REACTION` (`'reaction'`) and `ItemGroup::BOOKMARK` (`'bookmark'`).
+`all()` returns every stored `Item` for one `ItemGroup`. The group is an enum with exactly two cases —
+`ItemGroup::REACTION` (`'reaction'`) and `ItemGroup::BOOKMARK` (`'bookmark'`).
 
 ```php
 use SpaghettiDojo\Konomi\User\ItemGroup;
@@ -59,7 +66,8 @@ foreach ($reactions as $item) {
 $bookmarks = $user->all(ItemGroup::BOOKMARK);
 ```
 
-To check a single post, use `findItem()`. It always returns an `Item`; when nothing is stored you get a null item (`isValid() === false`, `isActive() === false`), so you never have to null-check the return value.
+To check a single post, use `findItem()`. It always returns an `Item`; when nothing is stored you get a null item
+(`isValid() === false`, `isActive() === false`), so you never have to null-check the return value.
 
 ```php
 $item = $user->findItem(123, ItemGroup::BOOKMARK);
@@ -71,7 +79,9 @@ if ($item->isActive()) {
 
 ### 3. Create and save an item
 
-Build items with `User\ItemFactory` (it accepts an `ItemGroup` or its string value and validates it), then persist with `saveItem()`. The active flag is the toggle: `true` stores the item, `false` removes it from the user's set on the next save.
+Build items with `User\ItemFactory` (it accepts an `ItemGroup` or its string value and validates it), then persist with
+`saveItem()`. The active flag is the toggle: `true` stores the item, `false` removes it from the user's set on the next
+save.
 
 ```php
 use SpaghettiDojo\Konomi\User\ItemFactory;
@@ -99,11 +109,14 @@ $reaction = Item::new(123, 'post', true); // group => ItemGroup::REACTION
 $user->saveItem($reaction);
 ```
 
-`saveItem()` returns `false` without touching storage when the user is anonymous (`id() === 0`) or the item is invalid (`id <= 0` or empty `type`). On a successful write it fires the action below.
+`saveItem()` returns `false` without touching storage when the user is anonymous (`id() === 0`) or the item is invalid
+(`id <= 0` or empty `type`). On a successful write it fires the action below.
 
 ### 4. React to a successful save
 
-When a save is persisted, `User\Repository::save()` fires `konomi.user.repository.save-successfully`. This is the seam the Post module uses to mirror the record on the entity axis, and you can hook it for your own side effects (cache busting, notifications, counters).
+When a save is persisted, `User\Repository::save()` fires `konomi.user.repository.save-successfully`. This is the seam
+the Post module uses to mirror the record on the entity axis, and you can hook it for your own side effects (cache
+busting, notifications, counters).
 
 ```php
 use SpaghettiDojo\Konomi\User;
@@ -125,9 +138,11 @@ add_action(
 );
 ```
 
-The action passes four arguments, in order: the `User\Item`, the `User\User`, the item's `User\ItemGroup`, and the `Storage\StorageKey`. (The Post module subscribes with only the first two — see [post.md](./post.md).)
+The action passes four arguments, in order: the `User\Item`, the `User\User`, the item's `User\ItemGroup`, and the
+`Storage\StorageKey`. (The Post module subscribes with only the first two — see [post.md](./post.md).)
 
-Two read actions are also available for observing lookups: `konomi.user.repository.find` (`$item, $user, $storageKey, $id`) and `konomi.user.repository.all` (`$items, $user, $storageKey`).
+Two read actions are also available for observing lookups: `konomi.user.repository.find`
+(`$item, $user, $storageKey, $id`) and `konomi.user.repository.all` (`$items, $user, $storageKey`).
 
 ## Public API
 
@@ -157,7 +172,8 @@ interface User
 }
 ```
 
-`CurrentUser` is the shipped `@internal` implementation; obtain it via `currentUser()` rather than constructing it directly.
+`CurrentUser` is the shipped `@internal` implementation; obtain it via `currentUser()` rather than constructing it
+directly.
 
 ### `Item` (value object, `@api`)
 
@@ -197,7 +213,8 @@ class ItemFactory
 }
 ```
 
-Accepts an `ItemGroup` or its string value (`'reaction'` / `'bookmark'`); an unknown string throws `\ValueError` via `ItemGroup::fromValue()`.
+Accepts an `ItemGroup` or its string value (`'reaction'` / `'bookmark'`); an unknown string throws `\ValueError` via
+`ItemGroup::fromValue()`.
 
 ### `UserFactory` (`@api`)
 
@@ -209,7 +226,8 @@ class UserFactory
 }
 ```
 
-Registered in the container; `currentUser()` resolves it for you. Resolve it manually only if you need a fresh `User` outside the helper:
+Registered in the container; `currentUser()` resolves it for you. Resolve it manually only if you need a fresh `User`
+outside the helper:
 
 ```php
 use SpaghettiDojo\Konomi\User\UserFactory;
@@ -222,9 +240,14 @@ $user = \SpaghettiDojo\Konomi\package()
 
 ### `Repository`, `CurrentUser`, `ItemRegistry`, `ItemRegistryKey` (`@internal`)
 
-These back the `User` façade and are not part of the supported surface. `Repository` performs the actual `Storage` reads/writes on `Storage\Axis::User` and fires the repository actions; `ItemRegistry` / `ItemRegistryKey` provide the per-request in-memory cache keyed by `{userId}.{group}`. Reach them through `User`'s methods (`all()`, `findItem()`, `saveItem()`) and the documented actions rather than calling them directly.
+These back the `User` façade and are not part of the supported surface. `Repository` performs the actual `Storage`
+reads/writes on `Storage\Axis::User` and fires the repository actions; `ItemRegistry` / `ItemRegistryKey` provide the
+per-request in-memory cache keyed by `{userId}.{group}`. Reach them through `User`'s methods (`all()`, `findItem()`,
+`saveItem()`) and the documented actions rather than calling them directly.
 
 ## Related
 
-- [post.md](./post.md) — the Post module reads a post's interactions and reacts to `konomi.user.repository.save-successfully`.
-- [storage.md](./storage.md) — the `Storage` driver both repositories write through; `User\Repository` always uses `Axis::User`.
+- [post.md](./post.md) — the Post module reads a post's interactions and reacts to
+    `konomi.user.repository.save-successfully`.
+- [storage.md](./storage.md) — the `Storage` driver both repositories write through; `User\Repository` always uses
+    `Axis::User`.

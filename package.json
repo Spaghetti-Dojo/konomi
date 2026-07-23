@@ -56,9 +56,11 @@
 		"lint:js:fix": "wp-scripts lint-js --fix ./sources ./@types",
 		"lint:css": "wp-scripts lint-style ./sources/**/*.scss --ignore-path .stylelintignore --config .stylelintrc.json",
 		"lint:css:fix": "wp-scripts lint-style ./sources/**/*.scss --fix",
+		"lint:md": "wp-scripts lint-md-docs README.md ./docs",
+		"lint:md:fix": "prettier --write --prose-wrap always --print-width 120 README.md \"./docs/**/*.md\" && wp-scripts lint-md-docs README.md ./docs --fix",
 		"test": "jest",
 		"test:update-snapshots": "yarn test -u",
 		"test:coverage": "jest --coverage",
-		"qa": "tsc --noEmit && yarn lint:js && yarn lint:css && yarn test:coverage"
+		"qa": "tsc --noEmit && yarn lint:js && yarn lint:css && yarn lint:md && yarn test:coverage"
 	}
 }
