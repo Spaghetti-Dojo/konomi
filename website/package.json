@@ -2,7 +2,6 @@
 	"name": "konomi-docs",
 	"version": "0.0.0",
 	"private": true,
-	"type": "module",
 	"description": "Documentation site for the Konomi WordPress plugin",
 	"license": "GPL-2.0-or-later",
 	"engines": {
