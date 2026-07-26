@@ -1,76 +1,29 @@
 # Storage
 
-Konomi keeps every interaction (reactions, bookmarks, …) in one place: a shared **storage service** that both the Post
-and User domains read from and write to. Because it is a single container service, you can replace the whole persistence
-backend once and affect both domains at the same time.
+Every interaction Konomi records — a reaction, a bookmark — passes through one narrow contract with two methods. The
+Post and User domains both read and write through that single service, so replacing it swaps the persistence backend for
+the whole plugin in one move. Nothing above it knows whether rows live in a custom table, in post-meta, or in a remote
+service.
 
-This page is the overview. The full worked example — a meta-backed driver, the axis invariant, and the `ExtendingModule`
-wiring — lives in [`./storage-drivers.md`](./storage-drivers.md).
+## Concepts
 
-## What you can do
+**Axis** — a call carries a bare integer id, and the axis says what that id means. Under `Axis::Entity` it is a post ID;
+under `Axis::User` it is a user ID. The Post domain always reads along the entity axis, the User domain along the user
+axis. The same record is reachable from either side.
 
-- **Swap the storage backend** for both the Post and User domains by extending a single shared service
-    (`Storage\Storage::class`).
-- **Read and write interaction records** through one narrow contract (`read` / `write`), without touching the
-    repositories that consume it.
-- **Branch per domain inside a custom driver** using the `Axis` passed on every call (e.g. store entity data in
-    `wp_postmeta`, user data in `wp_usermeta`).
+**Record** — one interaction: which entity, which user, what type of entity. It carries no identity of its own.
 
-## How-to: switch the storage service
+**Group key** — a sanitized string naming the kind of interaction (`"reaction"`, `"bookmark"`). It is _operation scope_,
+not row data: every read and write applies to the whole `(axis, id, groupKey)` slice.
 
-Konomi registers the driver once, under the `Storage\Storage::class` container id, and both `Post\Repository` and
-`User\Repository` consume that single instance. To replace it you extend that service — you do **not** re-register the
-repositories.
+**Replace, not append** — `write()` replaces that entire slice. The records you pass become the complete new contents;
+passing an empty list clears it.
 
-1. Write a class implementing `SpaghettiDojo\Konomi\Storage\Storage` (`read` + `write`).
-2. Declare an Inpsyde Modularity [`ExtendingModule`](https://inpsyde.github.io/modularity/Modules/#extendingmodule)
-   whose `extensions()` returns a replacement for the `Storage::class` id:
+## API
 
-```php
-use Inpsyde\Modularity\Module\ExtendingModule;
-use Inpsyde\Modularity\Module\ModuleClassNameIdTrait;
-use MyPlugin\Storage\MetaStorage;
-use Psr\Container\ContainerInterface;
-use SpaghettiDojo\Konomi\Storage\Storage;
+### `Storage`
 
-final class StorageOverrideModule implements ExtendingModule
-{
-    use ModuleClassNameIdTrait;
-
-    public static function new(): self
-    {
-        return new self();
-    }
-
-    private function __construct() {}
-
-    public function extensions(): array
-    {
-        return [
-            Storage::class => static fn (Storage $original, ContainerInterface $c): Storage
-                => new MetaStorage(),
-        ];
-    }
-}
-```
-
-3. Add the extending module **after** Konomi's bundled modules so the extension is applied:
-
-```php
-\SpaghettiDojo\Konomi\package()->addModule(StorageOverrideModule::new());
-```
-
-One extension swaps the driver for both repositories. For the complete implementation — a `MetaStorage` example that
-branches on `Axis`, the axis invariant it must preserve, and the read-boundary validation rules — see
-[`./storage-drivers.md`](./storage-drivers.md).
-
-## Public API
-
-### `Storage` interface
-
-The contract every driver implements. `read` returns all records scoped to `($axis, $id, $groupKey)`; `write`
-**replaces** that entire scope (existing rows deleted, supplied `$records` inserted; an empty list clears the scope) and
-should be transactional.
+The contract. Implement it to provide a backend.
 
 ```php
 namespace SpaghettiDojo\Konomi\Storage;
@@ -85,34 +38,29 @@ interface Storage
 }
 ```
 
-Arguments:
+`read()` returns every record in the scope, or an empty list when there are none. `write()` returns whether the
+replacement succeeded.
 
-- `Axis $axis` — which domain the bare `$id` addresses (see below).
-- `int $id` — the axis identifier: a post id under `Axis::Entity`, a user id under `Axis::User`.
-- `string $groupKey` — a sanitized `User\ItemGroup` value (e.g. `"reaction"`, `"bookmark"`). It is operation scope,
-    not row data.
+Two obligations fall on the implementation:
 
-The core implementation is `Storage\TableStorage`, which writes to the `{prefix}konomi_interactions` table (see
-[`./database.md`](./database.md)). It is `@internal` — depend on the `Storage` interface, not on `TableStorage`.
+- **Be transactional.** A partial write must roll back and return `false`. Consumers treat `false` as "nothing
+    changed".
+- **Validate at the read boundary.** `read()` must return only well-formed records. Callers trust the return type as
+    the contract and do not re-check it.
 
-### `Axis` enum
-
-Tells the driver which column a bare `$id` targets. `Post\Repository` always calls with `Axis::Entity`,
-`User\Repository` always with `Axis::User`.
+### `Axis`
 
 ```php
 enum Axis
 {
-    case Entity;   // $id -> entity_id column
-    case User;     // $id -> user_id column
+    case Entity;   // $id is a post id
+    case User;     // $id is a user id
 
     public function column(): string;   // 'entity_id' | 'user_id'
 }
 ```
 
-### `Record` value object
-
-A readonly row carrier returned by `read` and accepted by `write`:
+### `Record`
 
 ```php
 final readonly class Record
@@ -125,24 +73,135 @@ final readonly class Record
 }
 ```
 
-`TableStorage` enforces an **axis invariant** on write: the column matching the call's `Axis` is forced to `$id`,
-ignoring whatever that field carries on the `Record`. Custom drivers that share the same shape should preserve this —
-see [`./storage-drivers.md`](./storage-drivers.md).
+`$entityType` is the post type the interaction points at.
+
+### The axis invariant
+
+On write, the field matching the call's axis is authoritative from `$id`, not from the record. Writing along
+`Axis::User` for user `7` stores `user_id = 7` on every record regardless of what `$record->userId` holds. Preserve this
+in a custom driver: it is what guarantees a slice cannot contain rows belonging to someone else.
+
+```php
+'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
+'user_id'   => $axis === Axis::User   ? $id : $record->userId,
+```
 
 ### `StorageKey`
 
-Turns a `User\ItemGroup` into the sanitized `groupKey` string used by `read` / `write`. It strips to `[a-z0-9_]` and
-throws `\InvalidArgumentException` on an empty value or `\UnexpectedValueException` if sanitizing would change the value
-(invalid characters present).
+Turns a `User\ItemGroup` into the group key string. It accepts only `[a-z0-9_]`.
 
 ```php
-$groupKey = StorageKey::new()->for($itemGroup); // e.g. "reaction"
+$groupKey = StorageKey::new()->for($itemGroup); // "reaction"
 ```
+
+Throws `\InvalidArgumentException` when the group value is empty, and `\UnexpectedValueException` when it contains
+characters that sanitizing would strip — the value is rejected rather than silently altered.
+
+## Using it
+
+Konomi ships a driver backed by the `konomi_interactions` table (see [Database](./database.md)). It is registered under
+the `Storage::class` id, and both repositories resolve that one id — so replacing the id replaces the backend
+everywhere.
+
+### Writing a driver
+
+This one keeps each slice as a single serialized array, on post-meta for the entity axis and user meta for the user
+axis. One class, branching on the axis it is handed.
+
+```php
+namespace MyPlugin\Storage;
+
+use SpaghettiDojo\Konomi\Storage\{Axis, Record, Storage};
+
+final class MetaStorage implements Storage
+{
+    private const BASE = '_konomi_items';
+
+    public function read(Axis $axis, int $id, string $groupKey): array
+    {
+        if ($id <= 0 || $groupKey === '') {
+            return [];
+        }
+
+        $raw = $this->getMeta($axis, $id, self::BASE . '.' . $groupKey);
+        if (!is_array($raw)) {
+            return [];
+        }
+
+        $records = [];
+        foreach ($raw as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $entityId = (int) ($row['entity_id'] ?? 0);
+            $userId = (int) ($row['user_id'] ?? 0);
+            $entityType = (string) ($row['entity_type'] ?? '');
+            if ($entityId <= 0 || $userId <= 0 || $entityType === '') {
+                continue;
+            }
+            $records[] = new Record($entityId, $userId, $entityType);
+        }
+
+        return $records;
+    }
+
+    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
+    {
+        if ($id <= 0 || $groupKey === '') {
+            return false;
+        }
+
+        $payload = array_map(
+            static fn (Record $record) => [
+                'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
+                'user_id' => $axis === Axis::User ? $id : $record->userId,
+                'entity_type' => $record->entityType,
+            ],
+            $records
+        );
+
+        return $this->updateMeta($axis, $id, self::BASE . '.' . $groupKey, $payload);
+    }
+
+    private function getMeta(Axis $axis, int $id, string $key): mixed
+    {
+        return $axis === Axis::Entity
+            ? get_post_meta($id, $key, true)
+            : get_user_meta($id, $key, true);
+    }
+
+    /** @param list<array<string, mixed>> $payload */
+    private function updateMeta(Axis $axis, int $id, string $key, array $payload): bool
+    {
+        return (bool) ($axis === Axis::Entity
+            ? update_post_meta($id, $key, $payload)
+            : update_user_meta($id, $key, $payload));
+    }
+}
+```
+
+Note the guard clauses: a non-positive id or an empty group key is not an error, it is an empty scope. Reads return
+nothing, writes refuse.
+
+### Installing it
+
+Replace the `Storage::class` service. Both repositories pick it up — you never re-register them.
+
+```php
+public function extensions(): array
+{
+    return [
+        Storage::class => static fn (Storage $original, ContainerInterface $c): Storage
+            => MyPlugin\Storage\MetaStorage::new(),
+    ];
+}
+```
+
+See [Extending Konomi](./extending.md) for the full module and where to register it.
 
 ## Related
 
-- [`./storage-drivers.md`](./storage-drivers.md) — full driver reference: meta-backed example, invariants, extension
-    notes.
-- [`./database.md`](./database.md) — the `konomi_interactions` table that `TableStorage` reads and writes.
-- [`./post.md`](./post.md) — the Post domain repository (`Axis::Entity` consumer).
-- [`./user.md`](./user.md) — the User domain repository (`Axis::User` consumer) and `ItemGroup`.
+- [Extending Konomi](./extending.md) — how to install a replacement service.
+- [Database](./database.md) — the table the shipped driver uses.
+- [Post](./post.md) — the entity-axis consumer.
+- [User](./user.md) — the user-axis consumer, and `ItemGroup`.
