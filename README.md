@@ -9,6 +9,8 @@
 
 ## Documentation
 
+Also available as a browsable site: **<https://spaghetti-dojo.github.io/konomi/>**
+
 | Module                                   | What you can do                                                                                                                          |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | [Blocks](./docs/blocks.md)               | Reaction, bookmark, and container blocks — render them, extend the Konomi block via Block Hooks, and build your own Context-driven block |
