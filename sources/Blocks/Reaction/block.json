@@ -7,7 +7,7 @@
 	"category": "design",
 	"icon": "smiley",
 	"description": "Reaction e.g. Like",
-	"parent": ["konomi/konomi"],
+	"parent": [ "konomi/konomi" ],
 	"example": {},
 	"attributes": {
 		"inactiveColor": {

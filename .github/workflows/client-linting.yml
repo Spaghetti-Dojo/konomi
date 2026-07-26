@@ -36,6 +36,9 @@ jobs:
             -   name: Install
                 run: yarn install --frozen-lockfile
 
+            -   name: MD Lint
+                run: yarn lint:md
+
             -   name: CSS Lint
                 run: yarn lint:css
 

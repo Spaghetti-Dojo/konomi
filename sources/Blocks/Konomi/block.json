@@ -11,19 +11,14 @@
 	"attributes": {
 		"active": {
 			"type": "array",
-			"default": [
-				"reaction",
-				"bookmark"
-			]
+			"default": [ "reaction", "bookmark" ]
 		}
 	},
 	"supports": {
 		"html": false,
 		"interactivity": true
 	},
-	"allowedBlocks": [
-		"core/group"
-	],
+	"allowedBlocks": [ "core/group" ],
 	"textdomain": "konomi",
 	"editorScript": "file:./dist/js/konomi-konomi-block.js",
 	"viewScriptModule": "file:./build-module/konomi-konomi-block-view.js",
