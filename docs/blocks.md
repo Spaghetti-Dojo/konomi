@@ -1,3 +1,7 @@
+---
+slug: /
+---
+
 # Blocks
 
 Konomi ships the blocks that let a visitor react to or bookmark a post and see the counts, plus a favorites table for
