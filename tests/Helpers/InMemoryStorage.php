@@ -9,6 +9,12 @@ use SpaghettiDojo\Konomi\Storage\Record;
 use SpaghettiDojo\Konomi\Storage\Storage;
 use SpaghettiDojo\Konomi\User;
 
+/**
+ * Models the single `konomi_interactions` table: one flat set of records per
+ * group key, addressed from either axis. `write()` mirrors the `REPLACE` against
+ * `UNIQUE KEY entity_user_group (entity_id, user_id, group_key)`, and `delete()`
+ * reports success when the row is gone, whether or not it matched.
+ */
 class InMemoryStorage implements Storage
 {
     /** @var array<string, list<Record>> */
@@ -16,9 +22,13 @@ class InMemoryStorage implements Storage
 
     private bool $writeFails = false;
 
+    private bool $deleteFails = false;
+
     public int $reads = 0;
 
     public int $writes = 0;
+
+    public int $deletes = 0;
 
     public static function new(): InMemoryStorage
     {
@@ -30,20 +40,53 @@ class InMemoryStorage implements Storage
         if ($id <= 0 || $groupKey === '') {
             return [];
         }
+
         $this->reads++;
-        return $this->data[self::keyFor($id, $groupKey)] ?? [];
+
+        return $this->recordsFor($axis, $id, $groupKey);
     }
 
-    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
+    public function write(Axis $axis, string $groupKey, Record $record): bool
     {
-        if ($id <= 0 || $groupKey === '') {
+        if ($groupKey === '' || $this->writeFails) {
             return false;
         }
-        if ($this->writeFails) {
-            return false;
-        }
+
         $this->writes++;
-        $this->data[self::keyFor($id, $groupKey)] = array_values($records);
+
+        // Mirrors REPLACE against the unique key on
+        // (entity_id, user_id, group_key): the existing row is overwritten.
+        $index = $this->indexOf($groupKey, $record);
+
+        if ($index !== null) {
+            $this->data[$groupKey][$index] = $record;
+
+            return true;
+        }
+
+        $this->data[$groupKey][] = $record;
+
+        return true;
+    }
+
+    public function delete(Axis $axis, string $groupKey, Record $record): bool
+    {
+        if ($groupKey === '' || $this->deleteFails) {
+            return false;
+        }
+
+        $index = $this->indexOf($groupKey, $record);
+
+        // A delete that matches no row still leaves the wanted state.
+        if ($index === null) {
+            return true;
+        }
+
+        $this->deletes++;
+        $records = $this->data[$groupKey];
+        unset($records[$index]);
+        $this->data[$groupKey] = array_values($records);
+
         return true;
     }
 
@@ -52,29 +95,57 @@ class InMemoryStorage implements Storage
         $this->writeFails = $fail;
     }
 
+    public function failDeletes(bool $fail = true): void
+    {
+        $this->deleteFails = $fail;
+    }
+
     /**
      * @param list<Record> $records
      */
-    public function seed(int $id, User\ItemGroup $groupKey, array $records): void
+    public function seed(User\ItemGroup $group, array $records): void
     {
-        $this->data[self::keyFor($id, $groupKey->value)] = $records;
+        foreach ($records as $record) {
+            $this->data[$group->value][] = $record;
+        }
     }
 
     /**
      * @return list<Record>
      */
-    public function get(int $id, string $groupKey): array
+    public function get(int $id, string $groupKey, Axis $axis = Axis::User): array
     {
-        return $this->data[self::keyFor($id, $groupKey)] ?? [];
+        return $this->recordsFor($axis, $id, $groupKey);
     }
 
-    public function has(int $id, string $groupKey): bool
+    public function has(int $id, string $groupKey, Axis $axis = Axis::User): bool
     {
-        return isset($this->data[self::keyFor($id, $groupKey)]);
+        return $this->recordsFor($axis, $id, $groupKey) !== [];
     }
 
-    private static function keyFor(int $id, string $groupKey): string
+    /**
+     * @return list<Record>
+     */
+    private function recordsFor(Axis $axis, int $id, string $groupKey): array
     {
-        return $id . '|' . $groupKey;
+        $records = $this->data[$groupKey] ?? [];
+
+        return array_values(array_filter(
+            $records,
+            static fn (Record $record): bool => $axis === Axis::Entity
+                ? $record->entityId === $id
+                : $record->userId === $id
+        ));
+    }
+
+    private function indexOf(string $groupKey, Record $record): ?int
+    {
+        foreach ($this->data[$groupKey] ?? [] as $index => $stored) {
+            if ($stored->entityId === $record->entityId && $stored->userId === $record->userId) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 }

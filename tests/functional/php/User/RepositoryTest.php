@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SpaghettiDojo\Konomi\Tests\Functional\User;
 
+use SpaghettiDojo\Konomi\Database;
 use SpaghettiDojo\Konomi\User;
 
 use function SpaghettiDojo\Konomi\package;
@@ -77,6 +78,18 @@ describe('User Repository', function (): void {
         $items = $this->repo->all($this->user, User\ItemGroup::REACTION);
         expect($items)->toHaveCount(1)
             ->and($items[$this->postId]->id())->toBe($this->postId);
+
+        // The write replaces the row, so it must not accumulate duplicates.
+        global $wpdb;
+        $table = Database\InteractionsTable::new($wpdb->prefix)->name();
+        $rows = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM %i WHERE entity_id = %d AND user_id = %d AND group_key = %s",
+            $table,
+            $this->postId,
+            $this->user->id(),
+            'reaction'
+        ));
+        expect($rows)->toBe(1);
     });
 
     it('Delete: saving an inactive item removes the row', function (): void {

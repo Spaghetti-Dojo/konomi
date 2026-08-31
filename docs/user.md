@@ -63,8 +63,8 @@ write fires the save action below.
 ### React to a save
 
 When a save persists, the module fires `konomi.user.repository.save-successfully`. Hook it for side effects — cache
-busting, counters, notifications. This is also the seam the [Post](./post.md) module uses to mirror the interaction onto
-the post index.
+busting, counters, notifications. It is the only save-time extension point: the [Post](./post.md) module reads the same
+row from the other axis and fires no action of its own.
 
 ```php
 use SpaghettiDojo\Konomi\User;

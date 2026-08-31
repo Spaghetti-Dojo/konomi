@@ -10,16 +10,18 @@ use SpaghettiDojo\Konomi\Storage;
 use SpaghettiDojo\Konomi\Tests\Helpers;
 use SpaghettiDojo\Konomi\User;
 
+// Both axes address the same `konomi_interactions` table, so both repositories
+// share one storage instance here. A split storage cannot show the cross-axis
+// read that this change relies on.
 beforeEach(function (): void {
     $this->wpUser = \Mockery::mock('\WP_User');
     $this->wpUser->ID = 34;
 
     Functions\when('wp_get_current_user')->justReturn($this->wpUser);
 
-    $this->postStorage = Helpers\InMemoryStorage::new();
-    $this->userStorage = Helpers\InMemoryStorage::new();
+    $this->storage = Helpers\InMemoryStorage::new();
 
-    seedRecords($this->postStorage, 10, User\ItemGroup::REACTION, [
+    seedRecords($this->storage, 10, User\ItemGroup::REACTION, [
         100 => 'post',
         21 => 'product',
         33 => 'video',
@@ -32,22 +34,25 @@ beforeEach(function (): void {
         1000 => 'post',
     ], Storage\Axis::Entity);
 
-    $itemRegistryKey = User\ItemRegistryKey::new();
-    $this->currentUser = User\CurrentUser::new(
-        User\Repository::new(
-            Storage\StorageKey::new(),
-            $this->userStorage,
-            User\ItemFactory::new(),
-            User\ItemRegistry::new($itemRegistryKey)
-        )
+    $this->userRepository = User\Repository::new(
+        Storage\StorageKey::new(),
+        $this->storage,
+        User\ItemFactory::new(),
+        User\ItemRegistry::new(User\ItemRegistryKey::new())
     );
-    $postItemRegistryKey = Post\ItemRegistryKey::new();
+    $this->currentUser = User\CurrentUser::new($this->userRepository);
+
     $this->repository = Post\Repository::new(
         Storage\StorageKey::new(),
-        $this->postStorage,
+        $this->storage,
         User\ItemFactory::new(),
-        Post\ItemRegistry::new($postItemRegistryKey)
+        Post\ItemRegistry::new(Post\ItemRegistryKey::new())
     );
+
+    $this->recordsFor = fn (int $entityId, string $groupKey): array => array_values(array_filter(
+        $this->storage->get($entityId, $groupKey, Storage\Axis::Entity),
+        fn (Storage\Record $record): bool => $record->userId === $this->wpUser->ID
+    ));
 });
 
 describe('Post Repository', function (): void {
@@ -82,94 +87,56 @@ describe('Post Repository', function (): void {
             ->and(count($items))->toBe(0);
     });
 
-    it('save items to post repository', function (): void {
-        $itemToStore = User\Item::new(1, 'type', true);
-        $result = $this->repository->save($itemToStore, $this->currentUser);
+    it('do not load items twice from the persistence layer', function (): void {
+        $this->repository->find(10, User\ItemGroup::REACTION);
+        $this->repository->find(10, User\ItemGroup::REACTION);
 
-        $stored = $this->postStorage->get(1, 'reaction');
-        $matching = array_values(array_filter(
-            $stored,
-            fn (Storage\Record $record) => $record->userId === $this->wpUser->ID
-        ));
-
-        expect($result)->toBeTrue()
-            ->and($matching)->toHaveCount(1)
-            ->and($matching[0]->entityId)->toBe(1)
-            ->and($matching[0]->entityType)->toBe('type');
+        expect($this->storage->reads)->toBe(1);
     });
 
-    it('override existing item in post repository', function (): void {
-        $itemToStore = User\Item::new(1, 'type', true);
-        $this->repository->save($itemToStore, $this->currentUser);
+    it('an active item saved on the user axis is visible on the entity axis', function (): void {
+        $item = User\Item::new(500, 'post', true);
 
-        $itemToStore = User\Item::new(1, 'type', false);
-        $result = $this->repository->save($itemToStore, $this->currentUser);
+        expect($this->userRepository->save($this->currentUser, $item))->toBeTrue();
 
-        $matching = array_filter(
-            $this->postStorage->get(1, 'reaction'),
-            fn (Storage\Record $record) => $record->userId === $this->wpUser->ID
-        );
+        $items = $this->repository->find(500, User\ItemGroup::REACTION);
 
-        expect($result)->toBeTrue()
-            ->and($matching)->toBeEmpty();
+        expect($items)->toHaveKey($this->wpUser->ID)
+            ->and($items[$this->wpUser->ID]->id())->toBe(500)
+            ->and($items[$this->wpUser->ID]->type())->toBe('post')
+            ->and($items[$this->wpUser->ID]->isActive())->toBeTrue();
     });
 
-    it('do not store invalid items', function (): void {
-        $itemToStore = User\Item::new(-1, '', true);
-        $this->repository->save($itemToStore, $this->currentUser);
-        $result = $this->repository->save($itemToStore, $this->currentUser);
+    it('an inactive item saved on the user axis is absent from the entity axis', function (): void {
+        $this->userRepository->save($this->currentUser, User\Item::new(500, 'post', true));
 
-        expect($result)->toBeFalse()
-            ->and($this->postStorage->has(-1, 'reaction'))->toBeFalse();
+        expect($this->userRepository->save($this->currentUser, User\Item::new(500, 'post', false)))
+            ->toBeTrue();
+
+        expect($this->repository->find(500, User\ItemGroup::REACTION))->toBe([]);
     });
 
-    it('rollback registry when storage write fails for a new active item', function (): void {
-        $this->postStorage->failWrites();
+    it('a save on one group does not appear in another group', function (): void {
+        $item = User\Item::new(500, 'post', true, User\ItemGroup::BOOKMARK);
 
-        $itemToStore = User\Item::new(50, 'post', true);
+        $this->userRepository->save($this->currentUser, $item);
 
-        $found = $this->repository->find(50, User\ItemGroup::REACTION);
-        expect($found)->toBeEmpty();
-
-        $saved = $this->repository->save($itemToStore, $this->currentUser);
-        expect($saved)->toBeFalse();
-
-        $afterSaving = $this->repository->find(50, User\ItemGroup::REACTION);
-        expect($afterSaving)->toBeEmpty();
+        expect($this->repository->find(500, User\ItemGroup::BOOKMARK))->toHaveCount(1)
+            ->and($this->repository->find(500, User\ItemGroup::REACTION))->toBe([]);
     });
 
-    it('rollback registry when storage write fails for inactive item', function (): void {
-        $itemToStore = User\Item::new(10, 'post', true);
-        $this->repository->save($itemToStore, $this->currentUser);
+    it('a single user-axis save writes exactly one row and the post side adds none', function (): void {
+        $item = User\Item::new(500, 'post', true);
 
-        $found = $this->repository->find(10, User\ItemGroup::REACTION);
-        expect($found[$this->wpUser->ID]->isActive())->toBeTrue();
+        expect($this->userRepository->save($this->currentUser, $item))->toBeTrue();
 
-        $this->postStorage->failWrites();
+        // One write for the whole interaction: the post side only reads.
+        expect($this->storage->writes)->toBe(1)
+            ->and(($this->recordsFor)(500, 'reaction'))->toHaveCount(1);
 
-        $inactiveItem = User\Item::new(10, 'post', false);
-        $result = $this->repository->save($inactiveItem, $this->currentUser);
-        expect($result)->toBeFalse();
+        $this->repository->find(500, User\ItemGroup::REACTION);
 
-        $afterSaving = $this->repository->find(10, User\ItemGroup::REACTION);
-        expect($afterSaving[$this->wpUser->ID]->isActive())->toBeTrue();
-    });
-
-    it('replace method restores entire registry state on rollback with multiple users', function (): void {
-        $find = $this->repository->find(10, User\ItemGroup::REACTION);
-        expect($find)->toHaveCount(10);
-
-        $this->postStorage->failWrites();
-
-        $itemToStore = User\Item::new(10, 'post', false);
-        $afterSaving = $this->repository->save($itemToStore, $this->currentUser);
-        expect($afterSaving)->toBeFalse();
-
-        $rolledBack = $this->repository->find(10, User\ItemGroup::REACTION);
-
-        foreach ($find as $userId => $item) {
-            expect($rolledBack[$userId]->id())->toBe($item->id());
-            expect($rolledBack[$userId]->isActive())->toBeTrue();
-        }
+        expect($this->storage->writes)->toBe(1)
+            ->and(($this->recordsFor)(500, 'reaction'))->toHaveCount(1);
     });
 });

@@ -57,60 +57,54 @@ class TableStorage implements Storage
         return $records;
     }
 
-    /**
-     * @param list<Record> $records
-     */
-    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
+    public function delete(Axis $axis, string $groupKey, Record $record): bool
     {
-        if ($id <= 0 || $groupKey === '') {
+        if ($groupKey === '') {
             return false;
         }
 
         global $wpdb;
 
         $tableName = $this->table->name();
-        $column = $axis->column();
-
-        $wpdb->query('START TRANSACTION');
 
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $deleted = $wpdb->query(
+        return false !== $wpdb->query(
             $wpdb->prepare(
-                "DELETE FROM %i WHERE {$column} = %d AND group_key = %s",
+                "DELETE FROM %i WHERE group_key = %s AND entity_id = %d AND user_id = %d",
                 $tableName,
-                $id,
-                $groupKey
+                $groupKey,
+                $record->entityId,
+                $record->userId,
             )
         );
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    }
 
-        if ($deleted === false) {
-            $wpdb->query('ROLLBACK');
+    public function write(Axis $axis, string $groupKey, Record $record): bool
+    {
+        if ($groupKey === '') {
             return false;
         }
 
-        foreach ($records as $record) {
-            $payload = [
-                'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
-                'user_id' => $axis === Axis::User ? $id : $record->userId,
-                'entity_type' => $record->entityType,
-                'group_key' => $groupKey,
-            ];
+        global $wpdb;
 
-            $inserted = $wpdb->insert(
-                $tableName,
-                $payload,
-                ['%d', '%d', '%s', '%s']
-            );
+        $tableName = $this->table->name();
 
-            if ($inserted === false) {
-                $wpdb->query('ROLLBACK');
-                return false;
-            }
-        }
+        $payload = [
+            'entity_id' => $record->entityId,
+            'user_id' => $record->userId,
+            'entity_type' => $record->entityType,
+            'group_key' => $groupKey,
+        ];
 
-        $wpdb->query('COMMIT');
-        return true;
+        // REPLACE, not INSERT: the table declares a unique key on
+        // (entity_id, user_id, group_key), so a re-save of the same interaction
+        // must overwrite the row instead of failing the query.
+        return false !== $wpdb->replace(
+            $tableName,
+            $payload,
+            ['%d', '%d', '%s', '%s']
+        );
     }
 
     /**

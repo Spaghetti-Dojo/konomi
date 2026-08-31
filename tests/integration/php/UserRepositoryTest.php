@@ -70,6 +70,10 @@ describe('User Repository', function (): void {
     });
 
     it('save a valid item', function (): void {
+        // `did_action()` counts every fire in the run, so scope the assertion
+        // to this test instead.
+        Actions\expectDone('konomi.user.repository.save-successfully')->once();
+
         $user = User\CurrentUser::new($this->repository);
         $item = User\Item::new(1, 'product', true, User\ItemGroup::BOOKMARK);
 
@@ -84,7 +88,6 @@ describe('User Repository', function (): void {
         expect($result)->toBeTrue();
         expect($this->storage->writes)->toBe(1);
         expect($matching)->toHaveCount(1)->and($matching[0]->entityType)->toBe('product');
-        expect(did_action('konomi.user.repository.save-successfully'))->toBe(1);
     });
 
     it('do not save inactive items', function (): void {
@@ -117,14 +120,15 @@ describe('User Repository', function (): void {
         expect($foundAfter->id())->toBe(0);
     });
 
-    it('rollback registry when storage write fails for inactive item', function (): void {
+    it('rollback registry when storage delete fails for inactive item', function (): void {
         $user = User\CurrentUser::new($this->repository);
         $inactiveItem = User\Item::new(1, 'product', false);
 
         $foundBefore = $this->repository->find($user, 1, User\ItemGroup::REACTION);
         expect($foundBefore->id())->toBe(1);
 
-        $this->storage->failWrites();
+        // An inactive item is removed, so the delete is what must fail here.
+        $this->storage->failDeletes();
 
         $result = $this->repository->save($user, $inactiveItem);
 

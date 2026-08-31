@@ -17,11 +17,8 @@ beforeEach(function (): void {
 
 describe('TableStorage round trip', function (): void {
     it('writes and reads records on the Entity axis', function (): void {
-        $ok = $this->storage->write(Axis::Entity, 10, 'reaction', [
-            new Record(0, 5, 'post'),
-            new Record(0, 7, 'post'),
-        ]);
-        expect($ok)->toBeTrue();
+        expect($this->storage->write(Axis::Entity, 'reaction', new Record(10, 5, 'post')))->toBeTrue()
+            ->and($this->storage->write(Axis::Entity, 'reaction', new Record(10, 7, 'post')))->toBeTrue();
 
         $records = $this->storage->read(Axis::Entity, 10, 'reaction');
         $userIds = array_map(static fn (Record $record) => $record->userId, $records);
@@ -34,11 +31,8 @@ describe('TableStorage round trip', function (): void {
     });
 
     it('writes and reads records on the User axis', function (): void {
-        $ok = $this->storage->write(Axis::User, 99, 'bookmark', [
-            new Record(3, 0, 'post'),
-            new Record(4, 0, 'page'),
-        ]);
-        expect($ok)->toBeTrue();
+        expect($this->storage->write(Axis::User, 'bookmark', new Record(3, 99, 'post')))->toBeTrue()
+            ->and($this->storage->write(Axis::User, 'bookmark', new Record(4, 99, 'page')))->toBeTrue();
 
         $records = $this->storage->read(Axis::User, 99, 'bookmark');
         $entityIds = array_map(static fn (Record $record) => $record->entityId, $records);
@@ -49,18 +43,35 @@ describe('TableStorage round trip', function (): void {
             ->and($records[0]->userId)->toBe(99);
     });
 
-    it('replaces the previous set for the same axis id and group on write', function (): void {
-        $this->storage->write(Axis::Entity, 10, 'reaction', [new Record(0, 5, 'post')]);
-        $this->storage->write(Axis::Entity, 10, 'reaction', [new Record(0, 8, 'post')]);
+    it('reads a record written from the other axis', function (): void {
+        $this->storage->write(Axis::User, 'reaction', new Record(10, 5, 'post'));
 
         $records = $this->storage->read(Axis::Entity, 10, 'reaction');
 
         expect($records)->toHaveCount(1)
-            ->and($records[0]->userId)->toBe(8);
+            ->and($records[0]->userId)->toBe(5)
+            ->and($records[0]->entityId)->toBe(10);
+    });
+
+    it('deletes a single record and leaves the others', function (): void {
+        $this->storage->write(Axis::Entity, 'reaction', new Record(10, 5, 'post'));
+        $this->storage->write(Axis::Entity, 'reaction', new Record(10, 7, 'post'));
+
+        expect($this->storage->delete(Axis::Entity, 'reaction', new Record(10, 5, 'post')))->toBeTrue();
+
+        $records = $this->storage->read(Axis::Entity, 10, 'reaction');
+
+        expect($records)->toHaveCount(1)
+            ->and($records[0]->userId)->toBe(7);
+    });
+
+    it('reports success when the delete matches no row', function (): void {
+        // A delete is idempotent: only a query error is a failure.
+        expect($this->storage->delete(Axis::Entity, 'reaction', new Record(10, 5, 'post')))->toBeTrue();
     });
 
     it('keeps different group keys isolated', function (): void {
-        $this->storage->write(Axis::Entity, 10, 'reaction', [new Record(0, 5, 'post')]);
+        $this->storage->write(Axis::Entity, 'reaction', new Record(10, 5, 'post'));
 
         expect($this->storage->read(Axis::Entity, 10, 'bookmark'))->toBe([]);
     });
@@ -68,7 +79,7 @@ describe('TableStorage round trip', function (): void {
     it('filters out malformed rows on read', function (): void {
         global $wpdb;
 
-        $this->storage->write(Axis::Entity, 10, 'reaction', [new Record(0, 5, 'post')]);
+        $this->storage->write(Axis::Entity, 'reaction', new Record(10, 5, 'post'));
 
         // A row with an empty entity_type must be dropped by TableStorage::mapRow().
         $wpdb->insert(
