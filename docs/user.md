@@ -182,5 +182,5 @@ Two read actions also exist for observing lookups: `konomi.user.repository.find`
 
 ## Related
 
-- [Post](./post.md) — the read side; counts per post, kept in sync by the save action above.
+- [Post](./post.md) — the read side; it counts per post by reading the same interaction row on `Axis::Entity`.
 - [Storage](./storage.md) — where items are persisted; the User side always uses `Axis::User`.

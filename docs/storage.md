@@ -217,15 +217,21 @@ final class MetaStorage implements Storage
     {
         $key = self::BASE . '.' . $groupKey;
 
-        return (bool) ($axis === Axis::Entity
+        $done = (bool) ($axis === Axis::Entity
             ? update_post_meta($id, $key, $slice)
             : update_user_meta($id, $key, $slice));
+
+        // update_*_meta() returns false when the stored value already matches.
+        // That is a no-op, not a failure, so compare and report success.
+        return $done || $this->slice($axis, $id, $groupKey) === $slice;
     }
 }
 ```
 
 Note the guard clauses: a non-positive id or an empty group key is not an error, it is an empty scope. Reads return
-nothing, writes refuse.
+nothing, writes refuse. Note also the re-read in `updateMeta()`: `update_post_meta()` and `update_user_meta()` return
+`false` when the stored value already equals the new one. Without the comparison, a repeated write would look like a
+failure and `User\Repository::save()` would roll back a valid no-op.
 
 ### Installing it
 

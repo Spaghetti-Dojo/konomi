@@ -51,7 +51,21 @@ function browser() {
 	return chromium.launch({ headless: process.env.KONOMI_HEADED !== '1' });
 }
 
+// The login posts the admin password, so refuse a plaintext remote target.
+function assertSafeSite() {
+	const url = new URL(SITE);
+	const loopback = ['localhost', '127.0.0.1', '[::1]'];
+	if (url.protocol === 'https:') {
+		return;
+	}
+	if (url.protocol === 'http:' && loopback.includes(url.hostname)) {
+		return;
+	}
+	throw new Error(`KONOMI_SITE must use https, or http on a loopback host: ${SITE}`);
+}
+
 async function login(page) {
+	assertSafeSite();
 	await page.goto(`${SITE}/wp-login.php`, { waitUntil: 'domcontentloaded' });
 	await page.fill('#user_login', USER);
 	await page.fill('#user_pass', PASS);
@@ -82,8 +96,16 @@ async function cmdStatus() {
 }
 
 async function cmdUp() {
-	console.log(sh('npx', ['wp-env', 'start']).out);
-	console.log(wpCli(['plugin', 'activate', 'konomi']).out);
+	const start = sh('npx', ['wp-env', 'start']);
+	console.log(start.out);
+	if (start.code !== 0) {
+		throw new Error(`wp-env start failed with exit code ${start.code}`);
+	}
+	const activate = wpCli(['plugin', 'activate', 'konomi']);
+	console.log(activate.out);
+	if (activate.code !== 0) {
+		throw new Error(`plugin activate konomi failed with exit code ${activate.code}`);
+	}
 	await cmdStatus();
 }
 
