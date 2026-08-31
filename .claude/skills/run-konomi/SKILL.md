@@ -23,13 +23,13 @@ All paths and commands below are relative to the repository root.
 
 ```bash
 composer install                   # PHP deps; also copies the WorDBless drop-in
-yarn install                       # JS deps, including Playwright
-npx playwright install chromium    # the browser the driver needs
-yarn build                         # ~5s; writes sources/**/dist and sources/**/build-module
+pnpm install                       # JS deps, including Playwright
+pnpm exec playwright install chromium    # the browser the driver needs
+pnpm build                         # ~5s; writes sources/**/dist and sources/**/build-module
 ```
 
 `sources/**/dist/` and `sources/**/build-*/` are in `.gitignore`. A fresh clone renders blocks
-without scripts or styles until `yarn build` runs.
+without scripts or styles until `pnpm build` runs.
 
 ## Run: agent path
 
@@ -120,7 +120,7 @@ composer test:functional    # 38 tests, ~27s — the slow one
 composer tests              # all three
 composer analysis           # PHPStan, 92 files
 composer cs                 # PHPCS, 140 files
-yarn test                   # Jest, 17 suites
+pnpm test                   # Jest, 17 suites
 ```
 
 ## Direct invocation
@@ -161,8 +161,8 @@ node .claude/skills/run-konomi/driver.mjs cli db query "SELECT * FROM wp_konomi_
 
 | Symptom | Fix |
 | --- | --- |
-| `browserType.launch: Executable doesn't exist at .../chromium_headless_shell-1228/...` | `npx playwright install chromium`. A `yarn install` that bumps Playwright invalidates the cached build. |
+| `browserType.launch: Executable doesn't exist at .../chromium_headless_shell-1228/...` | `pnpm exec playwright install chromium`. A `pnpm install` that bumps Playwright invalidates the cached build. |
 | `Cannot read a post URL from WP-CLI: ...` | The containers are down or the site is not ready. Run `driver.mjs up`, then `driver.mjs status` and check for `HTTP 200`. |
-| Buttons render but nothing happens on click | The view modules are missing. Run `yarn build`, then reload. |
+| Buttons render but nothing happens on click | The view modules are missing. Run `pnpm build`, then reload. |
 | `smoke` fails with `counter is 0, expected 1` | The click did not reach the REST route. Re-run with `KONOMI_HEADED=1` and watch, or `dump` the page and check that `data-wp-interactive="konomiReaction"` is present. |
 | wp-env commands hang or fail to connect | Docker Desktop is not running. Start it and retry. |

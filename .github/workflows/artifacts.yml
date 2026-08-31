@@ -16,14 +16,17 @@ jobs:
             -   name: Checkout
                 uses: actions/checkout@v4
 
+            -   name: Setup pnpm
+                uses: pnpm/action-setup@v4
+
             -   name: Setup Node
                 uses: actions/setup-node@v4
                 with:
-                    cache: 'yarn'
+                    cache: 'pnpm'
                     node-version: '20'
 
             -   name: Install Dependencies
-                run: yarn install
+                run: pnpm install --frozen-lockfile
 
             -   name: Build Artifacts
                 uses: widoz/github-artifacts-action@main
@@ -32,5 +35,5 @@ jobs:
                     GIT_EMAIL: konomi-bot@konomi.bot
                     HUSKY: 0
                 with:
-                    command: 'yarn build'
+                    command: 'pnpm build'
                     target-dir: './sources'
