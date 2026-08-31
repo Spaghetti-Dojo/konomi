@@ -1,23 +1,25 @@
 # Storage
 
-Every interaction Konomi records — a reaction, a bookmark — passes through one narrow contract with two methods. The
-Post and User domains both read and write through that single service, so replacing it swaps the persistence backend for
-the whole plugin in one move. Nothing above it knows whether rows live in a custom table, in post-meta, or in a remote
-service.
+Every interaction Konomi records — a reaction, a bookmark — passes through one narrow contract with three methods. The
+Post and User domains both resolve that single service, so replacing it swaps the persistence backend for the whole
+plugin in one move. Nothing above it knows whether rows live in a custom table, in post-meta, or in a remote service.
 
 ## Concepts
 
-**Axis** — a call carries a bare integer id, and the axis says what that id means. Under `Axis::Entity` it is a post ID;
-under `Axis::User` it is a user ID. The Post domain always reads along the entity axis, the User domain along the user
-axis. The same record is reachable from either side.
+**Axis** — a read carries a bare integer id, and the axis says what that id means. Under `Axis::Entity` it is a post ID;
+under `Axis::User` it is a user ID. The Post domain reads along the entity axis, the User domain along the user axis.
+The same record is reachable from either side.
 
 **Record** — one interaction: which entity, which user, what type of entity. It carries no identity of its own.
 
-**Group key** — a sanitized string naming the kind of interaction (`"reaction"`, `"bookmark"`). It is _operation scope_,
-not row data: every read and write applies to the whole `(axis, id, groupKey)` slice.
+**Group key** — a sanitized string naming the kind of interaction (`"reaction"`, `"bookmark"`). It scopes a read, and it
+is also part of the identity of a row: a record is addressed by `(entityId, userId, groupKey)`.
 
-**Replace, not append** — `write()` replaces that entire slice. The records you pass become the complete new contents;
-passing an empty list clears it.
+**One row per interaction** — `write()` and `delete()` each act on a single record. A save never rewrites a whole
+slice, so two users who react to the same post never overwrite each other.
+
+**One writer** — `User\Repository` is the only caller that writes. `Post\Repository` reads along the entity axis and
+never writes; the row a user save persists is what a later post-side read returns. See [Post](./post.md).
 
 ## API
 
@@ -33,18 +35,21 @@ interface Storage
     /** @return list<Record> */
     public function read(Axis $axis, int $id, string $groupKey): array;
 
-    /** @param list<Record> $records */
-    public function write(Axis $axis, int $id, string $groupKey, array $records): bool;
+    public function delete(Axis $axis, string $groupKey, Record $record): bool;
+
+    public function write(Axis $axis, string $groupKey, Record $record): bool;
 }
 ```
 
-`read()` returns every record in the scope, or an empty list when there are none. `write()` returns whether the
-replacement succeeded.
+`read()` returns every record in the scope, or an empty list when there are none. `write()` and `delete()` return
+whether the operation succeeded.
 
-Two obligations fall on the implementation:
+Three obligations fall on the implementation:
 
-- **Be transactional.** A partial write must roll back and return `false`. Consumers treat `false` as "nothing
-    changed".
+- **Write is idempotent.** `write()` of a record that already exists must overwrite it, not fail and not duplicate it.
+    The shipped driver uses `REPLACE`, because the table declares a unique key on `(entity_id, user_id, group_key)`.
+- **Report failure.** Return `false` when the operation did not happen. `User\Repository` treats `false` as "nothing
+    changed" and rolls its in-memory registry back.
 - **Validate at the read boundary.** `read()` must return only well-formed records. Callers trust the return type as
     the contract and do not re-check it.
 
@@ -60,6 +65,10 @@ enum Axis
 }
 ```
 
+The axis selects the filter column of a read. `write()` and `delete()` also receive it, but the shipped `TableStorage`
+ignores it there: one table row already carries both ids, so it is readable from either axis. A driver that keeps a
+separate store per axis needs the parameter — see the reference driver below.
+
 ### `Record`
 
 ```php
@@ -74,17 +83,6 @@ final readonly class Record
 ```
 
 `$entityType` is the post type the interaction points at.
-
-### The axis invariant
-
-On write, the field matching the call's axis is authoritative from `$id`, not from the record. Writing along
-`Axis::User` for user `7` stores `user_id = 7` on every record regardless of what `$record->userId` holds. Preserve this
-in a custom driver: it is what guarantees a slice cannot contain rows belonging to someone else.
-
-```php
-'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
-'user_id'   => $axis === Axis::User   ? $id : $record->userId,
-```
 
 ### `StorageKey`
 
@@ -105,8 +103,9 @@ everywhere.
 
 ### Writing a driver
 
-This one keeps each slice as a single serialized array, on post-meta for the entity axis and user meta for the user
-axis. One class, branching on the axis it is handed.
+This one keeps each slice as a serialized array, on post-meta for the entity axis and user meta for the user axis.
+Because the two stores are separate, a write must record the interaction on both sides to keep it readable from either
+axis; only the read branches on the axis it is handed.
 
 ```php
 namespace MyPlugin\Storage;
@@ -123,13 +122,8 @@ final class MetaStorage implements Storage
             return [];
         }
 
-        $raw = $this->getMeta($axis, $id, self::BASE . '.' . $groupKey);
-        if (!is_array($raw)) {
-            return [];
-        }
-
         $records = [];
-        foreach ($raw as $row) {
+        foreach ($this->slice($axis, $id, $groupKey) as $row) {
             if (!is_array($row)) {
                 continue;
             }
@@ -145,37 +139,87 @@ final class MetaStorage implements Storage
         return $records;
     }
 
-    public function write(Axis $axis, int $id, string $groupKey, array $records): bool
+    public function write(Axis $axis, string $groupKey, Record $record): bool
     {
-        if ($id <= 0 || $groupKey === '') {
+        if ($groupKey === '' || $record->entityId <= 0 || $record->userId <= 0) {
             return false;
         }
 
-        $payload = array_map(
-            static fn (Record $record) => [
-                'entity_id' => $axis === Axis::Entity ? $id : $record->entityId,
-                'user_id' => $axis === Axis::User ? $id : $record->userId,
-                'entity_type' => $record->entityType,
-            ],
-            $records
+        $row = [
+            'entity_id' => $record->entityId,
+            'user_id' => $record->userId,
+            'entity_type' => $record->entityType,
+        ];
+
+        return $this->mutate(
+            $record,
+            $groupKey,
+            static function (array $slice) use ($row): array {
+                $slice[self::keyFor($row['entity_id'], $row['user_id'])] = $row;
+                return $slice;
+            }
+        );
+    }
+
+    public function delete(Axis $axis, string $groupKey, Record $record): bool
+    {
+        if ($groupKey === '') {
+            return false;
+        }
+
+        return $this->mutate(
+            $record,
+            $groupKey,
+            static function (array $slice) use ($record): array {
+                unset($slice[self::keyFor($record->entityId, $record->userId)]);
+                return $slice;
+            }
+        );
+    }
+
+    private static function keyFor(int $entityId, int $userId): string
+    {
+        return "{$entityId}:{$userId}";
+    }
+
+    /** @param callable(array<string, mixed>): array<string, mixed> $apply */
+    private function mutate(Record $record, string $groupKey, callable $apply): bool
+    {
+        $entity = $this->updateMeta(
+            Axis::Entity,
+            $record->entityId,
+            $groupKey,
+            $apply($this->slice(Axis::Entity, $record->entityId, $groupKey))
+        );
+        $user = $this->updateMeta(
+            Axis::User,
+            $record->userId,
+            $groupKey,
+            $apply($this->slice(Axis::User, $record->userId, $groupKey))
         );
 
-        return $this->updateMeta($axis, $id, self::BASE . '.' . $groupKey, $payload);
+        return $entity && $user;
     }
 
-    private function getMeta(Axis $axis, int $id, string $key): mixed
+    /** @return array<string, mixed> */
+    private function slice(Axis $axis, int $id, string $groupKey): array
     {
-        return $axis === Axis::Entity
+        $key = self::BASE . '.' . $groupKey;
+        $raw = $axis === Axis::Entity
             ? get_post_meta($id, $key, true)
             : get_user_meta($id, $key, true);
+
+        return is_array($raw) ? $raw : [];
     }
 
-    /** @param list<array<string, mixed>> $payload */
-    private function updateMeta(Axis $axis, int $id, string $key, array $payload): bool
+    /** @param array<string, mixed> $slice */
+    private function updateMeta(Axis $axis, int $id, string $groupKey, array $slice): bool
     {
+        $key = self::BASE . '.' . $groupKey;
+
         return (bool) ($axis === Axis::Entity
-            ? update_post_meta($id, $key, $payload)
-            : update_user_meta($id, $key, $payload));
+            ? update_post_meta($id, $key, $slice)
+            : update_user_meta($id, $key, $slice));
     }
 }
 ```
