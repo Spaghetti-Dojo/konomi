@@ -55,12 +55,6 @@ class Post
 
 Registered under `Post::class`; resolve it from the container.
 
-## Migration
-
-The `konomi.post.collection.save` action was removed. The Post module no longer writes, so it no longer fires a save
-event. Move a listener to `konomi.user.repository.save-successfully`, which fires at the same moment with the same
-`$item` and `$user` arguments. See [User](./user.md#action-konomiuserrepositorysave-successfully).
-
 ## Related
 
 - [User](./user.md) — the only writer of an interaction and the source of the save event.
