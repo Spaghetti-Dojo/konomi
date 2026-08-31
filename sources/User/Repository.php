@@ -62,10 +62,6 @@ class Repository
         $registrySnapshot = clone $this->registry;
         $this->prepareDataToStore($user, $item);
 
-        if (!$item->isValid()) {
-            return false;
-        }
-
         $record = new Storage\Record($item->id(), $user->id(), $item->type());
 
         $groupKey = $this->storageKey->for($item->group());
