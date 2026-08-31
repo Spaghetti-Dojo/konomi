@@ -1,178 +1,75 @@
 ---
 name: wp-interactivity-api
-description: "Use when building or debugging WordPress Interactivity API features (data-wp-* directives, @wordpress/interactivity store/state/actions, block viewScriptModule integration, wp_interactivity_*()) including performance, hydration, and directive behavior."
+description: "Use when you work on the Konomi front-end behavior: the data-wp-* directives in render.php and the partials, and the Interactivity stores under sources/Blocks/*/view."
 ---
 
-# WP Interactivity API
+# Konomi Interactivity API
 
 ## When to use
 
-Use this skill when the user mentions:
+Use this skill when a click, a state change, or a REST call of the front-end blocks does not behave as expected, or
+when you add such behavior.
 
-- Interactivity API, `@wordpress/interactivity`,
-- `data-wp-interactive`, `data-wp-on--*`, `data-wp-bind--*`, `data-wp-context`,
-- block `viewScriptModule` / module-based view scripts,
-- hydration issues or “directives don’t fire”.
+## Project facts
 
-## Inputs required
-
-- Repo root + triage output (`wp-project-triage`).
-- Which block/theme/plugin surfaces are affected (frontend, editor, both).
-- Any constraints: WP version, whether modules are supported in the build.
+- Every interactive block ships a store under `sources/Blocks/<Block>/view/`: `index.ts` (entry, calls `init()`),
+  `store.ts` (the store), plus command files, for example `add-reaction-command.ts`.
+- Store namespaces: `konomi` (container), `konomiReaction`, `konomiBookmark`, `konomiProfilePagination`.
+- The stores are TypeScript, strictly typed. Each store file exports its `Context` type. The inner stores import the
+  container `Context` type from `../../Konomi/view/store`.
+- The server prints the context. `render.php` builds it with `Blocks\context(Context::class)` and prints it with
+  `wp_interactivity_data_wp_context()`. The client reads it with `getContext<Context>('<namespace>')`.
+- Markup comes from `render.php` and from the partials under `sources/Blocks/*/partials/`. The directives live there,
+  not in a JavaScript template.
+- The allowed directive list is `Blocks\kses()` in `sources/Blocks/api.php`. If you add a new `data-wp-*` attribute to
+  markup that passes through `kses()`, add it to that list too.
+- Stores are built as script modules into `build-module/` and declared in `block.json` as `viewScriptModule`.
 
 ## Procedure
 
-### 1) Detect existing usage + integration style
+### 1) Read the context contract first
 
-Search for:
+The server `Context` class and the client `Context` type describe the same data. Change both, or the client reads
+`undefined`.
 
-- `data-wp-interactive`
-- `@wordpress/interactivity`
-- `viewScriptModule`
+Container context fields: `id`, `type`, `isUserLoggedIn`, `loginRequired`, `error`.
 
-Decide:
+### 2) Write the action
 
-- Is this a block providing interactivity via `block.json` view script module?
-- Is this theme-level interactivity?
-- Is this plugin-side “enhance existing markup” usage?
+- Use `store('<namespace>', { state, actions, callbacks })`.
+- Use a generator function with `yield` for an asynchronous action, as `updateUserPreferences` does.
+- Update the local context first, then persist, then revert on failure. `toggleStatus` plus `revertStatus` is the
+  pattern.
+- Check `outerContext.isUserLoggedIn` before a write. Set `loginRequired = true` instead of calling the REST endpoint.
 
-If you’re creating a new interactive block (not just debugging), prefer the official scaffold template:
+### 3) Call the REST endpoints
 
-- `@wordpress/create-block-interactive-template` (via `@wordpress/create-block`)
+Use `@konomi/api-fetch`, not `@wordpress/api-fetch`. It carries Konomi error handling. Read `docs/api-fetch.md`.
+Keep the request in a command file beside the store.
 
-### 2) Identify the store(s)
+### 4) Directives in markup
 
-Locate store definitions and confirm:
+Use the directives the project already uses: `data-wp-on-async--click`, `data-wp-class--is-active`,
+`data-wp-run--*`, `data-wp-bind--*`, `data-wp-text`. The pagination store of `konomi/user-profile` reads the server
+state with `getServerState()` and wraps a handler with `withSyncEvent()`.
 
-- state shape,
-- actions (mutations),
-- callbacks/event handlers used by `data-wp-on--*`.
-
-### 3) Server-side rendering (best practice)
-
-**Pre-render HTML on the server** before outputting to ensure:
-
-- Correct initial state in the HTML before JavaScript loads (no layout shift).
-- SEO benefits and faster perceived load time.
-- Seamless hydration when the client-side JavaScript takes over.
-
-#### Enable server directive processing
-
-For components using `block.json`, add `supports.interactivity`:
-
-```json
-{
-  "supports": {
-    "interactivity": true
-  }
-}
-```
-
-For themes/plugins without `block.json`, use `wp_interactivity_process_directives()` to process directives.
-
-#### Initialize state/context in PHP
-
-Use `wp_interactivity_state()` to define initial global state:
-
-```php
-wp_interactivity_state( 'myPlugin', array(
-  'items'    => array( 'Apple', 'Banana', 'Cherry' ),
-  'hasItems' => true,
-));
-```
-
-For local context, use `wp_interactivity_data_wp_context()`:
-
-```php
-<?php
-$context = array( 'isOpen' => false );
-?>
-<div <?php echo wp_interactivity_data_wp_context( $context ); ?>>
-  ...
-</div>
-```
-
-#### Define derived state in PHP
-
-When derived state affects initial HTML rendering, replicate the logic in PHP:
-
-```php
-wp_interactivity_state( 'myPlugin', array(
-  'items'    => array( 'Apple', 'Banana' ),
-  'hasItems' => function() {
-    $state = wp_interactivity_state();
-    return count( $state['items'] ) > 0;
-  }
-));
-```
-
-This ensures directives like `data-wp-bind--hidden="!state.hasItems"` render correctly on first load.
-
-For detailed examples and patterns, see `references/server-side-rendering.md`.
-
-### 4) Implement or change directives safely
-
-When touching markup directives:
-
-- keep directive usage minimal and scoped,
-- prefer stable data attributes that map clearly to store state,
-- ensure server-rendered markup + client hydration align.
-
-**WordPress 6.9 changes:**
-
-- **`data-wp-ignore` is deprecated** and will be removed in future versions. It broke context inheritance and caused issues with client-side navigation. Avoid using it.
-- **Unique directive IDs**: Multiple directives of the same type can now exist on one element using the `---` separator (e.g., `data-wp-on--click---plugin-a="..."` and `data-wp-on--click---plugin-b="..."`).
-- **New TypeScript types**: `AsyncAction<ReturnType>` and `TypeYield<T>` help with async action typing.
-
-For quick directive reminders, see `references/directives-quickref.md`.
-
-### 5) Build/tooling alignment
-
-Verify the repo supports the required module build path:
-
-- if it uses `@wordpress/scripts`, prefer its conventions.
-- if it uses custom bundling, confirm module output is supported.
-
-### 6) Debug common failure modes
-
-If “nothing happens” on interaction:
-
-- confirm the `viewScriptModule` is enqueued/loaded,
-- confirm the DOM element has `data-wp-interactive`,
-- confirm the store namespace matches the directive’s value,
-- confirm there are no JS errors before hydration.
-
-See `references/debugging.md`.
+Background: `references/directives-quickref.md`, `references/server-side-rendering.md`.
 
 ## Verification
 
-- `wp-project-triage` indicates `signals.usesInteractivityApi: true` after your change (if applicable).
-- Manual smoke test: directive triggers and state updates as expected.
-- If tests exist: add/extend Playwright E2E around the interaction path.
+```bash
+pnpm qa                    # tsc, eslint, stylelint, jest
+composer test:functional   # rendered markup snapshots
+```
+
+The JavaScript unit tests live in `tests/unit/js`. To drive a real button in a browser, use the `run-konomi` skill.
 
 ## Failure modes / debugging
 
-- Directives present but inert:
-  - view script not loading, wrong module entrypoint, or missing `data-wp-interactive`.
-- Hydration mismatch / flicker:
-  - server markup differs from client expectations; simplify or align initial state.
-  - derived state not defined in PHP: use `wp_interactivity_state()` with closures.
-- Initial content missing or wrong:
-  - `supports.interactivity` not set in `block.json` (for blocks).
-  - `wp_interactivity_process_directives()` not called (for themes/plugins).
-  - state/context not initialized in PHP before render.
-- Layout shift on load:
-  - derived state like `state.hasItems` missing on server, causing `hidden` attribute to be absent.
-- Performance regressions:
-  - overly broad interactive roots; scope interactivity to smaller subtrees.
-- Client-side navigation issues (WordPress 6.9):
-  - `getServerState()` and `getServerContext()` now reset between page transitions—ensure your code doesn't assume stale values persist.
-  - Router regions now support `attachTo` for rendering overlays (modals, pop-ups) dynamically.
+- The action does not run: the `data-wp-interactive` namespace in the markup does not match the `store()` namespace.
+- The context is `undefined`: `getContext` uses the wrong namespace, or `render.php` does not print the context.
+- The directive disappears from the output: `Blocks\kses()` does not allow the attribute.
+- The store does not load: `build-module/` is stale. Run `pnpm build:modules`.
 
-## Escalation
-
-- If repo build constraints are unclear, ask: "Is this using `@wordpress/scripts` or a custom bundler (webpack/vite)?"
-- Consult:
-  - `references/server-side-rendering.md`
-  - `references/directives-quickref.md`
-  - `references/debugging.md`
+Background: `references/debugging.md`. It describes common WordPress practice. When it disagrees with `docs/`, the
+`docs/` directory wins.

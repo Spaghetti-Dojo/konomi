@@ -1,113 +1,90 @@
 ---
 name: wp-rest-api
-description: "Use when building, extending, or debugging WordPress REST API endpoints/routes: register_rest_route, WP_REST_Controller/controller classes, schema/argument validation, permission_callback/authentication, response shaping, register_rest_field/register_meta, or exposing CPTs/taxonomies via show_in_rest."
+description: "Use when you work on the Konomi REST layer: Route, Schema, Controller, and the middleware chain under sources/Rest, or the konomi/v1 endpoints."
 ---
 
-# WP REST API
+# Konomi REST API
 
 ## When to use
 
-Use this skill when you need to:
+Use this skill when you add or change an endpoint, a schema, a controller, or a middleware.
 
-- create or update REST routes/endpoints
-- debug 401/403/404 errors or permission/nonce issues
-- add custom fields/meta to REST responses
-- expose custom post types or taxonomies via REST
-- implement schema + argument validation
-- adjust response links/embedding/pagination
+## Project facts
 
-## Inputs required
+Konomi does not call `register_rest_route()` in feature code. It uses a typed layer in `sources/Rest`:
 
-- Repo root + target plugin/theme/mu-plugin (path to entrypoint).
-- Desired namespace + version (e.g. `my-plugin/v1`) and routes.
-- Authentication mode (cookie + nonce vs application passwords vs auth plugin).
-- Target WordPress version constraints (if below 6.9, call out).
+| Piece                    | Contract                                                            |
+| ------------------------ | -------------------------------------------------------------------- |
+| `Rest\Route`             | `Route::post(namespace, path, Schema, Controller)`, then `register()` |
+| `Rest\Schema`            | `toArray(): array` — a JSON Schema                                   |
+| `Rest\Controller`        | `__invoke(WP_REST_Request): WP_REST_Response\|WP_Error`              |
+| `Rest\Middleware`        | `__invoke(WP_REST_Request, callable $next)`                          |
+| `Rest\ErrorFactory`      | Builds every `WP_Error`                                              |
+
+Existing endpoints, both `POST` under the `konomi/v1` namespace:
+
+- `/user-reaction`
+- `/user-bookmark`
+
+Both are registered in `Blocks\Module::initRest()` on `rest_api_init`, with the schema and controller resolved from the
+container through `AddSchemaFactory` and `AddControllerFactory`.
+
+Read `docs/rest.md` before you change this layer. It is the reference for the whole design.
 
 ## Procedure
 
-### 0) Triage and locate REST usage
+### 1) Register the route
 
-1. Run triage:
-   - `node skills/wp-project-triage/scripts/detect_wp_project.mjs`
-2. Search for existing REST usage:
-   - `register_rest_route`
-   - `WP_REST_Controller`
-   - `rest_api_init`
-   - `show_in_rest`, `rest_base`, `rest_controller_class`
+```php
+add_action('rest_api_init', static function () use ($container): void {
+    Rest\Route::post('konomi/v1', '/my-route', $schema, $controller)
+        ->withMiddleware($container->get(Rest\Middlewares\ErrorCatch::class))
+        ->withMiddleware($container->get(Rest\Middlewares\Authentication::class))
+        ->register();
+});
+```
 
-If this is a full site repo, pick the specific plugin/theme before changing code.
+`register()` derives the `args` from the schema, publishes the schema, and sets an allow-all permission callback. The
+route does not authenticate on its own. Attach `Authentication` for a route that needs a logged-in user.
 
-### 1) Choose the right approach
+**Attachment order is nesting order.** Attach `ErrorCatch` first, so it wraps everything.
 
-- **Expose CPT/taxonomy in `wp/v2`:**
-  - Use `show_in_rest => true` + `rest_base` if needed.
-  - Optionally provide `rest_controller_class`.
-  - Read `references/custom-content-types.md`.
-- **Custom endpoints:**
-  - Use `register_rest_route()` on `rest_api_init`.
-  - Prefer a controller class (`WP_REST_Controller` subclass) for anything non-trivial.
-  - Read `references/routes-and-endpoints.md` and `references/schema.md`.
+### 2) Write the schema
 
-### 2) Register routes safely (namespaces, methods, permissions)
+Return a JSON Schema array from `toArray()`. WordPress validates and sanitizes the arguments before the controller
+runs, so the controller can trust the declared parameters. Read the params with `$request->get_param()`. Never read
+`$_GET` or `$_POST`.
 
-- Use a unique namespace `vendor/v1`; avoid `wp/*` unless core.
-- Always provide `permission_callback` (use `__return_true` for public endpoints).
-- Use `WP_REST_Server::READABLE/CREATABLE/EDITABLE/DELETABLE` constants.
-- Return data via `rest_ensure_response()` or `WP_REST_Response`.
-- Return errors via `WP_Error` with an explicit `status`.
+Background: `references/schema.md`.
 
-Read `references/routes-and-endpoints.md`.
+### 3) Write the controller
 
-### 3) Validate/sanitize request args
+One `__invoke` method. Return a `WP_REST_Response`, or an error from `ErrorFactory` with an explicit status. Build the
+controller through a factory service when it needs dependencies, as `AddControllerFactory` does.
 
-- Define `args` with `type`, `default`, `required`, `validate_callback`, `sanitize_callback`.
-- Prefer JSON Schema validation with `rest_validate_value_from_schema` then `rest_sanitize_value_from_schema`.
-- Never read `$_GET`/`$_POST` directly inside endpoints; use `WP_REST_Request`.
+### 4) Write a middleware
 
-Read `references/schema.md`.
+Implement `Rest\Middleware`. Call `$next($request)` to continue inward. Return a response or an error to stop the
+chain. Add the middleware as a service in `Rest\Module::services()`.
 
-### 4) Responses, fields, and links
-
-- Do **not** remove core fields from default endpoints; add fields instead.
-- Use `register_rest_field` for computed fields; `register_meta` with `show_in_rest` for meta.
-- For `object`/`array` meta, define schema in `show_in_rest.schema`.
-- If you need unfiltered post content (e.g., ToC plugins injecting HTML), request `?context=edit` to access `content.raw` (auth required). Pair with `_fields=content.raw` to keep responses small.
-- Add related resource links via `WP_REST_Response::add_link()`.
-
-Read `references/responses-and-fields.md`.
-
-### 5) Authentication and authorization
-
-- For wp-admin/JS: cookie auth + `X-WP-Nonce` (action `wp_rest`).
-- For external clients: application passwords (basic auth) or an auth plugin.
-- Use capability checks in `permission_callback` (authorization), not just “logged in”.
-
-Read `references/authentication.md`.
-
-### 6) Client-facing behavior (discovery, pagination, embeds)
-
-- Ensure discovery works (`Link` header or `<link rel="https://api.w.org/">`).
-- Support `_fields`, `_embed`, `_method`, `_envelope`, pagination headers.
-- Remember `per_page` is capped at 100.
-
-Read `references/discovery-and-params.md`.
+Background: `references/routes-and-endpoints.md`, `references/responses-and-fields.md`, `references/authentication.md`.
 
 ## Verification
 
-- `/wp-json/` index includes your namespace.
-- `OPTIONS` on your route returns schema (when provided).
-- Endpoint returns expected data; permission failures return 401/403 as appropriate.
-- CPT/taxonomy routes appear under `wp/v2` when `show_in_rest` is true.
-- Run repo lint/tests and any PHP/JS build steps.
+```bash
+composer test:integration   # WorDBless, the REST layer
+composer analysis           # PHPStan level 9
+```
+
+Check the endpoint by hand with the `run-konomi` skill, or with `curl` against the `wp-env` site. The namespace must
+appear in `/wp-json/`.
 
 ## Failure modes / debugging
 
-- 404: `rest_api_init` not firing, route typo, or permalinks off (use `?rest_route=`).
-- 401/403: missing nonce/auth, or `permission_callback` too strict.
-- `_doing_it_wrong` for missing `permission_callback`: add it (use `__return_true` if public).
-- Invalid params: missing/incorrect `args` schema or validation callbacks.
-- Fields missing: `show_in_rest` false, meta not registered, or CPT lacks `custom-fields` support.
+- 404: the route is registered outside `rest_api_init`, or the module is not in `konomi.php`.
+- 401 where you did not expect it: the `Authentication` middleware is attached to a public route.
+- An unhandled exception returns a raw 500: `ErrorCatch` is not the first middleware attached.
+- An invalid parameter passes: the schema does not declare it, so WordPress does not validate it.
 
-## Escalation
-
-If version support or behavior is unclear, consult the REST API Handbook and core docs before inventing patterns.
+The reference files describe common WordPress practice, `register_rest_route()` included. Use them for the underlying
+behavior only. For the shape of Konomi code, `docs/rest.md` wins.
