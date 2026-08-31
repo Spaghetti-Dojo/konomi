@@ -33,29 +33,6 @@ class ItemRegistry
         return isset($this->items[$key]);
     }
 
-    public function has(int $postId, int $userId, User\ItemGroup $group): bool
-    {
-        $key = self::keyFor($postId, $group);
-
-        if (!$this->hasGroup($postId, $group)) {
-            return false;
-        }
-
-        return isset($this->items[$key][$userId]);
-    }
-
-    public function get(int $postId, int $userId, User\ItemGroup $group): User\Item
-    {
-        $nullItem = User\Item::null();
-        $key = self::keyFor($postId, $group);
-
-        if (!$this->hasGroup($postId, $group)) {
-            return $nullItem;
-        }
-
-        return $this->items[$key][$userId] ?? $nullItem;
-    }
-
     public function set(int $postId, int $userId, User\Item $item): void
     {
         $key = self::keyFor($postId, $item->group());
@@ -78,18 +55,6 @@ class ItemRegistry
         $this->items[$key] = $collection;
     }
 
-    public function unset(int $postId, int $userId, User\ItemGroup $group): void
-    {
-        if (!$this->has($postId, $userId, $group)) {
-            return;
-        }
-
-        $key = self::keyFor($postId, $group);
-        $collection = $this->items[$key];
-        unset($collection[$userId]);
-        $this->items[$key] = $collection;
-    }
-
     /**
      * @return Items
      */
@@ -99,11 +64,6 @@ class ItemRegistry
         return $this->hasGroup($postId, $group)
             ? $this->items[$key]
             : [];
-    }
-
-    public function replace(ItemRegistry $registry): void
-    {
-        $this->items = $registry->items;
     }
 
     private function keyFor(int $postId, User\ItemGroup $group): string

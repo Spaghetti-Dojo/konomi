@@ -27,4 +27,9 @@ describe('countForPost', function (): void {
         ]);
         expect($this->post->countForPost(1, ItemGroup::REACTION))->toBe(3);
     });
+
+    it('should return zero for a post with no stored interaction', function (): void {
+        $this->repository->shouldReceive('find')->with(2, ItemGroup::REACTION)->andReturn([]);
+        expect($this->post->countForPost(2, ItemGroup::REACTION))->toBe(0);
+    });
 });

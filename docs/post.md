@@ -10,9 +10,15 @@ without scanning every user.
 the post axis (this module). Both are stored in the same table; the axis is just which side you enter from. See
 [Storage](./storage.md) for the axis model.
 
-**Kept in sync by an event, not by you.** You never call the post-side save yourself. When the User module persists an
-interaction it fires `konomi.user.repository.save-successfully`; the Post module subscribes and mirrors the record onto
-the post index. Reading a post's count and reacting to saves is the whole public surface.
+**Written once, readable from either side.** An interaction is written one time only, on the user axis, by the
+[User](./user.md) module. The row it stores already carries the post id, so the post axis reads the same row back. The
+Post module never writes and never mirrors anything: it is a read view over the rows the User module persists. Reading a
+post's count is its whole public surface.
+
+**A count resolved in a request is not refreshed by a later save in that request.** The post-side index is built on the
+first read of a post and group, then served from memory for the rest of the request. A save that happens after that read
+lands in the table, but the already-resolved count keeps its value until the next request rebuilds the index. This is an
+accepted trade-off: counts are rendered on page load, before any save in the same request.
 
 ## Using it
 
@@ -32,26 +38,6 @@ $bookmarks = $post->countForPost(123, ItemGroup::BOOKMARK);
 
 `countForPost()` returns the number of distinct users who currently have an active item for that post and group.
 
-### React to any save
-
-The same `konomi.user.repository.save-successfully` action from the [User](./user.md) module is a general extension
-point — the callback gets the item and the user, enough to run any side effect:
-
-```php
-use SpaghettiDojo\Konomi\User;
-
-add_action(
-    'konomi.user.repository.save-successfully',
-    static function (User\Item $item, User\User $user): void {
-        if ($item->isActive()) {
-            do_action('myplugin.recount', $item->id(), $item->group()->value);
-        }
-    },
-    10,
-    2
-);
-```
-
 ## API
 
 ### `Post`
@@ -69,23 +55,7 @@ class Post
 
 Registered under `Post::class`; resolve it from the container.
 
-### Action: `konomi.post.collection.save`
-
-Fired just before the post-axis write, so you can observe the mirror step:
-
-```php
-do_action(
-    'konomi.post.collection.save',
-    User\Item $item,
-    User\User $user,
-    Storage\StorageKey $storageKey
-);
-```
-
-The upstream `konomi.user.repository.save-successfully` action (documented in [User](./user.md)) is what triggers this
-step.
-
 ## Related
 
-- [User](./user.md) — the write side and the source of the save event.
+- [User](./user.md) — the only writer of an interaction and the source of the save event.
 - [Storage](./storage.md) — the shared store; the Post side always uses `Axis::Entity`.

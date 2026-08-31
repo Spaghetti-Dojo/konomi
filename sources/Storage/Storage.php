@@ -11,8 +11,7 @@ interface Storage
      */
     public function read(Axis $axis, int $id, string $groupKey): array;
 
-    /**
-     * @param list<Record> $records
-     */
-    public function write(Axis $axis, int $id, string $groupKey, array $records): bool;
+    public function delete(Axis $axis, string $groupKey, Record $record): bool;
+
+    public function write(Axis $axis, string $groupKey, Record $record): bool;
 }

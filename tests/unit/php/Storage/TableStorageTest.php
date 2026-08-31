@@ -36,14 +36,13 @@ describe('TableStorage validation', function (): void {
         expect($storage->read($axis, 1, ''))->toBe([]);
     })->with('axes');
 
-    it('returns false for invalid id on write', function (Axis $axis): void {
-        $storage = TableStorage::new(InteractionsTable::new('wp_'));
-        expect($storage->write($axis, 0, 'reaction', []))->toBeFalse()
-            ->and($storage->write($axis, -1, 'reaction', []))->toBeFalse();
-    })->with('axes');
-
     it('returns false for empty key on write', function (Axis $axis): void {
         $storage = TableStorage::new(InteractionsTable::new('wp_'));
-        expect($storage->write($axis, 1, '', [new Record(1, 1, 'post')]))->toBeFalse();
+        expect($storage->write($axis, '', new Record(1, 1, 'post')))->toBeFalse();
+    })->with('axes');
+
+    it('returns false for empty key on delete', function (Axis $axis): void {
+        $storage = TableStorage::new(InteractionsTable::new('wp_'));
+        expect($storage->delete($axis, '', new Record(1, 1, 'post')))->toBeFalse();
     })->with('axes');
 });

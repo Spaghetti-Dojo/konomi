@@ -60,14 +60,15 @@ class Repository
 
         $this->loadItems($user, $item->group());
         $registrySnapshot = clone $this->registry;
-        $records = $this->prepareDataToStore($user, $item);
+        $this->prepareDataToStore($user, $item);
 
-        $stored = $this->storage->write(
-            Storage\Axis::User,
-            $user->id(),
-            $this->storageKey->for($item->group()),
-            $records
-        );
+        $record = new Storage\Record($item->id(), $user->id(), $item->type());
+
+        $groupKey = $this->storageKey->for($item->group());
+
+        $stored = $item->isActive()
+            ? $this->storage->write(Storage\Axis::User, $groupKey, $record)
+            : $this->storage->delete(Storage\Axis::User, $groupKey, $record);
 
         $stored
             ? do_action(
@@ -87,28 +88,11 @@ class Repository
         return $user->id() > 0 && $item->isValid();
     }
 
-    /**
-     * @return list<Storage\Record>
-     */
-    private function prepareDataToStore(User $user, Item $item): array
+    private function prepareDataToStore(User $user, Item $item): void
     {
         $item->isActive()
             ? $this->registry->set($user, $item)
             : $this->registry->unset($user, $item);
-
-        return $this->serializeData($user, $item->group());
-    }
-
-    /**
-     * @return list<Storage\Record>
-     */
-    private function serializeData(User $user, ItemGroup $group): array
-    {
-        $records = [];
-        foreach ($this->registry->all($user, $group) as $item) {
-            $records[] = new Storage\Record($item->id(), $user->id(), $item->type());
-        }
-        return $records;
     }
 
     private function rollbackRegistry(ItemRegistry $registry): void

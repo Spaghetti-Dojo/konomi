@@ -7,13 +7,12 @@ namespace SpaghettiDojo\Konomi\Post;
 use Psr\Container\ContainerInterface;
 use Inpsyde\Modularity\{
     Module\ServiceModule,
-    Module\ExecutableModule,
     Module\ModuleClassNameIdTrait
 };
 use SpaghettiDojo\Konomi\Storage;
 use SpaghettiDojo\Konomi\User;
 
-class Module implements ServiceModule, ExecutableModule
+class Module implements ServiceModule
 {
     use ModuleClassNameIdTrait;
 
@@ -47,19 +46,5 @@ class Module implements ServiceModule, ExecutableModule
                 $container->get(ItemRegistry::class)
             ),
         ];
-    }
-
-    public function run(ContainerInterface $container): bool
-    {
-        add_action(
-            'konomi.user.repository.save-successfully',
-            static fn (User\Item $item, User\User $user) => $container
-                ->get(Repository::class)
-                ->save($item, $user),
-            10,
-            2
-        );
-
-        return true;
     }
 }

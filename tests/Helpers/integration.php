@@ -25,5 +25,5 @@ function seedRecords(
             ? new Storage\Record($otherId, $id, $type)
             : new Storage\Record($id, $otherId, $type);
     }
-    $storage->seed($id, $group, $records);
+    $storage->seed($group, $records);
 }
