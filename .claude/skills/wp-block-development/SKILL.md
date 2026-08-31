@@ -1,173 +1,108 @@
 ---
 name: wp-block-development
-description: "Use when developing WordPress (Gutenberg) blocks: block.json metadata, register_block_type(_from_metadata), attributes/serialization, supports, dynamic rendering (render.php/render_callback), deprecations/migrations, viewScript vs viewScriptModule, and @wordpress/scripts/@wordpress/create-block build and test workflows."
+description: "Use when you work on the Konomi blocks: block.json, the edit code, render.php, the Context/TemplateRender layer, the blocks manifest, and the pnpm build."
 ---
 
-# WP Block Development
+# Konomi Block Development
 
 ## When to use
 
-Use this skill for block work such as:
+Use this skill when you change a block under `sources/Blocks/`, or add a new one.
 
-- creating a new block, or updating an existing one
-- changing `block.json` (scripts/styles/supports/attributes/render/viewScriptModule)
-- fixing “block invalid / not saving / attributes not persisting”
-- adding dynamic rendering (`render.php` / `render_callback`)
-- block deprecations and migrations (`deprecated` versions)
-- build tooling for blocks (`@wordpress/scripts`, `@wordpress/create-block`, `wp-env`)
+## Project facts
 
-## Inputs required
+The plugin ships four dynamic blocks. All are server-rendered and driven by the Interactivity API.
 
-- Repo root and target (plugin vs theme vs full site).
-- The block name/namespace and where it lives (path to `block.json` if known).
-- Target WordPress version range (especially if using modules / `viewScriptModule`).
+| Block                 | Directory                   | Role                                                     |
+| --------------------- | --------------------------- | -------------------------------------------------------- |
+| `konomi/konomi`       | `sources/Blocks/Konomi`     | Container. Inner blocks. Hooked after `core/post-title`. |
+| `konomi/reaction`     | `sources/Blocks/Reaction`   | Reaction control with an optional count.                 |
+| `konomi/bookmark`     | `sources/Blocks/Bookmark`   | Bookmark control.                                        |
+| `konomi/user-profile` | `sources/Blocks/UserProfile`| Favorites table of the current user.                     |
+
+Per block directory: `block.json`, `index.ts` (editor entry), `edit/` (React editor code), `view/` (Interactivity
+store), `render.php` (server render), and `Context.php` (server context service) where the block needs one. Build output goes to `dist/` (scripts)
+and `build-module/` (script modules). Both are git-ignored.
+
+Read `docs/blocks.md` and `docs/extending.md` before you change block behavior.
 
 ## Procedure
 
-### 0) Triage and locate blocks
+### 1) block.json
 
-1. Run triage:
-   - `node skills/wp-project-triage/scripts/detect_wp_project.mjs`
-2. List blocks (deterministic scan):
-   - `node skills/wp-block-development/scripts/list_blocks.mjs`
-3. Identify the block root (directory containing `block.json`) you’re changing.
+- `apiVersion` is 3. Keep `"supports": { "interactivity": true }` on the interactive blocks.
+- Entries point at build output: `editorScript` to `file:./dist/js/...`, `viewScriptModule` to
+  `file:./build-module/...`, `style` to `file:./dist/css/...`, `render` to `file:./render.php`.
+- Text domain is `konomi`.
+- `konomi/reaction` and `konomi/bookmark` declare `"parent": ["konomi/konomi"]`.
 
-If this repo is a full site (`wp-content/` present), be explicit about *which* plugin/theme contains the block.
+Background: `references/block-json.md`, `references/attributes-and-serialization.md`,
+`references/supports-and-wrappers.md`, `references/inner-blocks.md`.
 
-### 1) Create a new block (if needed)
+### 2) Registration
 
-If you are creating a new block, prefer scaffolding rather than hand-rolling structure:
+Do not call `register_block_type()` in new code. `Blocks\BlockRegistrar` scans `sources/Blocks`, loads
+`blocks-manifest.php` with `wp_register_block_metadata_collection()`, and registers every directory that holds a
+`block.json`. `Blocks\Module::run()` drives it.
 
-- Use `@wordpress/create-block` to scaffold a modern block/plugin setup.
-- If you need Interactivity API from day 1, use the interactive template.
+After you change any `block.json`, regenerate the manifest:
 
-Read:
-- `references/creating-new-blocks.md`
+```bash
+pnpm build:blocks-manifest
+```
 
-After scaffolding:
+Background: `references/registration.md`.
 
-1. Re-run the block list script and confirm the new block root.
-2. Continue with the remaining steps (model choice, metadata, registration, serialization).
+### 3) render.php
 
-### 2) Ensure apiVersion 3 (WordPress 6.9+)
+`render.php` runs in the block namespace and receives `$attributes`, `$content`, `$block`.
 
-WordPress 6.9 enforces `apiVersion: 3` in the block.json schema. Blocks with apiVersion 2 or lower trigger console warnings when `SCRIPT_DEBUG` is enabled.
+- Get the server context with `Blocks\context(Context::class)`, then `merge([...])` for per-render values.
+- Print it with `wp_interactivity_data_wp_context($context->toArray())`.
+- Render partials with `Blocks\renderer()->render('partials/<name>', [...])`, not with inline HTML.
+- Build inline custom properties with `Blocks\style()` and `Blocks\CustomProperty::new(...)`, each with a sanitize
+  callback.
+- Escape every attribute. Where PHPCS cannot see the escaping, add a narrow `phpcs:ignore` line, as the existing files do.
 
-**Why this matters:**
-- WordPress 7.0 will run the post editor in an iframe regardless of block apiVersion.
-- apiVersion 3 ensures your block works correctly inside the iframed editor (style isolation, viewport units, media queries).
+Background: `references/dynamic-rendering.md`.
 
-**Migration:** Changing from version 2 to 3 is usually as simple as updating the `apiVersion` field in `block.json`. However:
-- Test in a local environment with the iframe editor enabled.
-- Ensure any style handles are included in `block.json` (styles missing from the iframe won't apply).
-- Third-party scripts attached to a specific `window` may have scoping issues.
+### 4) Editor code
 
-Read:
-- `references/block-json.md` (apiVersion and schema details)
+`edit/index.tsx` uses `useBlockProps`; the container uses `useInnerBlocksProps` with a fixed `template` and
+`templateLock: 'insert'`. TypeScript is strict; types live beside the block in `edit/types.ts`.
 
-### 3) Pick the right block model
+### 5) Build
 
-- **Static block** (markup saved into post content): implement `save()`; keep attributes serialization stable.
-- **Dynamic block** (server-rendered): use `render` in `block.json` (or `render_callback` in PHP) and keep `save()` minimal or `null`.
-- **Interactive frontend behavior**:
-  - Prefer `viewScriptModule` for modern module-based view scripts where supported.
-  - If you're working primarily on `data-wp-*` directives or stores, also use `wp-interactivity-api`.
+```bash
+pnpm build              # scripts and modules
+pnpm build:dev:scripts  # watch, editor bundles
+pnpm build:dev:modules  # watch, view script modules
+```
 
-### 4) Update `block.json` safely
-
-Make changes in the block’s `block.json`, then confirm registration matches metadata.
-
-For field-by-field guidance, read:
-- `references/block-json.md`
-
-Common pitfalls:
-
-- changing `name` breaks compatibility (treat it as stable API)
-- changing saved markup without adding `deprecated` causes “Invalid block”
-- adding attributes without defining source/serialization correctly causes “attribute not saving”
-
-### 5) Register the block (server-side preferred)
-
-Prefer PHP registration using metadata, especially when:
-
-- you need dynamic rendering
-- you need translations (`wp_set_script_translations`)
-- you need conditional asset loading
-
-Read and apply:
-- `references/registration.md`
-
-### 6) Implement edit/save/render patterns
-
-Follow wrapper attribute best practices:
-
-- Editor: `useBlockProps()`
-- Static save: `useBlockProps.save()`
-- Dynamic render (PHP): `get_block_wrapper_attributes()`
-
-Read:
-- `references/supports-and-wrappers.md`
-- `references/dynamic-rendering.md` (if dynamic)
-
-### 7) Inner blocks (block composition)
-
-If your block is a “container” that nests other blocks, treat Inner Blocks as a first-class feature:
-
-- Use `useInnerBlocksProps()` to integrate inner blocks with wrapper props.
-- Keep migrations in mind if you change inner markup.
-
-Read:
-- `references/inner-blocks.md`
-
-### 8) Attributes and serialization
-
-Before changing attributes:
-
-- confirm where the attribute value lives (comment delimiter vs HTML vs context)
-- avoid the deprecated `meta` attribute source
-
-Read:
-- `references/attributes-and-serialization.md`
-
-### 9) Migrations and deprecations (avoid "Invalid block")
-
-If you change saved markup or attributes:
-
-1. Add a `deprecated` entry (newest → oldest).
-2. Provide `save` for old versions and an optional `migrate` to normalize attributes.
-
-Read:
-- `references/deprecations.md`
-
-### 10) Tooling and verification commands
-
-Prefer whatever the repo already uses:
-
-- `@wordpress/scripts` (common) → run existing npm scripts
-- `wp-env` (common) → use for local WP + E2E
-
-Read:
-- `references/tooling-and-testing.md`
+Every build script runs `tsc --noEmit` first.
 
 ## Verification
 
-- Block appears in inserter and inserts successfully.
-- Saving + reloading does not create “Invalid block”.
-- Frontend output matches expectations (static: saved markup; dynamic: server output).
-- Assets load where expected (editor vs frontend).
-- Run the repo’s lint/build/tests that triage recommends.
+```bash
+pnpm qa      # tsc, lint:js, lint:css, lint:md, jest with coverage
+composer qa  # PHPCS, PHPStan, Pest
+```
+
+Functional PHP tests snapshot the rendered markup. If the markup changes on purpose, update the snapshots:
+
+```bash
+composer test:snapshots:update
+```
+
+To see a block in a real site, use the `run-konomi` skill.
 
 ## Failure modes / debugging
 
-If something fails, start here:
+- A block does not appear: the manifest is stale. Run `pnpm build:blocks-manifest`.
+- The view module does not load: `build-module/` is missing. Run `pnpm build:modules`.
+- The context is empty on the client: `render.php` did not print `wp_interactivity_data_wp_context()`, or the
+  `data-wp-interactive` namespace does not match the store namespace.
 
-- `references/debugging.md` (common failures + fastest checks)
-- `references/attributes-and-serialization.md` (attributes not saving)
-- `references/deprecations.md` (invalid block after change)
-
-## Escalation
-
-If you’re uncertain about upstream behavior/version support, consult canonical docs first:
-
-- WordPress Developer Resources (Block Editor Handbook, Theme Handbook, Plugin Handbook)
-- Gutenberg repo docs for bleeding-edge behaviors
+Background: `references/debugging.md`, `references/tooling-and-testing.md`, `references/deprecations.md`,
+`references/creating-new-blocks.md`. These describe common WordPress practice. When they disagree with `docs/`, the
+`docs/` directory wins.
